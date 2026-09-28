@@ -419,13 +419,13 @@ async function downloadCardImage(x){
 const UNRELEASED_ROLLS=[
  {id:'unreleased-can-u-be',title:'CAN U BE',credits:"Kanye West, Ye, Travis Scott, Ty Dolla $ign",album:'VULTURES 2',cover:'covers/unreleased-can-u-be.jpg'},
  {id:'unreleased-this-one-here',title:'Showtime',credits:'Kanye West, James Blake',album:'WAR',cover:'covers/unreleased-war.jpg'},
- {id:'unreleased-mr-ye-and-jesus',title:'MR YE AND JESUS',credits:'Ye',album:'Cuck',cover:'covers/unreleased-cuck.jpg'},
- {id:'unreleased-south-carolina',title:'South Carolina',credits:'Kanye West, Sunday Service Choir',album:'Donda',cover:'covers/unreleased-south-carolina.webp'},
- {id:'unreleased-happy',title:'Happy',credits:'Kanye West',album:'YEBU',cover:'covers/unreleased-yebu.jpeg'},
- {id:'unreleased-pussy-cost-money',title:'PUSSY COST MONEY',credits:"Kanye West, Ty Dolla $ign",album:'VULTURES 3',cover:'covers/unreleased-vultures-3.jpg'},
+ {id:'unreleased-mr-ye-and-jesus',title:'MR YE AND JESUS',credits:'Ye',album:'Cuck',cover:'covers/unreleased-cuck.png'},
+ {id:'unreleased-south-carolina',title:'South Carolina',credits:'Kanye West, Sunday Service Choir',album:'Donda',cover:'covers/unreleased-south-carolina.png'},
+ {id:'unreleased-happy',title:'Happy',credits:'Kanye West',album:'YEBU',cover:'covers/unreleased-yebu.png'},
+ {id:'unreleased-pussy-cost-money',title:'PUSSY COST MONEY',credits:"Kanye West, Ty Dolla $ign",album:'VULTURES 3',cover:'covers/unreleased-vultures-3.png'},
  {id:'unreleased-all-in-love',title:'All In Love',credits:"Kanye West, James Blake, Ty Dolla $ign",album:'WAR',cover:'covers/unreleased-war.jpg'},
  {id:'unreleased-living-so-italian',title:'Living So Italian',credits:'Kanye West, JAY-Z',album:'Watch The Throne',cover:'covers/watch-the-throne.jpg'},
- {id:'unreleased-new-body',title:'New Body',credits:"Kanye West, Ty Dolla $ign, Nicki Minaj",album:'Yandhi',cover:'covers/unreleased-yandhi.jpg'}
+ {id:'unreleased-new-body',title:'New Body',credits:"Kanye West, Ty Dolla $ign, Nicki Minaj",album:'Yandhi',cover:'covers/unreleased-yandhi.png'}
 ];
 const EBK_ROLL={id:'ebk-see-me-again',title:'See Me Again',credits:'Kanye West',album:'Good Ass Job',cover:'covers/ebk-see-me-again.png'};
 const EBK_CHANCE=.0001; // 0.01%
@@ -465,10 +465,10 @@ async function submitAuth(){if(!supa)return document.getElementById('authMsg').t
 async function serverDailyRoll(){if(!supa||!currentUser)return null;let {data,error}=await supa.rpc('daily_roll');if(error){document.getElementById('rollStatus').textContent=error.message;return null}await loadProfile();return data}
 function serverCoverSrc(v){v=String(v||'').trim();if(!v)return'';if(/^https?:\/\//i.test(v)||v.startsWith('data:')||v.startsWith('blob:'))return v;v=v.replace(/^\.\//,'').replace(/^\/+/, '');if(v.startsWith('covers/'))return v;return 'covers/'+v}
 function specialRollByRecord(r){let key=String(r?.catalog_key||r?.key||r?.spotify||'');let title=normTitle(r?.title||'');if(String(r?.rarity)==='EBK')return EBK_ROLL;return UNRELEASED_ROLLS.find(x=>x.id===key||normTitle(x.title)===title)||null}
-function fallbackCoverForRecord(r){let sp=specialRollByRecord(r);if(sp){let album=String(sp.album||'').toUpperCase();if(album==='VULTURES 2')return 'covers/vultures-2.jpg';if(album==='DONDA')return 'covers/donda.jpg';if(album==='WATCH THE THRONE')return 'covers/watch-the-throne.jpg';if(album==='YEBU')return 'covers/donda-2.jpg';if(album==='VULTURES 3')return 'covers/vultures-2.jpg';if(album==='YANDHI')return 'covers/ye.jpg';if(album==='GOOD ASS JOB')return 'covers/graduation.jpg';if(album==='WAR')return 'covers/donda-2.jpg';return serverCoverSrc(sp.cover)}let x=trackerSongForServer(r);return x?localCover(x):''}
+function fallbackCoverForRecord(r){let sp=specialRollByRecord(r);if(sp)return serverCoverSrc(sp.cover);let x=trackerSongForServer(r);return x?localCover(x):''}
 function coverImgHTML(src,r){let primary=serverCoverSrc(src)||fallbackCoverForRecord(r),fallback=fallbackCoverForRecord(r);if(!primary)return esc(initials(r?.title||''));let onerr=fallback&&fallback!==primary?`this.onerror=null;this.src='${esc(fallback)}'`:`this.style.display='none';this.parentElement.textContent='${esc(initials(r?.title||''))}'`;return `<img src="${esc(primary)}" onerror="${onerr}">`}
 function trackerSongForServer(r){let key=String(r?.catalog_key||r?.key||r?.spotify||'').split('/').pop();let byKey=key&&DB.songs.find(x=>(x.spotify||'').split('/').pop()===key);if(byKey)return byKey;let nt=normTitle(r?.title||'');return DB.songs.find(x=>normTitle(displayTitle(x))===nt)||DB.songs.find(x=>normTitle(x.name)===nt)||null}
-function serverItemInfo(r){let special=['Unreleased','EBK'].includes(String(r?.rarity||'')),sp=specialRollByRecord(r);if(special)return{cover:serverCoverSrc(r.cover)||serverCoverSrc(sp?.cover),album:r.album||sp?.album||'Unknown',releaseDate:r.release_date||r.releaseDate||'Unknown'};let x=trackerSongForServer(r),md=x?(META[x.spotify]||{}):{};return{cover:serverCoverSrc(r.cover)||(x?localCover(x):''),album:(r.album&&r.album!=='Tracker'?r.album:(x?projectLabelFor(x):'Unknown')),releaseDate:r.release_date||r.releaseDate||md.releaseDate||'Unknown'}}
+function serverItemInfo(r){let special=['Unreleased','EBK'].includes(String(r?.rarity||'')),sp=specialRollByRecord(r);if(special)return{cover:serverCoverSrc(sp?.cover)||serverCoverSrc(r.cover),album:sp?.album||r.album||'Unknown',releaseDate:r.release_date||r.releaseDate||'Unknown'};let x=trackerSongForServer(r),md=x?(META[x.spotify]||{}):{};return{cover:serverCoverSrc(r.cover)||(x?localCover(x):''),album:(r.album&&r.album!=='Tracker'?r.album:(x?projectLabelFor(x):'Unknown')),releaseDate:r.release_date||r.releaseDate||md.releaseDate||'Unknown'}}
 const QUICKSELL_VALUES={'Surface Ball':50,'Uncommon':100,'Common':175,'Basic':300,'Epic':600,'Legendary':1250,'Mythic':3000,'Unreleased':7500,'EBK':50000};
 function quicksellValue(rarity){return QUICKSELL_VALUES[String(rarity||'')]||0}
 async function loadInventory(){if(!supa||!currentUser)return[];let {data}=await supa.from('inventory').select('*').eq('owner_id',currentUser.id).order('acquired_at',{ascending:false});return data||[]}
