@@ -537,6 +537,24 @@ document.getElementById('accountBtn').onclick=openAuth;document.getElementById('
 document.addEventListener('click',e=>{if(!e.target.closest('.settingsWrap'))themePanel.classList.remove('open');if(!e.target.closest('.modeWrap'))modePanel.classList.remove('open');if(!e.target.closest('.sortWrap'))sortPanel.classList.remove('open')});render();updateDailyRoll();initAuth();
 </script><script src="data/history.js"></script><div class="siteShoutout">SHOUTOUT SCAMHUB, WOOLMANS, AND SPIDER</div>
 <style>
-.siteShoutout{display:none;width:100%;box-sizing:border-box;text-align:center;font-size:10px;line-height:1.2;letter-spacing:.08em;opacity:.38;padding:10px 12px 8px;user-select:none} body:not(.rollMode) .siteShoutout{display:block}
+.siteShoutout{display:none;width:100%;box-sizing:border-box;text-align:center;font-size:10px;line-height:1.2;letter-spacing:.08em;opacity:.38;padding:10px 12px 8px;user-select:none}
 </style>
+
+<script>
+(function(){
+  function syncShoutout(){
+    const shout=document.querySelector('.siteShoutout');
+    const stats=document.getElementById('app');
+    if(!shout||!stats)return;
+    const cs=getComputedStyle(stats);
+    const visible=cs.display!=='none' && cs.visibility!=='hidden';
+    shout.style.display=visible?'block':'none';
+  }
+  const observer=new MutationObserver(syncShoutout);
+  observer.observe(document.documentElement,{attributes:true,subtree:true,attributeFilter:['class','style','hidden']});
+  document.addEventListener('click',()=>requestAnimationFrame(syncShoutout));
+  window.addEventListener('load',syncShoutout);
+  syncShoutout();
+})();
+</script>
 </body></html>
