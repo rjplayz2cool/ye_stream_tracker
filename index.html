@@ -551,10 +551,9 @@ document.addEventListener('click',e=>{if(!e.target.closest('.settingsWrap'))them
 (function(){
   function syncShoutout(){
     const shout=document.querySelector('.siteShoutout');
-    const stats=document.getElementById('app');
+    const stats=document.getElementById('statsScreen');
     if(!shout||!stats)return;
-    const cs=getComputedStyle(stats);
-    const visible=cs.display!=='none' && cs.visibility!=='hidden';
+    const visible=stats.classList.contains('activeScreen');
     shout.style.display=visible?'block':'none';
   }
   const observer=new MutationObserver(syncShoutout);
