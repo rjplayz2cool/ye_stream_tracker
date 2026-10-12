@@ -26,6 +26,7 @@ def clean(cell):
    if u:el.set('src',u);el.set('loading','lazy');el.set('alt','Tracker reference image')
  return escape(x.text or '')+''.join(html.tostring(el,encoding='unicode') for el in x)
 def parse_section(name,gid,source):
+ if '</table>' not in source.lower() or '</html>' not in source.lower():raise ValueError(name+': incomplete source document; keeping last good archive')
  d=html.fromstring(source);css='\n'.join(d.xpath('//style/text()'))
  styles={k:style(v) for k,v in re.findall(r'\.ritz\s+\.waffle\s+\.(s\d+)\s*\{([^}]+)\}',css)}
  raw=d.xpath('//table[contains(@class,"waffle")]/tbody/tr')
@@ -93,7 +94,12 @@ def update(index_path,source_dir=None):
  for i,new in enumerate(current):
   old=previous[i] if previous else new
   if new['name']!=old['name'] or new['headers']!=old['headers']:raise ValueError('Section schema changed: '+new['name'])
-  if not new['rows'] or len(new['rows'])<len(old['rows'])*0.8:raise ValueError('Unexpectedly missing entries in '+new['name']+'; keeping last good archive')
+  if not new['rows']:raise ValueError('Empty section '+new['name']+'; keeping last good archive')
+  curated={'Recent','Best Of','Special','Worst Of','Grails/Wanted'}
+  if len(new['rows'])<len(old['rows'])*0.8 and new['name'] not in curated:
+   raise ValueError('Unexpectedly missing entries in '+new['name']+'; keeping last good archive')
+  if len(new['rows'])<len(old['rows']) and new['name'] in curated:
+   print('Curated list '+new['name']+' changed from '+str(len(old['rows']))+' to '+str(len(new['rows']))+' entries; accepting the complete source list.')
   if any(len(r['cells'])!=len(new['headers']) for r in new['rows']):raise ValueError('Misaligned cells: '+new['name'])
   print(new['name']+': '+str(len(new['rows']))+' entries')
  if current==previous:
