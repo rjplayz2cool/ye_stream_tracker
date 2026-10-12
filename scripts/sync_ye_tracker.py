@@ -54,9 +54,9 @@ def parse_section(name,gid,source):
   rows.append({'era':era,'cells':vals,'search':text.lower()})
  return {'name':name,'gid':gid,'headers':labels,'rows':rows,'legend':legend}
 
-import argparse,concurrent.futures,datetime,gzip,base64,time,urllib.request,os,tempfile
+import argparse,concurrent.futures,datetime,gzip,base64,time,urllib.request,os,tempfile,hashlib
 ROOT=Path(__file__).resolve().parents[1]
-ARCHIVE_PATTERN=r'(<script id="yeTrackerArchive"[^>]*>)([^<]+)(</script>)'
+ARCHIVE_PATTERN=r'(<script id="yeTrackerArchive"[^>]*>)([^<]*)(</script>)'
 
 def fetch(url):
  for attempt in range(3):
@@ -84,10 +84,14 @@ def update(index_path,source_dir=None):
  original=index_path.read_text();match=re.search(ARCHIVE_PATTERN,original)
  if not match or not original.rstrip().endswith('</script></body></html>'):
   raise ValueError('Index is incomplete or tracker archive is missing; no changes written')
- previous=json.loads(gzip.decompress(base64.b64decode(match.group(2))))
+ external=re.search(r'data-src="([^"]+)"',match.group(1))
+ archive_path=index_path.parent/'data'/'ye-tracker-archive.txt' if external else None
+ previous_payload=(archive_path.read_text() if archive_path.exists() else '') if archive_path else match.group(2)
+ previous=json.loads(gzip.decompress(base64.b64decode(previous_payload))) if previous_payload.strip() else None
  current=collect(source_dir)
  if len(current)!=12:raise ValueError('Incomplete import')
- for new,old in zip(current,previous):
+ for i,new in enumerate(current):
+  old=previous[i] if previous else new
   if new['name']!=old['name'] or new['headers']!=old['headers']:raise ValueError('Section schema changed: '+new['name'])
   if not new['rows'] or len(new['rows'])<len(old['rows'])*0.8:raise ValueError('Unexpectedly missing entries in '+new['name']+'; keeping last good archive')
   if any(len(r['cells'])!=len(new['headers']) for r in new['rows']):raise ValueError('Misaligned cells: '+new['name'])
@@ -95,15 +99,25 @@ def update(index_path,source_dir=None):
  if current==previous:
   print('No source changes. Index unchanged.');return False
  archive=base64.b64encode(gzip.compress(json.dumps(current,ensure_ascii=False,separators=(',',':')).encode(),compresslevel=9,mtime=0)).decode()
- updated=original[:match.start(2)]+archive+original[match.end(2):]
+ if archive_path:
+  digest=hashlib.sha256(archive.encode()).hexdigest()[:12]
+  opening=re.sub(r'data-src="[^"]+"','data-src="data/ye-tracker-archive.txt?v='+digest+'"',match.group(1))
+  updated=original[:match.start()]+opening+match.group(3)+original[match.end():]
+ else:
+  updated=original[:match.start(2)]+archive+original[match.end(2):]
  stamp=datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
  updated=re.sub(r'(<span id="yeTrackerSyncStatus">).*?(</span>)',lambda m:m[1]+'Syncs hourly · Data updated '+stamp+m[2],updated,count=1)
  # Verify only the archive payload and timestamp changed. Calendar, games, and accounts stay byte-identical.
  def outside_archive(text):
-  text=re.sub(ARCHIVE_PATTERN,lambda m:m[1]+'ARCHIVE'+m[3],text)
+  text=re.sub(ARCHIVE_PATTERN,lambda m:re.sub(r'data-src="[^"]+"','data-src="ARCHIVE_VERSION"',m[1])+'ARCHIVE'+m[3],text)
   return re.sub(r'(<span id="yeTrackerSyncStatus">).*?(</span>)',lambda m:m[1]+'TIMESTAMP'+m[2],text)
  if outside_archive(original)!=outside_archive(updated):raise ValueError('Unexpected change outside tracker data')
- if json.loads(gzip.decompress(base64.b64decode(re.search(ARCHIVE_PATTERN,updated)[2])))!=current:raise ValueError('Archive verification failed')
+ if json.loads(gzip.decompress(base64.b64decode(archive if archive_path else re.search(ARCHIVE_PATTERN,updated)[2])))!=current:raise ValueError('Archive verification failed')
+ if archive_path:
+  archive_path.parent.mkdir(parents=True,exist_ok=True)
+  with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',dir=archive_path.parent,delete=False) as payload_file:
+   payload_file.write('\n'.join(archive[i:i+4096] for i in range(0,len(archive),4096))+'\n');payload_temp=payload_file.name
+  os.replace(payload_temp,archive_path)
  with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',dir=index_path.parent,delete=False) as f:
   f.write(updated);temp_path=f.name
  os.replace(temp_path,index_path)
