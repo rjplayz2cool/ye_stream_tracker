@@ -3,13 +3,18 @@ on:
   workflow_dispatch:
     inputs:
       names:
-        description: 'Exact tracker titles with versions, separated by commas. Leave empty for the next batch.'
-        default: 'Déjà Vu,ALL THE LOVE V6,ALL THE LOVE V13'
+        description: 'Optional exact song/version titles. Leave empty to import the selected sections.'
+        default: ''
         required: false
         type: string
       count:
-        description: 'Maximum new audio files in this batch'
-        default: '3'
+        description: 'Maximum new audio files; 0 imports all selected links until the storage limit'
+        default: '0'
+        required: true
+        type: string
+      sections:
+        description: 'Tracker sections separated by commas'
+        default: 'Worst Of,Best Of,Special,Grails/Wanted'
         required: true
         type: string
 permissions:
@@ -23,7 +28,7 @@ jobs:
   import-and-publish:
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 180
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -38,8 +43,10 @@ jobs:
         env:
           IMPORT_NAMES: ${{ inputs.names }}
           IMPORT_COUNT: ${{ inputs.count }}
-        run: python scripts/import_imgur_audio.py --names "$IMPORT_NAMES" --limit "$IMPORT_COUNT" --max-file-mb 24 --max-total-mb 700 --repair-existing
+          IMPORT_SECTIONS: ${{ inputs.sections }}
+        run: python scripts/import_imgur_audio.py --names "$IMPORT_NAMES" --sections "$IMPORT_SECTIONS" --limit "$IMPORT_COUNT" --max-file-mb 95 --max-total-mb 700 --repair-existing
       - name: Commit actual files and player mappings
+        if: always()
         run: |
           git add media/imgur data/hosted-audio.json data/audio-import-report.json
           if git diff --cached --quiet; then
@@ -51,10 +58,29 @@ jobs:
             git pull --rebase
             git push
           fi
+      - name: Summarize import
+        if: always()
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          p=Path('data/audio-import-report.json')
+          if p.exists():
+              d=json.loads(p.read_text())
+              print('## Selected tracker audio import')
+              print('Sections: Worst Of, Best Of, Special, Grails/Wanted')
+              for label,key in [('Selected unique links','selectedUniqueLinks'),('New copies','imported'),('Total available copies','availableCopies'),('Links without copies','remainingCount')]:
+                  print(f'- {label}: {d.get(key, "—")}')
+              if d.get('blocked'): print('\nImport paused: '+d['blocked'])
+              print('\nSee `data/audio-import-report.json` for skipped files and remaining links.')
+          PY
       - uses: actions/configure-pages@v5
+        if: always()
       - uses: actions/upload-pages-artifact@v4
+        if: always()
         with:
           path: '.'
           retention-days: 1
       - id: deployment
+        if: always()
         uses: actions/deploy-pages@v4
