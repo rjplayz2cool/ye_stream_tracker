@@ -1,0 +1,60 @@
+name: Import Tracker Audio Copies
+on:
+  workflow_dispatch:
+    inputs:
+      names:
+        description: 'Exact tracker titles with versions, separated by commas. Leave empty for the next batch.'
+        default: 'Déjà Vu,ALL THE LOVE V6,ALL THE LOVE V13'
+        required: false
+        type: string
+      count:
+        description: 'Maximum new audio files in this batch'
+        default: '3'
+        required: true
+        type: string
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: ye-tracker-audio-import
+  cancel-in-progress: false
+jobs:
+  import-and-publish:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install audio tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Copy selected audio files
+        env:
+          IMPORT_NAMES: ${{ inputs.names }}
+          IMPORT_COUNT: ${{ inputs.count }}
+        run: python scripts/import_imgur_audio.py --names "$IMPORT_NAMES" --limit "$IMPORT_COUNT" --max-file-mb 24 --max-total-mb 700
+      - name: Commit actual files and player mappings
+        run: |
+          git add media/imgur data/hosted-audio.json data/audio-import-report.json
+          if git diff --cached --quiet; then
+            echo "No new audio copies."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Add copied tracker audio and playable card mappings"
+            git pull --rebase
+            git push
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: '.'
+          retention-days: 1
+      - id: deployment
+        uses: actions/deploy-pages@v4
