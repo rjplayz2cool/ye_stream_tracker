@@ -386,7 +386,7 @@ body.detailOpen .modeWrap,body.detailOpen .settingsWrap,body.detailOpen #account
  <div class="yeTrackerHeader"><div><div class="eyebrow">DISCOGRAPHY & ARCHIVE</div><h1>YE TRACKER</h1><p>Explore songs, sessions, artwork, tracklists, and groupbuys.</p></div><a class="yeTrackerSource" href="https://yetracker.net/" target="_blank" rel="noopener noreferrer">Source: Ye Tracker ↗</a></div>
  <div id="yeTrackerTabs" class="yeTrackerTabs" role="tablist" aria-label="Tracker sections"></div>
  <div class="yeTrackerToolbar"><input id="yeTrackerSearch" type="search" placeholder="Enter a song name to see its versions…" aria-label="Search current section"><div id="yeTrackerEraWrap" class="sortWrap"><button id="yeTrackerEraBtn" class="sortBtn" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="yeTrackerEraLabel">All eras</span><span>⌄</span></button><div id="yeTrackerEraPanel" class="sortPanel" role="listbox" aria-label="Filter by era"></div></div></div>
- <div class="yeTrackerMeta"><span id="yeTrackerCount" aria-live="polite">Loading archive…</span><span id="yeTrackerSyncStatus">Syncs hourly · Data updated 2026-10-13 17:35 UTC</span></div>
+ <div class="yeTrackerMeta"><span id="yeTrackerCount" aria-live="polite">Loading archive…</span><span id="yeTrackerSyncStatus">Syncs hourly · Data updated 2026-10-13 14:11 UTC</span></div>
  <details class="yeTrackerKey"><summary>Color key</summary><div id="yeTrackerLegend" class="yeTrackerLegend"></div></details>
  <div id="yeTrackerStatus" class="yeTrackerStatus" role="status">Select Ye Tracker to load the archive.</div>
  <div id="yeTrackerTableWrap" class="yeTrackerTableWrap" hidden><table class="yeTrackerTable"><thead id="yeTrackerHead"></thead><tbody id="yeTrackerBody"></tbody></table></div>
@@ -1380,7 +1380,7 @@ document.addEventListener('keydown',e=>{if(!active()||/INPUT|TEXTAREA|SELECT/.te
 function autoPause(){if(!active()&&running&&!paused)pause();if(active()){if(!running)readBest();draw()}}new MutationObserver(autoPause).observe($('pacmanGame'),{attributes:true,attributeFilter:['hidden']});new MutationObserver(autoPause).observe($('gamesScreen'),{attributes:true,attributeFilter:['class']});document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused)pause()});readBest();draw();
 window.yeArcadeSync.register('pacman',row=>{running=false;paused=false;cancelAnimationFrame(raf);readBest();best=Number(row?.score)||0;draw()});
 })();
-</script><script id="yeTrackerArchive" type="application/octet-stream" data-src="data/ye-tracker-archive.txt?v=bd7a9d517da2"></script><script>(()=>{
+</script><script id="yeTrackerArchive" type="application/octet-stream" data-src="data/ye-tracker-archive.txt?v=d984bbe8e007"></script><script>(()=>{
 'use strict';
 let data=null,loading=null,section=0,shown=0,selectedEra='',results=[],debounce=null;
 const $=id=>document.getElementById(id),escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1488,11 +1488,11 @@ sync();hide();
 </script><script>(()=>{
 'use strict';
 const body=document.getElementById('yeTrackerBody'),screen=document.getElementById('yeTrackerScreen');if(!body||!screen)return;
-const DRIVE_TEST_COPIES={"https://imgur.gg/f/tVb4GGe":{"source":"https://imgur.gg/f/tVb4GGe","title":"UNCLE V11","era":"IN A PERFECT WORLD","src":"https://drive.google.com/uc?export=download&id=1KVeNiZkrG5KV4lBx5OoVX7uLSWL4Jnz-","duration":142.341225,"waveform":[0.31,0.346,0.29,0.3,0.372,0.358,0.299,0.348,0.304,0.296,0.365,0.359,0.306,0.344,0.315,0.286,0.377,0.33,0.314,0.319,0.314,0.306,0.377,0.33,0.308,0.331,0.308,0.326,0.379,0.316,0.327,0.301,0.321,0.34,0.371,0.311,0.364,0.273,0.308,0.357,0.363,0.732,0.758,0.514,0.871,0.934,1,0.856,0.812,0.693,0.829,0.842,0.965,0.83,0.804,0.781,0.835,0.829,0.826,0.1]}};
+const DRIVE_TEST_COPIES={"https://imgur.gg/f/tVb4GGe":{"source":"https://imgur.gg/f/tVb4GGe","title":"UNCLE V11","era":"IN A PERFECT WORLD","drivePreview":"https://drive.google.com/file/d/1KVeNiZkrG5KV4lBx5OoVX7uLSWL4Jnz-/preview","src":"https://drive.google.com/uc?export=download&id=1KVeNiZkrG5KV4lBx5OoVX7uLSWL4Jnz-","duration":142.341225,"waveform":[0.31,0.346,0.29,0.3,0.372,0.358,0.299,0.348,0.304,0.296,0.365,0.359,0.306,0.344,0.315,0.286,0.377,0.33,0.314,0.319,0.314,0.306,0.377,0.33,0.308,0.331,0.308,0.326,0.379,0.316,0.327,0.301,0.321,0.34,0.371,0.311,0.364,0.273,0.308,0.357,0.363,0.732,0.758,0.514,0.871,0.934,1,0.856,0.812,0.693,0.829,0.842,0.965,0.83,0.804,0.781,0.835,0.829,0.826,0.1]}};
 let manifest=null,manifestPromise=null,activeAudio=null,activeCard=null;
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const time=v=>{v=Math.max(0,Math.floor(Number(v)||0));return Math.floor(v/60)+':'+String(v%60).padStart(2,'0');};
-function stop(){if(activeAudio){activeAudio.pause();activeAudio.removeAttribute('src');activeAudio.load();}if(activeCard){activeCard.querySelector('.hostedPlay').textContent='▶ Play song';activeCard.querySelector('.hostedPause').disabled=true;}activeAudio=null;activeCard=null;}
+function stop(){if(activeAudio){activeAudio.pause();activeAudio.removeAttribute('src');activeAudio.load();}if(activeCard){const play=activeCard.querySelector('.hostedPlay'),pause=activeCard.querySelector('.hostedPause');if(play)play.textContent='▶ Play song';if(pause)pause.disabled=true;const mount=activeCard.querySelector('.hostedDriveMount');if(mount){mount.replaceChildren();activeCard.open=false;}}activeAudio=null;activeCard=null;}
 async function files(){if(manifest)return manifest;if(!manifestPromise)manifestPromise=fetch('data/hosted-audio.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{files:{}}).then(data=>(manifest={...DRIVE_TEST_COPIES,...(data.files||{})})).catch(()=>{manifestPromise=null;return {...DRIVE_TEST_COPIES};});return manifestPromise;}
 function entryTitle(row,fallback){const cell=row.cells?.[1];if(!cell)return fallback;const clone=cell.cloneNode(true);clone.querySelectorAll('br').forEach(br=>br.replaceWith('\n'));return (clone.textContent||'').split('\n')[0].replace(/[\p{S}]/gu,'').replace(/\[\s*(V\d+(?:\.\d+)?)\s*\]/gi,'$1').trim()||fallback;}
 function coverFor(row){
@@ -1505,7 +1505,17 @@ function coverFor(row){
   if(/turbo\s*grafx\s*16/i.test(era)&&typeof CALENDAR_ANNUAL_EVENTS!=='undefined')return CALENDAR_ANNUAL_EVENTS.find(x=>/Deja Vu OG File Created/i.test(x.title))?.cover||'';
  }catch(_){}return '';
 }
+function makeDriveCard(row,record){
+ const card=document.createElement('details');card.className='hostedSongCard';const title=entryTitle(row,record.title),cover=coverFor(row);
+ card.innerHTML=`<summary class="hostedSongHead">${cover?`<img class="hostedSongCover" src="${escape(cover)}" alt="" loading="lazy">`:'<div class="hostedSongCover hostedSongFallback">♫</div>'}<div class="hostedSongText"><b>${escape(title)}</b><small>GOOGLE DRIVE</small></div><span class="hostedSongArrow">⌄</span></summary><div class="hostedSongPanel"><div class="hostedDriveMount"></div></div>`;
+ card.addEventListener('toggle',()=>{
+  if(!card.open){if(activeCard===card)stop();return;}
+  if(activeCard===card)return;stop();if(typeof stopSpecialSnippet==='function')stopSpecialSnippet();
+  const frame=document.createElement('iframe');frame.src=record.drivePreview;frame.title='Play '+title+' in Google Drive';frame.allow='autoplay';frame.style.cssText='display:block;width:100%;height:190px;border:0;border-radius:8px;background:#111';card.querySelector('.hostedDriveMount').append(frame);activeCard=card;
+ });return card;
+}
 function makeCard(row,record){
+ if(record.drivePreview)return makeDriveCard(row,record);
  const card=document.createElement('details');card.className='hostedSongCard';const title=entryTitle(row,record.title),cover=coverFor(row),peaks=record.waveform||[];
  card.innerHTML=`<summary class="hostedSongHead">${cover?`<img class="hostedSongCover" src="${escape(cover)}" alt="" loading="lazy">`:'<div class="hostedSongCover hostedSongFallback">♫</div>'}<div class="hostedSongText"><b>${escape(title)}</b><small>HOSTED COPY</small></div><span class="hostedSongArrow">⌄</span></summary><div class="hostedSongPanel"><div class="hostedSongButtons"><button type="button" class="hostedPlay">▶ Play song</button><button type="button" class="hostedPause" disabled>Ⅱ Pause</button></div><div class="hostedSongSeek"><div class="hostedWave"><div class="hostedWaveBars">${peaks.map(p=>`<i style="height:${Math.max(8,Math.min(100,Number(p)*100))}%"></i>`).join('')}</div><div class="hostedWavePlayed"></div><div class="hostedWaveNeedle"></div><input class="hostedSongRange" type="range" min="0" max="1000" value="0" aria-label="Seek ${escape(title)}"></div><span class="hostedSongTime">0:00 / ${time(record.duration)}</span></div><div class="hostedSongError" role="status"></div></div>`;
  const play=card.querySelector('.hostedPlay'),pause=card.querySelector('.hostedPause'),seek=card.querySelector('.hostedSongRange'),error=card.querySelector('.hostedSongError');
