@@ -88,7 +88,9 @@
         0.131
       ],
       "bytes": 8082800,
-      "sha256": "d94859f6b1c1767193d50e55c55f57fde933024eeaad552ffd2da2d89bc1b214"
+      "sha256": "d94859f6b1c1767193d50e55c55f57fde933024eeaad552ffd2da2d89bc1b214",
+      "playbackSrc": "media/imgur/uqrIvDJ/Déjà Vu - playback.mp3",
+      "playbackBytes": 8093405
     },
     "https://imgur.gg/f/w2f9Jd0": {
       "source": "https://imgur.gg/f/w2f9Jd0",
@@ -172,7 +174,9 @@
         0.418
       ],
       "bytes": 20213100,
-      "sha256": "2b0660e85a340f0cc83134fe8cb4b3f51f568999d55c2b9db51545be73668c59"
+      "sha256": "2b0660e85a340f0cc83134fe8cb4b3f51f568999d55c2b9db51545be73668c59",
+      "playbackSrc": "media/imgur/w2f9Jd0/ALL THE LOVE V6 - playback.mp3",
+      "playbackBytes": 3668889
     },
     "https://imgur.gg/f/gzPIfkz": {
       "source": "https://imgur.gg/f/gzPIfkz",
@@ -256,7 +260,9 @@
         0.896
       ],
       "bytes": 3911296,
-      "sha256": "4a29ec2b183f79b50fc667b2020a606a7ee7802ecadf1d1374130c2b1887a301"
+      "sha256": "4a29ec2b183f79b50fc667b2020a606a7ee7802ecadf1d1374130c2b1887a301",
+      "playbackSrc": "media/imgur/gzPIfkz/ALL THE LOVE V13 - playback.mp3",
+      "playbackBytes": 3128354
     }
   }
 }
