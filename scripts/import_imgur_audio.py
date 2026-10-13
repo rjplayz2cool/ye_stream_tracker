@@ -4,6 +4,7 @@ import argparse,base64,gzip,hashlib,html,json,math,os,re,subprocess,tempfile,tim
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 AUDIO_EXT={'.mp3','.wav','.flac','.m4a','.ogg','.opus','.aac','.aiff','.aif'}
+CURATED_SECTIONS={'Worst Of','Best Of','Special','Grails/Wanted'}
 
 def request(url):
  parsed=urllib.parse.urlsplit(url)
@@ -82,20 +83,30 @@ def run(args):
  archive=args.archive or ROOT/'data'/'ye-tracker-archive.txt';manifest_path=ROOT/'data'/'hosted-audio.json'
  manifest=json.loads(manifest_path.read_text()) if manifest_path.exists() else {'version':1,'files':{}}
  choices=map_entries(archive)
+ if args.sections:
+  selected={x.strip() for x in args.sections.split(',') if x.strip()}
+  invalid=selected-CURATED_SECTIONS
+  if invalid:raise ValueError('Unknown section(s): '+', '.join(sorted(invalid)))
+  choices=[x for x in choices if any(e['section'] in selected for e in x['entries'])]
  if args.names:
   patterns=[x.strip().casefold() for x in args.names.split(',') if x.strip()]
   choices=[x for x in choices if any(x['title'].casefold()==p for p in patterns)]
- if args.limit<1 or args.limit>100:raise ValueError('Batch count must be between 1 and 100')
+ if args.limit<0 or args.limit>1000:raise ValueError('Batch count must be between 0 and 1000; 0 means all selected files')
  if args.url:choices=[x for x in choices if x['source']==args.url]
  total=sum(p.stat().st_size for p in (ROOT/'media').rglob('*') if p.is_file()) if (ROOT/'media').exists() else 0
  site_bytes=sum(p.stat().st_size for p in ROOT.rglob('*') if p.is_file() and '.git' not in p.relative_to(ROOT).parts)
- imported=0;failures=[]
+ imported=0;failures=[];blocked=None;started=time.monotonic()
+ print('Selected',len(choices),'unique Imgur links',flush=True)
+ (ROOT/'media'/'imgur').mkdir(parents=True,exist_ok=True)
+ save_json(manifest_path,manifest)
  for item in choices:
+  if time.monotonic()-started>150*60:
+   blocked='Run time limit reached; run the workflow again to continue';break
   if item['source'] in manifest['files']:
-   if args.repair_existing:
+   if args.repair_existing and not manifest['files'][item['source']].get('playbackSrc'):
     playback_copy(manifest['files'][item['source']],args.max_total_mb);save_json(manifest_path,manifest)
    continue
-  if imported>=args.limit:break
+  if args.limit and imported>=args.limit:break
   try:
    audio_url,ext=inspect_audio(fetch_page(item['source']));folder=ROOT/'media'/'imgur'/item['id'];folder.mkdir(parents=True,exist_ok=True)
    dest=folder/(safe_filename(item['title'])+ext);temp=folder/(dest.name+'.part');written=0
@@ -117,10 +128,12 @@ def run(args):
   except Exception as e:
    if 'temp' in locals() and temp.exists():temp.unlink()
    failures.append({'source':item['source'],'title':item['title'],'error':str(e)});print('SKIPPED',item['title'],str(e),flush=True)
-   if 'storage budget reached' in str(e):break
+   if 'storage budget reached' in str(e):blocked=str(e);break
  total=sum(p.stat().st_size for p in (ROOT/'media').rglob('*') if p.is_file()) if (ROOT/'media').exists() else 0
- save_json(ROOT/'data'/'audio-import-report.json',{'imported':imported,'availableCopies':len(manifest['files']),'totalBytes':total,'uniqueImgurLinks':len(map_entries(archive)),'failed':failures})
+ remaining=[{'source':x['source'],'title':x['title'],'sections':sorted({e['section'] for e in x['entries'] if e['section'] in CURATED_SECTIONS})} for x in choices if x['source'] not in manifest['files']]
+ save_json(ROOT/'data'/'audio-import-report.json',{'imported':imported,'availableCopies':len(manifest['files']),'totalBytes':total,'selectedSections':args.sections,'selectedUniqueLinks':len(choices),'remainingCount':len(remaining),'remaining':remaining,'blocked':blocked,'uniqueImgurLinks':len(map_entries(archive)),'failed':failures})
  print('Finished:',imported,'new files;',len(manifest['files']),'available copied files')
- if not imported and failures:raise SystemExit('No new copies could be imported; see audio-import-report.json')
+ if blocked:print('IMPORT PAUSED:',blocked,flush=True)
+ if not imported and failures and not blocked:raise SystemExit('No new copies could be imported; see audio-import-report.json')
 if __name__=='__main__':
- p=argparse.ArgumentParser();p.add_argument('--archive',type=Path);p.add_argument('--names');p.add_argument('--url');p.add_argument('--repair-existing',action='store_true');p.add_argument('--limit',type=int,default=3);p.add_argument('--max-file-mb',type=float,default=24);p.add_argument('--max-total-mb',type=float,default=700);run(p.parse_args())
+ p=argparse.ArgumentParser();p.add_argument('--archive',type=Path);p.add_argument('--names');p.add_argument('--sections');p.add_argument('--url');p.add_argument('--repair-existing',action='store_true');p.add_argument('--limit',type=int,default=3);p.add_argument('--max-file-mb',type=float,default=24);p.add_argument('--max-total-mb',type=float,default=700);run(p.parse_args())
