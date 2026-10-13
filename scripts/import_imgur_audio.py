@@ -60,6 +60,24 @@ def save_json(path,data):
  path.parent.mkdir(parents=True,exist_ok=True)
  with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',dir=path.parent,delete=False) as f:json.dump(data,f,ensure_ascii=False,indent=2);temp=f.name
  os.replace(temp,path)
+def playback_copy(record,max_total_mb):
+ original=ROOT/record['src']
+ if not original.is_file():raise ValueError('Original copied audio is missing')
+ dest=original.with_name(original.stem+' - playback.mp3')
+ if not dest.exists():
+  temp=dest.with_name(dest.name+'.part')
+  try:
+   subprocess.run(['ffmpeg','-v','error','-y','-i',str(original),'-vn','-ac','2','-ar','44100','-codec:a','libmp3lame','-b:a','256k','-f','mp3',str(temp)],check=True)
+   probe(temp)
+   site_bytes=sum(p.stat().st_size for p in ROOT.rglob('*') if p.is_file() and '.git' not in p.relative_to(ROOT).parts)
+   media_bytes=sum(p.stat().st_size for p in (ROOT/'media').rglob('*') if p.is_file())
+   if site_bytes>900_000_000 or media_bytes>max_total_mb*1_000_000:raise ValueError('Playback copy storage budget reached')
+   os.replace(temp,dest)
+  finally:
+   if temp.exists():temp.unlink()
+ record['playbackSrc']=dest.relative_to(ROOT).as_posix()
+ record['playbackBytes']=dest.stat().st_size
+ print('PLAYBACK READY',record['title'],flush=True)
 def run(args):
  archive=args.archive or ROOT/'data'/'ye-tracker-archive.txt';manifest_path=ROOT/'data'/'hosted-audio.json'
  manifest=json.loads(manifest_path.read_text()) if manifest_path.exists() else {'version':1,'files':{}}
@@ -73,7 +91,10 @@ def run(args):
  site_bytes=sum(p.stat().st_size for p in ROOT.rglob('*') if p.is_file() and '.git' not in p.relative_to(ROOT).parts)
  imported=0;failures=[]
  for item in choices:
-  if item['source'] in manifest['files']:continue
+  if item['source'] in manifest['files']:
+   if args.repair_existing:
+    playback_copy(manifest['files'][item['source']],args.max_total_mb);save_json(manifest_path,manifest)
+   continue
   if imported>=args.limit:break
   try:
    audio_url,ext=inspect_audio(fetch_page(item['source']));folder=ROOT/'media'/'imgur'/item['id'];folder.mkdir(parents=True,exist_ok=True)
@@ -90,12 +111,16 @@ def run(args):
    duration=probe(temp);waveform=peaks(temp);os.replace(temp,dest);total+=written;site_bytes+=written
    manifest['files'][item['source']]={**item,'src':dest.relative_to(ROOT).as_posix(),'duration':duration,'waveform':waveform,'bytes':written,'sha256':hashlib.sha256(dest.read_bytes()).hexdigest()}
    save_json(manifest_path,manifest);imported+=1;print('COPIED',item['title'],written,'bytes',flush=True)
+   playback_copy(manifest['files'][item['source']],args.max_total_mb);save_json(manifest_path,manifest)
+   total=sum(p.stat().st_size for p in (ROOT/'media').rglob('*') if p.is_file())
+   site_bytes=sum(p.stat().st_size for p in ROOT.rglob('*') if p.is_file() and '.git' not in p.relative_to(ROOT).parts)
   except Exception as e:
    if 'temp' in locals() and temp.exists():temp.unlink()
    failures.append({'source':item['source'],'title':item['title'],'error':str(e)});print('SKIPPED',item['title'],str(e),flush=True)
    if 'storage budget reached' in str(e):break
+ total=sum(p.stat().st_size for p in (ROOT/'media').rglob('*') if p.is_file()) if (ROOT/'media').exists() else 0
  save_json(ROOT/'data'/'audio-import-report.json',{'imported':imported,'availableCopies':len(manifest['files']),'totalBytes':total,'uniqueImgurLinks':len(map_entries(archive)),'failed':failures})
  print('Finished:',imported,'new files;',len(manifest['files']),'available copied files')
  if not imported and failures:raise SystemExit('No new copies could be imported; see audio-import-report.json')
 if __name__=='__main__':
- p=argparse.ArgumentParser();p.add_argument('--archive',type=Path);p.add_argument('--names');p.add_argument('--url');p.add_argument('--limit',type=int,default=3);p.add_argument('--max-file-mb',type=float,default=24);p.add_argument('--max-total-mb',type=float,default=700);run(p.parse_args())
+ p=argparse.ArgumentParser();p.add_argument('--archive',type=Path);p.add_argument('--names');p.add_argument('--url');p.add_argument('--repair-existing',action='store_true');p.add_argument('--limit',type=int,default=3);p.add_argument('--max-file-mb',type=float,default=24);p.add_argument('--max-total-mb',type=float,default=700);run(p.parse_args())
