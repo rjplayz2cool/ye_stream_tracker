@@ -38,7 +38,7 @@ jobs:
         env:
           IMPORT_NAMES: ${{ inputs.names }}
           IMPORT_COUNT: ${{ inputs.count }}
-        run: python scripts/import_imgur_audio.py --names "$IMPORT_NAMES" --limit "$IMPORT_COUNT" --max-file-mb 24 --max-total-mb 700
+        run: python scripts/import_imgur_audio.py --names "$IMPORT_NAMES" --limit "$IMPORT_COUNT" --max-file-mb 24 --max-total-mb 700 --repair-existing
       - name: Commit actual files and player mappings
         run: |
           git add media/imgur data/hosted-audio.json data/audio-import-report.json
