@@ -1,0 +1,33 @@
+name: Prepare audio for Drive
+on:
+  push:
+    branches: [main]
+    paths: [data/drive-import-queue.json]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: prepare-drive-audio
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install audio tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Prepare requested files
+        run: python scripts/prepare_drive_audio.py
+      - name: Save transfer artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drive-audio-${{ github.run_id }}
+          path: drive-audio/
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
