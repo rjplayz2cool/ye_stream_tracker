@@ -26,6 +26,13 @@ jobs:
       - name: Apply October calendar and artwork update
         run: python3 updates/oct16_calendar.py
 
+      - name: Enable game YZYMNY rewards
+        run: |
+          python3 updates/arcade_rewards.py
+          node --check arcade/rewards.js
+          node arcade/test-engines.cjs index.html
+          node arcade/test-rewards-client.cjs
+
       - name: Update Kworb snapshot
         run: python3 update_kworb.py
 
