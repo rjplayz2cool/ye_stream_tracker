@@ -22,3 +22,8 @@ if marker not in s:
  p.write_text(s)
  print('Installed shared card metadata and account layout')
 else:print('Shared card metadata and layout already installed')
+# Metadata must be available during the first render, including cached guest pulls.
+s=p.read_text();tag='<script src="data/card-metadata.js"></script>'
+s=s.replace(tag,'').replace('<script src="data/current.js"></script>','<script src="data/current.js"></script>'+tag,1)
+p.write_text(s)
+assert s.index(tag)<s.index('function rollCardHTML(')
