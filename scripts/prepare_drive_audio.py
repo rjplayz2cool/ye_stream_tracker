@@ -1,8 +1,26 @@
 """Prepare requested public audio as temporary artifacts for Drive transfer."""
-import concurrent.futures,hashlib,html,json,math,re,subprocess,urllib.parse,urllib.request
+import base64,concurrent.futures,gzip,hashlib,html,json,math,re,subprocess,unicodedata,urllib.parse,urllib.request
 from pathlib import Path
 OUT=Path('drive-audio');OUT.mkdir(exist_ok=True)
 queue=json.loads(Path('data/drive-import-queue.json').read_text())
+if isinstance(queue,dict):
+    done=set(queue['uploadedIds']);sections=set(queue['sections']);choices={}
+    archive=json.loads(gzip.decompress(base64.b64decode(Path('data/ye-tracker-archive.txt').read_bytes())))
+    for tab in archive:
+        if tab['name'] not in sections:continue
+        for row in tab['rows']:
+            markup=row['cells'][1][0]
+            title=html.unescape(re.sub(r'<[^>]+>','',re.split(r'<br\s*/?>',markup,maxsplit=1,flags=re.I)[0]))
+            title=re.sub(r'\[\s*(V\d+(?:\.\d+)?)\s*\]',r'\1',title,flags=re.I)
+            title=''.join(c for c in title if unicodedata.category(c)[0]!='S').strip()
+            for markup,_ in row['cells']:
+                for source in re.findall(r'href="(https://(?:www\.)?imgur\.gg/f/[^"?#]+)',markup):
+                    source=html.unescape(source);key=source.rsplit('/',1)[-1]
+                    item=choices.setdefault(source,{'source':source,'id':key,'title':title,'era':row['era'],'entries':[]})
+                    entry={'section':tab['name'],'title':title,'era':row['era']}
+                    if entry not in item['entries']:item['entries'].append(entry)
+    (OUT/'selected.json').write_text(json.dumps(list(choices.values()),ensure_ascii=False,indent=2))
+    queue=[r for r in choices.values() if r['id'] not in done]
 def request(url):
     parsed=urllib.parse.urlsplit(url)
     if parsed.scheme!='https' or not (parsed.hostname=='imgur.gg' or (parsed.hostname or '').endswith('.imgur.gg')):raise ValueError('Unexpected source host')
@@ -48,3 +66,4 @@ for offset in range(0,len(ready),40):
     (folder/'records.json').write_text(json.dumps(group,ensure_ascii=False,indent=2))
 (OUT/'report.json').write_text(json.dumps(records,ensure_ascii=False,indent=2))
 print(json.dumps({'requested':len(queue),'ready':len(ready),'unavailable':len(records)-len(ready)}))
+
