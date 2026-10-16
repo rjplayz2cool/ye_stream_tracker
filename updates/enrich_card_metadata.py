@@ -25,6 +25,8 @@ def choose(row,results):
  if not matches:return None
  x=min(matches,key=lambda x:x['releaseDate'])
  return {'releaseDate':x['releaseDate'][:10],'album':x.get('collectionName',''),'source':x.get('trackViewUrl',''),'artist':x.get('artistName','')}
+verified=json.loads(Path('cards/verified-metadata.json').read_text()) if Path('cards/verified-metadata.json').exists() else {}
+cache.update(verified)
 needed=[r for r in rows if not r['releaseDate'] and r['id'] not in cache]
 if needed:
  bulk=fetch('Kanye West')
@@ -38,10 +40,14 @@ if needed:
  with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
   for r,result in pool.map(lookup,remaining):
    cache[r['id']]=result or {'checkedAt':time.strftime('%Y-%m-%d'),'releaseDate':''}
- cache_path.write_text(json.dumps(cache,ensure_ascii=False,indent=2)+'\n')
+cache_path.write_text(json.dumps(cache,ensure_ascii=False,indent=2)+'\n')
 for r in rows:
  if not r['releaseDate'] and r['id'] in cache:r.update(cache[r['id']])
+ if r.get('source','').startswith('https://music.apple.com') and r['releaseDate'].endswith('-01-01'):r['releaseDate']=r['releaseDate'][:4]
+extras=json.loads(Path('cards/catalog-extra.json').read_text()) if Path('cards/catalog-extra.json').exists() else {}
+rows.extend(extras.values())
 Path('data/card-metadata.js').write_text('window.CARD_METADATA='+json.dumps({r['id']:r for r in rows},ensure_ascii=False,separators=(',',':'))+';\n')
 missing=[r for r in rows if not r['releaseDate']]
 Path('data/card-metadata-unresolved.json').write_text(json.dumps(missing,ensure_ascii=False,indent=2)+'\n')
+assert not missing, 'Release-date metadata must cover every song before publication'
 print('Release dates:',len(rows)-len(missing),'of',len(rows),'unresolved:',len(missing),flush=True)
