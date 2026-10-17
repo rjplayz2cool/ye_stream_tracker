@@ -4,12 +4,18 @@
 .walletControls{order:1;display:flex;flex-direction:column;align-items:stretch;gap:10px;min-width:0}
 .walletControls .moneyPill{justify-content:center}
 .walletControls .dailyRewardBtn{width:100%;min-width:0}
-.siteControls .modeWrap{order:2;position:relative!important}
-.siteControls .settingsWrap{order:3;position:relative!important}
+.siteControls .modeWrap{order:2;position:relative!important;inset:auto!important}
+.siteControls .settingsWrap{order:3;position:relative!important;inset:auto!important}
 .siteControls .miniPanel,.siteControls .themePanel{position:absolute;right:0;top:54px}
 .rollHistoryCard,.shopCard{position:relative}
-.rollHistoryCard .alreadyOwnedBadge,.shopCard .alreadyOwnedBadge{position:absolute;top:16px;right:16px;margin:0;max-width:calc(100% - 32px)}
-.rollHistoryCard:has(.alreadyOwnedBadge)>.row,.shopCard:has(.alreadyOwnedBadge)>.shopCardTop{padding-top:30px}
+.shopCardTop>div:last-child,#marketGrid .row>div:last-child{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:8px;min-width:0}
+.shopCardTop .rarity,#marketGrid .row .rarity{grid-column:1;grid-row:1;justify-self:start;margin:0 0 9px;max-width:100%;box-sizing:border-box;font-size:10px;letter-spacing:.04em;padding:6px 8px}
+.shopCard .alreadyOwnedBadge,#marketGrid .alreadyOwnedBadge{position:static;grid-column:2;grid-row:1;justify-self:end;align-self:center;margin:0 0 9px;white-space:nowrap;font-size:9.5px;padding:3px 5px}
+.shopTitle,.shopCredits,#marketGrid .row .name,#marketGrid .row .artists{grid-column:1/-1}
+.shopCard{display:flex;flex-direction:column}
+.shopCardTop{align-items:start}
+.shopCompare{margin-bottom:14px}
+.shopCard .shopBuy{margin-top:auto}
 .rollTabs,.marketActions,.sellControls,.tradeActions,.rollActions,.snakeActions,.runnerActions,.pacActions{gap:14px}
 .rollTabs{display:flex;flex-wrap:wrap}
 .sellControls{display:flex;flex-wrap:wrap}
