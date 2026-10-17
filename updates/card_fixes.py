@@ -27,3 +27,16 @@ s=p.read_text();tag='<script src="data/card-metadata.js"></script>'
 s=s.replace(tag,'').replace('<script src="data/current.js"></script>','<script src="data/current.js"></script>'+tag,1)
 p.write_text(s)
 assert s.index(tag)<s.index('function rollCardHTML(')
+
+# Use the same whole-day estimate and Eastern calendar date in both views.
+s=p.read_text()
+helper="""function milestoneProjection(x,target=nextM(x.streams),now=new Date()){if(x.streams==null||!x.daily||x.daily<=0)return null;let days=Math.ceil((target-x.streams)/x.daily);if(!Number.isFinite(days)||days<0)return null;let parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now),o={};parts.forEach(p=>o[p.type]=p.value);let date=new Date(Date.UTC(Number(o.year),Number(o.month)-1,Number(o.day)+days,12));return{days,date,key:date.toISOString().slice(0,10)}}"""
+if 'function milestoneProjection(' not in s:s=s.replace('function estimate(x){',helper+'\nfunction estimate(x){',1)
+estimate="""function estimate(x){let m=nextM(x.streams),p=milestoneProjection(x,m);if(!p)return 'Projection unavailable';return `Estimated ${short(m)}: <b>${p.date.toLocaleDateString(undefined,{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric'})}</b> · ~${fmt(p.days)} days`}"""
+s=re.sub(r'^function estimate\(x\).*$',lambda _:estimate,s,count=1,flags=re.M)
+old="let target=nextM(x.streams),days=(target-x.streams)/x.daily;if(!Number.isFinite(days)||days<0||days>730)continue;let d=new Date(now+days*86400000),parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d),o={};parts.forEach(p=>o[p.type]=p.value);let key=`${o.year}-${o.month}-${o.day}`;"
+new="let target=nextM(x.streams),projection=milestoneProjection(x,target,new Date(now));if(!projection||projection.days>730)continue;let key=projection.key;"
+assert old in s or new in s,'Calendar projection function changed; inspect before patching'
+s=s.replace(old,new,1)
+s=s.replace("(e.achieved?' · Achieved':'')","(e.achieved?' · Achieved':' · Projected')")
+p.write_text(s)
