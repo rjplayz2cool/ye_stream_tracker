@@ -80,16 +80,28 @@ const sandBase=new THREE.Mesh(new THREE.CylinderGeometry(3.65,3.72,.23,100),new 
 sandBase.scale.z=.64;sandBase.position.y=-1.9;sandGroup.add(sandBase);
 const sandSurface=new THREE.Mesh(new THREE.CylinderGeometry(3.63,3.63,.035,100),new THREE.MeshStandardMaterial({color:0xc0ae86,roughness:1,metalness:0}));
 sandSurface.scale.z=.64;sandSurface.position.y=-1.77;sandGroup.add(sandSurface);
-const sandGeo=new THREE.SphereGeometry(2.95,96,48,0,Math.PI*2,0,Math.PI/2);
+// Broad, nearly flat sand surface: subtle ripples and grain instead of a dome.
+const sandGeo=new THREE.PlaneGeometry(7.14,4.55,132,92);
 const sandPositions=sandGeo.attributes.position;
 for(let i=0;i<sandPositions.count;i++){
- const x=sandPositions.getX(i),y=sandPositions.getY(i),z=sandPositions.getZ(i);
- const wobble=.96+.045*Math.sin(x*5.1+z*2.3)+.028*Math.sin(z*12-x*3);
- sandPositions.setXYZ(i,x*wobble,y*(.20+.012*Math.sin(x*8+z*6)),z*.58*wobble);
+ const x=sandPositions.getX(i),z=sandPositions.getY(i);
+ const edge=Math.pow(Math.max(0,1-(x*x/12.75+z*z/5.2)),.55);
+ const ripples=.018*Math.sin(x*10.8+Math.sin(z*3.1)*2.3)
+   +.013*Math.sin(z*19.4+x*5.1)
+   +.007*Math.sin(x*47.2-z*32.6);
+ sandPositions.setZ(i,edge*(.024+ripples));
 }
 sandGeo.computeVertexNormals();
-const sandMound=new THREE.Mesh(sandGeo,new THREE.MeshStandardMaterial({color:0xc2b18c,roughness:1,flatShading:false,side:THREE.DoubleSide}));
-sandMound.position.y=-1.745;sandGroup.add(sandMound);
+const sandMound=new THREE.Mesh(sandGeo,new THREE.MeshStandardMaterial({
+ color:0xb9a17a,roughness:1,metalness:0,side:THREE.DoubleSide
+}));
+sandMound.rotation.x=-Math.PI/2;
+sandMound.position.y=-1.737;
+sandGroup.add(sandMound);
+const sandDust=new THREE.Mesh(new THREE.PlaneGeometry(7.06,4.48),new THREE.MeshStandardMaterial({
+ color:0x8e7857,roughness:1,transparent:true,opacity:.22,side:THREE.DoubleSide
+}));
+sandDust.rotation.x=-Math.PI/2;sandDust.position.y=-1.708;sandGroup.add(sandDust);
 const sandRim=new THREE.Mesh(new THREE.TorusGeometry(3.64,.018,5,100),new THREE.MeshStandardMaterial({color:0x80715c,roughness:1}));
 sandRim.scale.y=.64;sandRim.rotation.x=Math.PI/2;sandRim.position.y=-1.745;sandGroup.add(sandRim);
 // Layered atmospheric fog, soft glow and distant stars.
@@ -157,6 +169,9 @@ function setTour(index){
  const tour=tours[index],isGlobe=tour.kind==='globe';
  globeGroup.visible=isGlobe;stageEdge.visible=isGlobe;darkBase.visible=isGlobe;
  sandGroup.visible=!isGlobe;
+ // Raise the 2025 stage into the center, clear of bottom controls.
+ sandGroup.position.y=isGlobe?0:1.15;
+ if(!isGlobe){pitch=.18;cameraUpdate();}
  renderShows('left',tour.leftTitle,tour.leftShows);
  document.getElementById('right').style.display=isGlobe?'flex':'none';
  document.querySelector('#header h1').textContent='TOUR '+tour.year;
