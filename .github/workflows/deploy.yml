@@ -23,7 +23,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Fix World Tour background bleed\n        run: python3 updates/fix_tour_background.py\n\n      - name: Apply October calendar and artwork update
+      - name: Fix World Tour background bleed
+        run: python3 updates/fix_tour_background.py
+
+      - name: Apply October calendar and artwork update
         run: python3 updates/oct16_calendar.py
 
       - name: Enable game YZYMNY rewards
