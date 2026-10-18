@@ -11,11 +11,87 @@ const normalize=s=>s.toUpperCase().replace(/[^A-Z0-9]/g,"");
 const day=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
 let seed=2166136261;for(const c of day+"ye-crossword")seed=Math.imul(seed^c.charCodeAt(0),16777619)>>>0;
 function random(){seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)/4294967296}
-const pool=tracks.map((t,i)=>({t,sort:random()})).sort((a,b)=>a.sort-b.sort).map(v=>v.t),goal=7+Math.floor(random()*9),N=45,g=Array.from({length:N},()=>Array(N).fill("")),words=[];
+// Daily rotation uses stable independent released/unreleased queues. Each queue
+// advances by the day's quota, so adjacent dates draw different songs rather
+// than reshuffling the same small pool from scratch.
+const unreleasedTitles=new Set([
+ 'CAN U BE','SHOWTIME','MR YE AND JESUS','SOUTH CAROLINA','HAPPY',
+ 'PUSSY COST MONEY','ALL IN LOVE','LIVING SO ITALIAN','NEW BODY',
+ 'WE ARE YOUNG','EVERYBODY','CASH TO BURN','PAY PER VIEW',
+ 'MITUS TOUCH','MELROSE','AFTER YOU','YE ABOUT MINE',
+ 'SEE ME AGAIN','MAMAS BOYFRIEND','FLASHING LIGHTS 2'
+]);
+const released=tracks.filter(t=>!unreleasedTitles.has(t[0]));
+const unreleased=tracks.filter(t=>unreleasedTitles.has(t[0]));
+const dayIndex=Math.floor((Date.UTC(...day.split('-').map((v,i)=>i===1?Number(v)-1:Number(v)))-Date.UTC(2026,0,1))/86400000);
+function stableShuffle(items,salt){
+ let state=2166136261;
+ for(const c of salt)state=Math.imul(state^c.charCodeAt(0),16777619)>>>0;
+ function next(){state^=state<<13;state^=state>>>17;state^=state<<5;return(state>>>0)/4294967296}
+ return items.map((t,i)=>({t,i,k:next()})).sort((a,b)=>a.k-b.k||a.i-b.i).map(x=>x.t);
+}
+const releasedQueue=stableShuffle(released,'ye-crossword-released-v2');
+const unreleasedQueue=stableShuffle(unreleased,'ye-crossword-unreleased-v2');
+const goal=9+Math.floor(random()*4),N=45,g=Array.from({length:N},()=>Array(N).fill("")),words=[];
+// Six released and four unreleased are prioritized daily. Placement may
+// occasionally need extra candidates for intersections.
+const pickQueue=(queue,offset)=>Array.from({length:queue.length},(_,i)=>queue[((offset%queue.length)+queue.length+i)%queue.length]);
+const releasedChoices=pickQueue(releasedQueue,dayIndex*6);
+const unreleasedChoices=pickQueue(unreleasedQueue,dayIndex*4);
+const pool=[];
+for(let i=0;i<Math.max(releasedChoices.length,unreleasedChoices.length);i++){
+ if(i<releasedChoices.length)pool.push(releasedChoices[i]);
+ if(i<unreleasedChoices.length)pool.push(unreleasedChoices[i]);
+}
 function valid(w,x,y,d){const dx=d==="Across"?1:0,dy=1-dx;if(x<1||y<1||x+dx*(w.length-1)>=N-1||y+dy*(w.length-1)>=N-1)return -1;let hits=0;for(let i=0;i<w.length;i++){const xx=x+dx*i,yy=y+dy*i,v=g[yy][xx];if(v&&v!==w[i])return -1;if(v)hits++;else if((d==="Across"&&(g[yy-1][xx]||g[yy+1][xx]))||(d==="Down"&&(g[yy][xx-1]||g[yy][xx+1])))return -1}if(g[y-dy][x-dx]||g[y+dy*w.length][x+dx*w.length])return -1;return hits}
 function add(t,x,y,d){const w=normalize(t[0]);for(let i=0;i<w.length;i++)g[y+(d==="Down"?i:0)][x+(d==="Across"?i:0)]=w[i];words.push({t,w,x,y,d})}
-add(pool[0],Math.floor((N-normalize(pool[0][0]).length)/2),22,"Across");
-for(const t of pool.slice(1)){if(words.length>=goal)break;const w=normalize(t[0]),choices=[];for(let i=0;i<w.length;i++)for(const p of words)for(let j=0;j<p.w.length;j++){if(w[i]!==p.w[j])continue;const d=p.d==="Across"?"Down":"Across",x=p.x+(p.d==="Across"?j:0)-(d==="Across"?i:0),y=p.y+(p.d==="Down"?j:0)-(d==="Down"?i:0),score=valid(w,x,y,d);if(score>0)choices.push({x,y,d,score:score+random()/2})}choices.sort((a,b)=>b.score-a.score);if(choices.length)add(t,choices[0].x,choices[0].y,choices[0].d)}
+// Prefer the intended 60/40 mix when choosing intersections. We use a
+// larger reserve of unique tracks if a chosen word cannot fit on the grid.
+const desiredReleased=Math.round(goal*.6);
+const desiredUnreleased=goal-desiredReleased;
+let usedReleased=0,usedUnreleased=0;
+function placeCandidate(t){
+ const w=normalize(t[0]),choices=[];
+ for(let i=0;i<w.length;i++)for(const p of words)for(let j=0;j<p.w.length;j++){
+  if(w[i]!==p.w[j])continue;
+  const d=p.d==="Across"?"Down":"Across";
+  const x=p.x+(p.d==="Across"?j:0)-(d==="Across"?i:0);
+  const y=p.y+(p.d==="Down"?j:0)-(d==="Down"?i:0);
+  const score=valid(w,x,y,d);
+  if(score>0)choices.push({x,y,d,score:score+random()/2});
+ }
+ choices.sort((a,b)=>b.score-a.score);
+ if(!choices.length)return false;
+ add(t,choices[0].x,choices[0].y,choices[0].d);
+ return true;
+}
+const first=releasedChoices[0];
+add(first,Math.floor((N-normalize(first[0]).length)/2),22,"Across");
+usedReleased++;
+// Quota-first alternating placement, then use reserve tracks to fill gaps.
+const primary=[];
+for(let i=0;i<Math.max(desiredReleased,desiredUnreleased);i++){
+ if(i<desiredReleased-1)primary.push(releasedChoices[i+1]);
+ if(i<desiredUnreleased)primary.push(unreleasedChoices[i]);
+}
+for(const t of primary){
+ if(words.length>=goal)break;
+ if(placeCandidate(t)){
+  if(unreleasedTitles.has(t[0]))usedUnreleased++;else usedReleased++;
+ }
+}
+const reserve=[...releasedChoices.slice(desiredReleased),...unreleasedChoices.slice(desiredUnreleased)];
+for(const t of reserve){
+ if(words.length>=goal)break;
+ const isUnreleased=unreleasedTitles.has(t[0]);
+ if((isUnreleased?usedUnreleased:usedReleased)>= (isUnreleased?desiredUnreleased:desiredReleased))continue;
+ if(placeCandidate(t)){if(isUnreleased)usedUnreleased++;else usedReleased++}
+}
+for(const t of reserve){
+ if(words.length>=goal)break;
+ if(words.some(p=>p.t[0]===t[0]))continue;
+ if(placeCandidate(t)){if(unreleasedTitles.has(t[0]))usedUnreleased++;else usedReleased++}
+}
 const minX=Math.min(...words.map(p=>p.x))-1,maxX=Math.max(...words.map(p=>p.x+(p.d==="Across"?p.w.length-1:0)))+1,minY=Math.min(...words.map(p=>p.y))-1,maxY=Math.max(...words.map(p=>p.y+(p.d==="Down"?p.w.length-1:0)))+1;
 const board=document.getElementById("board");board.style.setProperty("--board-width","min(100%, "+Math.min(460,(maxX-minX+1)*22)+"px)");const cols=maxX-minX+1,rows=maxY-minY+1;const cellSize=Math.max(16,Math.min(29,Math.floor(470/cols),Math.floor(540/rows)));board.style.gridTemplateColumns=`repeat(${cols},${cellSize}px)`;board.style.gridTemplateRows=`repeat(${rows},${cellSize}px)`;
 const starts=[...new Set(words.map(p=>p.y+","+p.x))].sort((a,b)=>{const [ay,ax]=a.split(",").map(Number),[by,bx]=b.split(",").map(Number);return ay-by||ax-bx});words.forEach(p=>p.n=starts.indexOf(p.y+","+p.x)+1);
