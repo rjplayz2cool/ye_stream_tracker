@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YE — TOUR 2026</title>
+<style>
+:root{font-family:Inter,Arial,Helvetica,sans-serif;color:#f4f5fa;color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;background:#070a13;overflow:hidden}canvas{display:block}
+#three{position:fixed;inset:0}#vignette{position:fixed;inset:0;pointer-events:none;background:linear-gradient(90deg,#060910a8,transparent 25%,transparent 73%,#060910aa),linear-gradient(0deg,#0609109e,transparent 20%,transparent 82%,#0609106b)}
+#header{position:fixed;top:clamp(24px,5vh,60px);left:0;right:0;text-align:center;pointer-events:none;text-shadow:0 3px 20px #0009}
+#header small{font-size:10px;letter-spacing:.55em;color:#a4aebf}h1{font-family:Impact,"Arial Narrow",sans-serif;font-stretch:condensed;font-weight:600;letter-spacing:.10em;font-size:clamp(30px,3.5vw,54px);margin:6px 0 0}
+#header p{font-size:9px;letter-spacing:.33em;color:#98a5b9;margin:7px 0}
+#left,#right{position:fixed;top:23%;bottom:110px;width:clamp(165px,19vw,260px);display:flex;flex-direction:column;gap:0;overflow-y:hidden;scrollbar-width:none;padding:4px 9px 18px 0}
+#left{left:clamp(18px,3.2vw,60px)}#right{right:clamp(18px,3.2vw,60px);overscroll-behavior:contain;touch-action:pan-x}#right::-webkit-scrollbar{display:none}
+.previous-track{flex-shrink:0}.column-title{font-size:13px;letter-spacing:.08em;font-weight:750;color:#f4f6fb;margin:0 0 20px;position:sticky;top:-4px;padding:8px 0 12px;background:linear-gradient(#080d19 75%,transparent);z-index:2}
+.city{position:relative;padding-left:11px;border-left:1px solid #d7e3ff43;cursor:pointer;transition:opacity .2s;margin-bottom:19px;cursor:default}
+.city:hover{opacity:1}.city .name{font-size:12px;font-weight:800;letter-spacing:.025em}.city .flag{font-size:13px;margin-right:6px}.city .type{font-size:8px;letter-spacing:.18em;color:#9ea8b8;margin:7px 0}
+.city .status{display:inline-block;border:1px solid #ffffff4b;padding:5px 8px;font-size:9px;color:#d5deec;letter-spacing:.1em}
+#foot{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);text-align:center;min-width:270px}
+#foot .control{background:#111928ad;border:1px solid #b7c5e333;border-radius:99px;padding:9px 14px;color:#d8e2f3;cursor:pointer;font-size:11px;margin:0 3px;backdrop-filter:blur(12px)}
+#foot .control:hover{background:#253149}#foot p{font-size:9px;letter-spacing:.17em;color:#8290a6}
+#dates{position:fixed;right:24px;bottom:18px;background:#0a111edb;border:1px solid #ffffff24;border-radius:10px;padding:13px;width:260px;display:none;backdrop-filter:blur(18px)}
+#dates.open{display:block}#dates strong{font-size:11px;letter-spacing:.1em}#dates p{font-size:11px;color:#a6b4c6;line-height:1.5}#dates textarea{width:100%;height:100px;background:#131c2b;border:1px solid #ffffff35;border-radius:6px;color:white;font:11px/1.6 monospace;padding:8px}
+#dates button{background:#e7eaf1;color:#11151e;border:0;padding:8px 12px;border-radius:6px;cursor:pointer;margin-top:8px;font-size:11px}
+#notice{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.07em;color:#abb9ce;text-align:center;pointer-events:none}
+@media(max-width:680px){#left,#right{top:auto;bottom:102px;height:38vh;width:43%;padding-right:5px}#left{left:12px}#right{right:12px}.column-title{font-size:11px;margin-bottom:12px}.city{margin-bottom:13px}.city .name{font-size:10px}.city .type{font-size:8px;margin:4px 0}.city .status{font-size:8px;padding:3px 5px}#header{top:15px}#notice{bottom:74px;font-size:8px;width:100%}#foot{bottom:8px}#foot p{display:none}}
+</style></head><body>
+<div id="three"></div><div id="vignette"></div>
+<div id="header"><small>YE LIVE</small><h1>TOUR 2026</h1></div>
+<div id="left"></div><div id="right"></div>
+<div id="notice">ROTATING DOME STAGE • SCROLL TO ZOOM</div>
+<div id="foot"><button class="control" id="auto">⏸ Rotation</button></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+const mount=document.getElementById('three'),scene=new THREE.Scene();scene.background=new THREE.Color(0x080d19);
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,300);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;mount.append(renderer.domElement);
+const ambient=new THREE.AmbientLight(0x9ab8f7,.4);scene.add(ambient);
+const sunlight=new THREE.DirectionalLight(0xffeed4,3.2);sunlight.position.set(5,3,6);scene.add(sunlight);
+const rimlight=new THREE.DirectionalLight(0x4c9dff,1.6);rimlight.position.set(-4,1,-5);scene.add(rimlight);
+const globeGroup=new THREE.Group();globeGroup.position.y=-1.75;scene.add(globeGroup);
+const globeGeo=new THREE.SphereGeometry(3.45,128,96,0,Math.PI*2,0,Math.PI/2);
+// Keep the northern hemisphere's original latitude coordinates instead of
+// stretching a whole world map across half a sphere.
+const uv=globeGeo.attributes.uv;
+for(let i=0;i<uv.count;i++)uv.setY(i,.5+.5*uv.getY(i));
+uv.needsUpdate=true;
+const earthMat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.94,metalness:0});
+const earth=new THREE.Mesh(globeGeo,earthMat);globeGroup.add(earth);
+// Original Earth rendering uses public-domain NASA-derived imagery hosted by three.js examples.
+// No textures from the uploaded stage screenshots.
+const loader=new THREE.TextureLoader();
+loader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',tex=>{tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=renderer.capabilities.getMaxAnisotropy();earthMat.map=tex;earthMat.needsUpdate=true},undefined,()=>{});
+// Clouds are a translucent shell that follows the globe.
+const cloudMat=new THREE.MeshStandardMaterial({transparent:true,opacity:.18,depthWrite:false,roughness:1,color:0xffffff});
+const cloudGeo=new THREE.SphereGeometry(3.472,96,64,0,Math.PI*2,0,Math.PI/2);
+const cloudUV=cloudGeo.attributes.uv;
+for(let i=0;i<cloudUV.count;i++)cloudUV.setY(i,.5+.5*cloudUV.getY(i));
+cloudUV.needsUpdate=true;
+const cloudSphere=new THREE.Mesh(cloudGeo,cloudMat);globeGroup.add(cloudSphere);
+loader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png',tex=>{cloudMat.map=tex;cloudMat.needsUpdate=true},undefined,()=>{cloudSphere.visible=false});
+// Soft rim glow: a view-facing shader, unlike the previous hard circle.
+const glow=new THREE.Mesh(new THREE.SphereGeometry(3.58,96,64,0,Math.PI*2,0,Math.PI/2),new THREE.ShaderMaterial({
+ uniforms:{glowColor:{value:new THREE.Color('#7fb4ff')}},
+ vertexShader:`varying vec3 n;varying vec3 v;void main(){vec4 mv=modelViewMatrix*vec4(position,1.);n=normalize(normalMatrix*normal);v=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}`,
+ fragmentShader:`uniform vec3 glowColor;varying vec3 n;varying vec3 v;void main(){float f=pow(1.-max(dot(normalize(n),normalize(v)),0.),4.);gl_FragColor=vec4(glowColor,f*.33);}`,
+ transparent:true,side:THREE.BackSide,depthWrite:false,blending:THREE.AdditiveBlending
+}));globeGroup.add(glow);
+// Low-profile stage edge: a narrow rim at the flat base, not a Saturn ring.
+const stageEdge=new THREE.Mesh(new THREE.TorusGeometry(3.455,.027,8,180),new THREE.MeshBasicMaterial({color:0x687d9d,transparent:true,opacity:.5}));stageEdge.rotation.x=Math.PI/2;stageEdge.position.y=-1.75;scene.add(stageEdge);
+const darkBase=new THREE.Mesh(new THREE.CylinderGeometry(3.44,3.44,.10,160),new THREE.MeshStandardMaterial({color:0x0c1018,roughness:.9}));darkBase.position.y=-1.81;scene.add(darkBase);
+// Layered atmospheric fog, soft glow and distant stars.
+const stars=[];for(let i=0;i<1200;i++){const r=30+Math.random()*80,a=Math.random()*Math.PI*2,z=Math.random()*2-1,t=Math.sqrt(1-z*z);stars.push(r*t*Math.cos(a),r*z,r*t*Math.sin(a))}
+const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(stars,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xc8dcff,size:.065,transparent:true,opacity:.68,sizeAttenuation:true})));
+function fogTexture(){const cv=document.createElement('canvas');cv.width=cv.height=256;const c=cv.getContext('2d');const g=c.createRadialGradient(128,128,12,128,128,128);g.addColorStop(0,'rgba(187,204,236,.24)');g.addColorStop(.4,'rgba(139,159,204,.12)');g.addColorStop(1,'rgba(95,120,175,0)');c.fillStyle=g;c.fillRect(0,0,256,256);return new THREE.CanvasTexture(cv)}
+const mistTex=fogTexture(),mists=[];
+for(let i=0;i<25;i++){const mat=new THREE.SpriteMaterial({map:mistTex,transparent:true,opacity:.14+Math.random()*.18,depthWrite:false,color:i%4===0?0xf0ad77:0xa3b8e6,blending:THREE.AdditiveBlending});const sp=new THREE.Sprite(mat);const a=i/25*Math.PI*2;sp.position.set(Math.cos(a)*(3.5+Math.random()*2.8),-2.7+Math.random()*2.6,-1.8-Math.random()*2);sp.scale.set(3+Math.random()*4,1.2+Math.random()*2,1);scene.add(sp);mists.push(sp)}
+const orange=new THREE.PointLight(0xff8845,28,16);orange.position.set(-6,-1,1);scene.add(orange);
+const blue=new THREE.PointLight(0x528bff,20,16);blue.position.set(5,-2,-2);scene.add(blue);
+let radius=12.8,rotation=-.55,pitch=.08,drag=false,lastX=0,lastY=0,auto=true;
+function cameraUpdate(){camera.position.set(Math.sin(pitch)*1.5,2.6+Math.sin(pitch)*2,radius);camera.lookAt(0,-.15,0)}
+cameraUpdate();globeGroup.rotation.y=rotation;
+renderer.domElement.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});
+renderer.domElement.addEventListener('pointerup',()=>drag=false);
+renderer.domElement.addEventListener('pointermove',e=>{if(!drag)return;rotation+=(e.clientX-lastX)*.0045;pitch=THREE.MathUtils.clamp(pitch+(e.clientY-lastY)*.003,-.6,.6);lastX=e.clientX;lastY=e.clientY;cameraUpdate()});
+renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();radius=THREE.MathUtils.clamp(radius+e.deltaY*.01,9.5,19);cameraUpdate()},{passive:false});
+document.getElementById('auto').onclick=()=>{auto=!auto;document.getElementById('auto').textContent=auto?'⏸ Rotation':'▶ Rotation'};
+
+// Tour dates supplied by the site owner. These are displayed as provided, not independently verified.
+const upcoming=[
+ ['🇮🇩','JAKARTA','GELORA BUNG KARNO STADIUM','24 OCTOBER 2026'],
+ ['🇺🇸','HOUSTON','RELIANT STADIUM','31 OCTOBER 2026'],
+ ['🇺🇸','DALLAS','AT&T STADIUM','7 NOVEMBER 2026'],
+ ['🇺🇸','PHOENIX','STATE FARM STADIUM','21 NOVEMBER 2026']
+];
+const previous=[
+ ['🇲🇽','MEXICO CITY, MEXICO','', 'JANUARY 30 & 31, 2026'],
+ ['🇺🇸','INGLEWOOD, UNITED STATES','SOFI STADIUM', 'APRIL 1 & 3, 2026'],
+ ['🇹🇷','ISTANBUL, TURKEY','ATATÜRK OLYMPIC STADIUM', 'MAY 30, 2026'],
+ ['🇳🇱','ARNHEM, NETHERLANDS','GELREDOME', 'JUNE 6 & 8, 2026'],
+ ['🇬🇪','TBILISI, GEORGIA','DINAMO ARENA', 'JUNE 12, 2026'],
+ ['🇺🇸','TAMPA BAY, UNITED STATES','RAYMOND JAMES STADIUM', 'JUNE 26 & 28, 2026'],
+ ['🇺🇸','SAN ANTONIO, UNITED STATES','ALAMODOME', 'JULY 4, 2026'],
+ ['🇦🇱','TIRANA, ALBANIA','EAGLE STADIUM', 'JULY 11, 2026'],
+ ['🇪🇸','MADRID, SPAIN','METROPOLITANO STADIUM', 'JULY 30, 2026'],
+ ['🇵🇹','ALGARVE, PORTUGAL','ESTÁDIO ALGARVE', 'AUGUST 7, 2026'],
+ ['🇰🇿','ALMATY, KAZAKHSTAN','ALMATY CENTRAL STADIUM', 'AUGUST 15, 2026'],
+ ['🇺🇸','NEW ORLEANS, UNITED STATES','CAESARS SUPERDOME', 'AUGUST 28, 2026'],
+ ['🇺🇸','CHICAGO, UNITED STATES','SOLDIER FIELD', 'SEPTEMBER 3 & 4, 2026']
+];
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderShows(id,heading,items){
+ const parent=document.getElementById(id);
+ parent.innerHTML='<h2 class="column-title">'+heading+'</h2>'+items.map(([flag,city,venue,date])=>'<div class="city"><div class="name"><span class="flag">'+esc(flag)+'</span>'+esc(city)+'</div>'+(venue?'<div class="type">'+esc(venue)+'</div>':'')+'<div class="status">'+esc(date)+'</div></div>').join('');
+}
+renderShows('left','Upcoming Shows:',upcoming);
+renderShows('right','Previous Shows:',previous);
+// Automatic, seamless vertical carousel. No manual wheel/touch scrolling.
+const previousColumn=document.getElementById('right');
+const previousTitle=previousColumn.querySelector('.column-title');
+const previousCards=[...previousColumn.querySelectorAll('.city')];
+const previousTrack=document.createElement('div');
+previousTrack.className='previous-track';
+previousCards.forEach(card=>previousTrack.appendChild(card));
+const previousClone=previousTrack.cloneNode(true);
+previousClone.setAttribute('aria-hidden','true');
+previousColumn.appendChild(previousTrack);
+previousColumn.appendChild(previousClone);
+previousColumn.addEventListener('wheel',e=>e.preventDefault(),{passive:false});
+previousColumn.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+let previousScroll=0;
+function movePrevious(dt){
+  const height=previousTrack.getBoundingClientRect().height;
+  if(height<=0)return;
+  previousScroll=(previousScroll+dt*22)%height;
+  previousColumn.scrollTop=previousScroll;
+}
+
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+let prev=performance.now();function tick(t){requestAnimationFrame(tick);const dt=Math.min(.05,(t-prev)/1000);prev=t;if(auto&&!drag)rotation+=dt*.025;
+movePrevious(dt);globeGroup.rotation.y=rotation;cloudSphere.rotation.y+=dt*.002;for(let i=0;i<mists.length;i++)mists[i].position.x+=Math.sin(t*.00015+i)*dt*.035;renderer.render(scene,camera)}requestAnimationFrame(tick);
+</script></body></html>
