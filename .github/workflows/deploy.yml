@@ -65,6 +65,28 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Verify October calendar cover assets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path('index.html').read_text()
+          expected={
+            'WHAT AM I MISSING':'assets/calendar/bbp-2026.jpg',
+            'This One Here':'assets/calendar/bbp-2026.jpg',
+            'HONOR ROLL V10':'assets/calendar/bbp-2026.jpg',
+            'Say You Will - Remix':'assets/calendar/hollywood-bowl-2015.jpg',
+            'When I See It':'assets/calendar/when-i-see-it-2015.jpg',
+          }
+          for phrase,asset in expected.items():
+              entries=[line for line in html.splitlines() if '"month": 10' in line and '"day": 17' in line and phrase in line]
+              assert len(entries)==1 and asset in entries[0], f'Wrong cover for {phrase}'
+              path=Path(asset)
+              assert path.is_file() and path.stat().st_size>500, f'Missing cover image: {asset}'
+              assert path.read_bytes()[:3]==bytes.fromhex('ffd8ff'), f'Invalid JPEG: {asset}'
+              print('OK:',phrase,asset,path.stat().st_size)
+          PY
+
       - name: Upload website
         uses: actions/upload-pages-artifact@v3
         with:
