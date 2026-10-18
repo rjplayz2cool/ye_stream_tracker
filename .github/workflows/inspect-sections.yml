@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/inspect-sections.yml'
+      - 'recovery-index/inspect-trigger.txt'
 permissions:
   contents: write
 jobs:
