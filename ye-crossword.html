@@ -37,7 +37,7 @@ const goal=9+Math.floor(random()*4),N=45,g=Array.from({length:N},()=>Array(N).fi
 // occasionally need extra candidates for intersections.
 const pickQueue=(queue,offset)=>Array.from({length:queue.length},(_,i)=>queue[((offset%queue.length)+queue.length+i)%queue.length]);
 const releasedChoices=pickQueue(releasedQueue,dayIndex*8);
-const unreleasedChoices=pickQueue(unreleasedQueue,dayIndex*3);
+const unreleasedChoices=pickQueue(unreleasedQueue,dayIndex*2);
 const pool=[];
 for(let i=0;i<Math.max(releasedChoices.length,unreleasedChoices.length);i++){
  if(i<releasedChoices.length)pool.push(releasedChoices[i]);
@@ -47,8 +47,8 @@ function valid(w,x,y,d){const dx=d==="Across"?1:0,dy=1-dx;if(x<1||y<1||x+dx*(w.l
 function add(t,x,y,d){const w=normalize(t[0]);for(let i=0;i<w.length;i++)g[y+(d==="Down"?i:0)][x+(d==="Across"?i:0)]=w[i];words.push({t,w,x,y,d})}
 // Prefer the intended 60/40 mix when choosing intersections. We use a
 // larger reserve of unique tracks if a chosen word cannot fit on the grid.
-const desiredReleased=Math.round(goal*.7);
-const desiredUnreleased=goal-desiredReleased;
+const desiredUnreleased=Math.min(3,Math.max(2,Math.round(goal*.22)));
+const desiredReleased=goal-desiredUnreleased;
 let usedReleased=0,usedUnreleased=0;
 function placeCandidate(t){
  const w=normalize(t[0]),choices=[];
