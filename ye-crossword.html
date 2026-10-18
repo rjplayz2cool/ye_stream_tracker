@@ -36,8 +36,8 @@ const goal=9+Math.floor(random()*4),N=45,g=Array.from({length:N},()=>Array(N).fi
 // Six released and four unreleased are prioritized daily. Placement may
 // occasionally need extra candidates for intersections.
 const pickQueue=(queue,offset)=>Array.from({length:queue.length},(_,i)=>queue[((offset%queue.length)+queue.length+i)%queue.length]);
-const releasedChoices=pickQueue(releasedQueue,dayIndex*6);
-const unreleasedChoices=pickQueue(unreleasedQueue,dayIndex*4);
+const releasedChoices=pickQueue(releasedQueue,dayIndex*8);
+const unreleasedChoices=pickQueue(unreleasedQueue,dayIndex*3);
 const pool=[];
 for(let i=0;i<Math.max(releasedChoices.length,unreleasedChoices.length);i++){
  if(i<releasedChoices.length)pool.push(releasedChoices[i]);
@@ -47,7 +47,7 @@ function valid(w,x,y,d){const dx=d==="Across"?1:0,dy=1-dx;if(x<1||y<1||x+dx*(w.l
 function add(t,x,y,d){const w=normalize(t[0]);for(let i=0;i<w.length;i++)g[y+(d==="Down"?i:0)][x+(d==="Across"?i:0)]=w[i];words.push({t,w,x,y,d})}
 // Prefer the intended 60/40 mix when choosing intersections. We use a
 // larger reserve of unique tracks if a chosen word cannot fit on the grid.
-const desiredReleased=Math.round(goal*.6);
+const desiredReleased=Math.round(goal*.7);
 const desiredUnreleased=goal-desiredReleased;
 let usedReleased=0,usedUnreleased=0;
 function placeCandidate(t){
@@ -68,29 +68,25 @@ function placeCandidate(t){
 const first=releasedChoices[0];
 add(first,Math.floor((N-normalize(first[0]).length)/2),22,"Across");
 usedReleased++;
-// Quota-first alternating placement, then use reserve tracks to fill gaps.
-const primary=[];
-for(let i=0;i<Math.max(desiredReleased,desiredUnreleased);i++){
- if(i<desiredReleased-1)primary.push(releasedChoices[i+1]);
- if(i<desiredUnreleased)primary.push(unreleasedChoices[i]);
+// Fill the released quota first, then unreleased; never exceed the 30%
+// unreleased ceiling just to fill a crossword with easy intersections.
+for(const t of releasedChoices.slice(1)){
+ if(usedReleased>=desiredReleased)break;
+ if(placeCandidate(t))usedReleased++;
 }
-for(const t of primary){
- if(words.length>=goal)break;
- if(placeCandidate(t)){
-  if(unreleasedTitles.has(t[0]))usedUnreleased++;else usedReleased++;
+for(const t of unreleasedChoices){
+ if(usedUnreleased>=desiredUnreleased)break;
+ if(placeCandidate(t))usedUnreleased++;
+}
+// If an unreleased candidate cannot fit, substitute another released song.
+// This keeps the released share at or above 70% instead of falling back to
+// mostly unreleased words.
+if(words.length<goal){
+ for(const t of releasedChoices.slice(1)){
+  if(words.length>=goal)break;
+  if(words.some(p=>p.t[0]===t[0]))continue;
+  if(placeCandidate(t))usedReleased++;
  }
-}
-const reserve=[...releasedChoices.slice(desiredReleased),...unreleasedChoices.slice(desiredUnreleased)];
-for(const t of reserve){
- if(words.length>=goal)break;
- const isUnreleased=unreleasedTitles.has(t[0]);
- if((isUnreleased?usedUnreleased:usedReleased)>= (isUnreleased?desiredUnreleased:desiredReleased))continue;
- if(placeCandidate(t)){if(isUnreleased)usedUnreleased++;else usedReleased++}
-}
-for(const t of reserve){
- if(words.length>=goal)break;
- if(words.some(p=>p.t[0]===t[0]))continue;
- if(placeCandidate(t)){if(unreleasedTitles.has(t[0]))usedUnreleased++;else usedReleased++}
 }
 const minX=Math.min(...words.map(p=>p.x))-1,maxX=Math.max(...words.map(p=>p.x+(p.d==="Across"?p.w.length-1:0)))+1,minY=Math.min(...words.map(p=>p.y))-1,maxY=Math.max(...words.map(p=>p.y+(p.d==="Down"?p.w.length-1:0)))+1;
 const board=document.getElementById("board");board.style.setProperty("--board-width","min(100%, "+Math.min(460,(maxX-minX+1)*22)+"px)");const cols=maxX-minX+1,rows=maxY-minY+1;const cellSize=Math.max(16,Math.min(29,Math.floor(470/cols),Math.floor(540/rows)));board.style.gridTemplateColumns=`repeat(${cols},${cellSize}px)`;board.style.gridTemplateRows=`repeat(${rows},${cellSize}px)`;
