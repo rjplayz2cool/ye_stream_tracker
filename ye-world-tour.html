@@ -7,8 +7,8 @@ body{margin:0;background:#070a13;overflow:hidden}canvas{display:block}
 #header{position:fixed;top:clamp(24px,5vh,60px);left:0;right:0;text-align:center;pointer-events:none;text-shadow:0 3px 20px #0009}
 #header small{font-size:10px;letter-spacing:.55em;color:#a4aebf}h1{font-family:Impact,"Arial Narrow",sans-serif;font-stretch:condensed;font-weight:600;letter-spacing:.10em;font-size:clamp(30px,3.5vw,54px);margin:6px 0 0}
 #header p{font-size:9px;letter-spacing:.33em;color:#98a5b9;margin:7px 0}
-#left,#right{position:fixed;top:23%;bottom:92px;width:clamp(150px,17vw,225px);display:flex;flex-direction:column;gap:0;overflow-y:hidden;scrollbar-width:none;padding:4px 9px 18px 0}
-#left{left:clamp(18px,3.2vw,60px)}#right{right:clamp(18px,3.2vw,60px);overscroll-behavior:contain;touch-action:pan-x}#right::-webkit-scrollbar{display:none}#right .column-title{position:fixed;top:calc(23% - 3px);right:clamp(18px,3.2vw,60px);width:clamp(150px,17vw,225px);pointer-events:none}#right{padding-top:38px}
+#left,#right{position:fixed;top:clamp(105px,22vh,210px);bottom:clamp(60px,10vh,92px);width:clamp(125px,17vw,225px);display:flex;flex-direction:column;gap:0;overflow-y:hidden;scrollbar-width:none;padding:4px 9px 18px 0}
+#left{left:clamp(18px,3.2vw,60px)}#right{right:clamp(18px,3.2vw,60px);overscroll-behavior:contain;touch-action:pan-x}#right::-webkit-scrollbar{display:none}#right .column-title{position:fixed;top:calc(clamp(105px,22vh,210px) - 3px);right:clamp(18px,3.2vw,60px);width:clamp(125px,17vw,225px);pointer-events:none}#right{padding-top:38px}
 .previous-track{flex-shrink:0}.column-title{font-size:13px;letter-spacing:.08em;font-weight:750;color:#f4f6fb;margin:0 0 20px;position:sticky;top:-4px;padding:8px 0 12px;background:linear-gradient(#080d19 75%,transparent);z-index:2}
 .city{position:relative;padding-left:11px;border-left:1px solid #d7e3ff43;cursor:pointer;transition:opacity .2s;margin-bottom:19px;cursor:default}
 .city:hover{opacity:1}.city .name{font-size:12px;font-weight:800;letter-spacing:.025em}.city .flag{font-size:13px;margin-right:6px}.city .type{font-size:8px;letter-spacing:.18em;color:#9ea8b8;margin:7px 0}
@@ -21,7 +21,7 @@ body{margin:0;background:#070a13;overflow:hidden}canvas{display:block}
 #dates button{background:#e7eaf1;color:#11151e;border:0;padding:8px 12px;border-radius:6px;cursor:pointer;margin-top:8px;font-size:11px}
 #notice{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.07em;color:#abb9ce;text-align:center;pointer-events:none}
 @media(max-width:680px){#left,#right{top:auto;bottom:102px;height:38vh;width:43%;padding-right:5px}#left{left:12px}#right{right:12px}.column-title{font-size:11px;margin-bottom:12px}.city{margin-bottom:13px}.city .name{font-size:10px}.city .type{font-size:8px;margin:4px 0}.city .status{font-size:8px;padding:3px 5px}#header{top:15px}#notice{bottom:74px;font-size:8px;width:100%}#foot{bottom:8px}#foot p{display:none}}
-</style></head><body>
+@media(max-height:650px) and (min-width:681px){#header{top:10px}#left,#right{top:92px;bottom:48px}#right .column-title{top:89px}.city{margin-bottom:10px}#foot{bottom:8px}#notice{bottom:50px}}@media(max-width:900px) and (min-width:681px){#left{left:10px}#right{right:10px}#right .column-title{right:10px}#header h1{font-size:clamp(24px,3vw,42px)}}@media(max-width:680px){#right .column-title{position:sticky;top:0;right:auto;width:auto}#right{padding-top:0}#header{top:10px}#left,#right{bottom:65px;height:min(39vh,300px)}#foot{bottom:4px}}html,body{width:100%;height:100%;max-width:100%;overflow:hidden}</style></head><body>
 <div id="three"></div><div id="vignette"></div>
 <div id="header"><small>YE LIVE</small><h1>TOUR 2026</h1></div>
 <div id="left"></div><div id="right"></div>
