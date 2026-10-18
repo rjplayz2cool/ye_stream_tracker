@@ -21,10 +21,18 @@ body{margin:0;background:#070a13;overflow:hidden}canvas{display:block}
 #dates button{background:#e7eaf1;color:#11151e;border:0;padding:8px 12px;border-radius:6px;cursor:pointer;margin-top:8px;font-size:11px}
 #notice{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.07em;color:#abb9ce;text-align:center;pointer-events:none}
 @media(max-width:680px){#left,#right{top:auto;bottom:102px;height:38vh;width:43%;padding-right:5px}#left{left:12px}#right{right:12px}.column-title{font-size:11px;margin-bottom:12px}.city{margin-bottom:13px}.city .name{font-size:10px}.city .type{font-size:8px;margin:4px 0}.city .status{font-size:8px;padding:3px 5px}#header{top:15px}#notice{bottom:74px;font-size:8px;width:100%}#foot{bottom:8px}#foot p{display:none}}
-@media(max-height:650px) and (min-width:681px){#header{top:10px}#left,#right{top:92px;bottom:48px}#right .column-title{top:89px}.city{margin-bottom:10px}#foot{bottom:8px}#notice{bottom:50px}}@media(max-width:900px) and (min-width:681px){#left{left:10px}#right{right:10px}#right .column-title{right:10px}#header h1{font-size:clamp(24px,3vw,42px)}}@media(max-width:680px){#right .column-title{position:sticky;top:0;right:auto;width:auto}#right{padding-top:0}#header{top:10px}#left,#right{bottom:65px;height:min(39vh,300px)}#foot{bottom:4px}}html,body{width:100%;height:100%;max-width:100%;overflow:hidden}</style></head><body>
+@media(max-height:650px) and (min-width:681px){#header{top:10px}#left,#right{top:92px;bottom:48px}#right .column-title{top:89px}.city{margin-bottom:10px}#foot{bottom:8px}#notice{bottom:50px}}@media(max-width:900px) and (min-width:681px){#left{left:10px}#right{right:10px}#right .column-title{right:10px}#header h1{font-size:clamp(24px,3vw,42px)}}@media(max-width:680px){#right .column-title{position:sticky;top:0;right:auto;width:auto}#right{padding-top:0}#header{top:10px}#left,#right{bottom:65px;height:min(39vh,300px)}#foot{bottom:4px}}html,body{width:100%;height:100%;max-width:100%;overflow:hidden}
+/* Tour year navigation; years are data-driven so older tours can be appended. */
+.tour-year-arrow{position:fixed;z-index:20;top:50%;transform:translateY(-50%);width:43px;height:65px;border:1px solid #64759277;border-radius:10px;background:#111a2b9c;color:#f4f7ff;font:32px Arial;cursor:pointer;backdrop-filter:blur(9px);transition:background .2s,opacity .2s}
+.tour-year-arrow:hover:not(:disabled){background:#273a5a}.tour-year-arrow:disabled{opacity:.16;cursor:default}
+#tour-older{left:4px}#tour-newer{right:4px}
+#left,#right,#header,#notice{transition:opacity .22s ease}
+#tour-year-tag{position:fixed;z-index:5;bottom:12px;left:15px;font-size:10px;letter-spacing:.18em;color:#9caecb}
+@media(max-width:680px){.tour-year-arrow{width:30px;height:48px;font-size:25px}#tour-older{left:0}#tour-newer{right:0}}
+</style></head><body>
 <div id="three"></div><div id="vignette"></div>
 <div id="header"><small>YE LIVE</small><h1>TOUR 2026</h1></div>
-<div id="left"></div><div id="right"></div>
+<div id="left"></div><div id="right"></div><button id="tour-older" class="tour-year-arrow" aria-label="Previous tour year" title="Previous tour year">‹</button><button id="tour-newer" class="tour-year-arrow" aria-label="Next tour year" title="Next tour year">›</button><div id="tour-year-tag">2026</div>
 <div id="notice">ROTATING DOME STAGE • SCROLL TO ZOOM</div>
 <div id="foot"><button class="control" id="auto">⏸ Rotation</button></div>
 <script type="module">
@@ -66,6 +74,24 @@ const glow=new THREE.Mesh(new THREE.SphereGeometry(3.58,48,32,0,Math.PI*2,0,Math
 // Low-profile stage edge: a narrow rim at the flat base, not a Saturn ring.
 const stageEdge=new THREE.Mesh(new THREE.TorusGeometry(3.455,.027,6,90),new THREE.MeshBasicMaterial({color:0x687d9d,transparent:true,opacity:.5}));stageEdge.rotation.x=Math.PI/2;stageEdge.position.y=-1.75;scene.add(stageEdge);
 const darkBase=new THREE.Mesh(new THREE.CylinderGeometry(3.44,3.44,.10,80),new THREE.MeshStandardMaterial({color:0x0c1018,roughness:.9}));darkBase.position.y=-1.81;scene.add(darkBase);
+// 2025: low oval sand-covered stadium stage, without the 2026 globe.
+const sandGroup=new THREE.Group();sandGroup.visible=false;scene.add(sandGroup);
+const sandBase=new THREE.Mesh(new THREE.CylinderGeometry(3.65,3.72,.23,100),new THREE.MeshStandardMaterial({color:0x484035,roughness:1}));
+sandBase.scale.z=.64;sandBase.position.y=-1.9;sandGroup.add(sandBase);
+const sandSurface=new THREE.Mesh(new THREE.CylinderGeometry(3.63,3.63,.035,100),new THREE.MeshStandardMaterial({color:0xc0ae86,roughness:1,metalness:0}));
+sandSurface.scale.z=.64;sandSurface.position.y=-1.77;sandGroup.add(sandSurface);
+const sandGeo=new THREE.SphereGeometry(2.95,96,48,0,Math.PI*2,0,Math.PI/2);
+const sandPositions=sandGeo.attributes.position;
+for(let i=0;i<sandPositions.count;i++){
+ const x=sandPositions.getX(i),y=sandPositions.getY(i),z=sandPositions.getZ(i);
+ const wobble=.96+.045*Math.sin(x*5.1+z*2.3)+.028*Math.sin(z*12-x*3);
+ sandPositions.setXYZ(i,x*wobble,y*(.20+.012*Math.sin(x*8+z*6)),z*.58*wobble);
+}
+sandGeo.computeVertexNormals();
+const sandMound=new THREE.Mesh(sandGeo,new THREE.MeshStandardMaterial({color:0xc2b18c,roughness:1,flatShading:false,side:THREE.DoubleSide}));
+sandMound.position.y=-1.745;sandGroup.add(sandMound);
+const sandRim=new THREE.Mesh(new THREE.TorusGeometry(3.64,.018,5,100),new THREE.MeshStandardMaterial({color:0x80715c,roughness:1}));
+sandRim.scale.y=.64;sandRim.rotation.x=Math.PI/2;sandRim.position.y=-1.745;sandGroup.add(sandRim);
 // Layered atmospheric fog, soft glow and distant stars.
 const stars=[];for(let i=0;i<450;i++){const r=30+Math.random()*80,a=Math.random()*Math.PI*2,z=Math.random()*2-1,t=Math.sqrt(1-z*z);stars.push(r*t*Math.cos(a),r*z,r*t*Math.sin(a))}
 const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(stars,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xc8dcff,size:.065,transparent:true,opacity:.68,sizeAttenuation:true})));
@@ -114,6 +140,36 @@ function renderShows(id,heading,items){
 }
 renderShows('left','Upcoming Shows:',upcoming);
 renderShows('right','Previous Shows:',previous);
+
+const tours=[
+ {year:2026,kind:'globe',leftTitle:'Upcoming Shows:',leftShows:upcoming,notice:'ROTATING DOME STAGE • SCROLL TO ZOOM'},
+ {year:2025,kind:'sand',leftTitle:'2025 Shows:',leftShows:[
+  ['🇨🇳','SHANGHAI, CHINA','SHANGHAI STADIUM','JULY 12, 2025'],
+  ['🇰🇷','MICHUHOL-GU, INCHEON, SOUTH KOREA','INCHEON MUNHAK STADIUM','JULY 26, 2025']
+ ],notice:'SAND-COVERED OVAL STAGE • DRAG TO ROTATE • SCROLL TO ZOOM'}
+];
+// Add older tours to the end of this array; the left arrow will continue backwards.
+let activeTour=0;
+const olderBtn=document.getElementById('tour-older'),newerBtn=document.getElementById('tour-newer');
+function setTour(index){
+ if(index<0||index>=tours.length)return;
+ activeTour=index;
+ const tour=tours[index],isGlobe=tour.kind==='globe';
+ globeGroup.visible=isGlobe;stageEdge.visible=isGlobe;darkBase.visible=isGlobe;
+ sandGroup.visible=!isGlobe;
+ renderShows('left',tour.leftTitle,tour.leftShows);
+ document.getElementById('right').style.display=isGlobe?'flex':'none';
+ document.querySelector('#header h1').textContent='TOUR '+tour.year;
+ document.getElementById('tour-year-tag').textContent=tour.year;
+ document.getElementById('notice').textContent=tour.notice;
+ olderBtn.disabled=index===tours.length-1;
+ newerBtn.disabled=index===0;
+ document.getElementById('auto').textContent=auto?'⏸ Rotation':'▶ Rotation';
+}
+olderBtn.addEventListener('click',()=>setTour(activeTour+1));
+newerBtn.addEventListener('click',()=>setTour(activeTour-1));
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')setTour(activeTour+1);if(e.key==='ArrowRight')setTour(activeTour-1)});
+
 // Automatic, seamless vertical carousel. No manual wheel/touch scrolling.
 const previousColumn=document.getElementById('right');
 const previousTitle=previousColumn.querySelector('.column-title');
@@ -139,5 +195,5 @@ addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updat
 let prev=performance.now(),lastDraw=0,visible=true;
 const visibilityObserver=new IntersectionObserver(entries=>{visible=entries[0]?.isIntersecting??true},{threshold:0.01});visibilityObserver.observe(renderer.domElement);
 function tick(t){requestAnimationFrame(tick);if(document.hidden||!visible){prev=t;return;}if(t-lastDraw<50)return;lastDraw=t;const dt=Math.min(.08,(t-prev)/1000);prev=t;if(auto&&!drag)rotation+=dt*.025;
-movePrevious(dt);globeGroup.rotation.y=rotation;cloudSphere.rotation.y+=dt*.002;for(let i=0;i<mists.length;i++)mists[i].position.x+=Math.sin(t*.00015+i)*dt*.035;renderer.render(scene,camera)}requestAnimationFrame(tick);
+if(activeTour===0)movePrevious(dt);globeGroup.rotation.y=rotation;sandGroup.rotation.y=rotation;cloudSphere.rotation.y+=dt*.002;for(let i=0;i<mists.length;i++)mists[i].position.x+=Math.sin(t*.00015+i)*dt*.035;renderer.render(scene,camera)}setTour(0);requestAnimationFrame(tick);
 </script></body></html>
