@@ -80,28 +80,39 @@ const sandBase=new THREE.Mesh(new THREE.CylinderGeometry(3.65,3.72,.23,100),new 
 sandBase.scale.z=.64;sandBase.position.y=-1.9;sandGroup.add(sandBase);
 const sandSurface=new THREE.Mesh(new THREE.CylinderGeometry(3.63,3.63,.035,100),new THREE.MeshStandardMaterial({color:0xc0ae86,roughness:1,metalness:0}));
 sandSurface.scale.z=.64;sandSurface.position.y=-1.77;sandGroup.add(sandSurface);
-// Broad, nearly flat sand surface: subtle ripples and grain instead of a dome.
-const sandGeo=new THREE.PlaneGeometry(7.14,4.55,132,92);
-const sandPositions=sandGeo.attributes.position;
-for(let i=0;i<sandPositions.count;i++){
- const x=sandPositions.getX(i),z=sandPositions.getY(i);
- const edge=Math.pow(Math.max(0,1-(x*x/12.75+z*z/5.2)),.55);
- const ripples=.018*Math.sin(x*10.8+Math.sin(z*3.1)*2.3)
-   +.013*Math.sin(z*19.4+x*5.1)
-   +.007*Math.sin(x*47.2-z*32.6);
- sandPositions.setZ(i,edge*(.024+ripples));
+// Irregular, continuous oval terrain; no rectangular plane beneath the sand.
+const sandGeo=new THREE.BufferGeometry();
+const sandVertices=[],sandColors=[],sandIndices=[];
+const sandRings=56,sandSegments=192;
+const sandColor=new THREE.Color();
+for(let ring=0;ring<=sandRings;ring++){
+ const u=ring/sandRings;
+ for(let segment=0;segment<=sandSegments;segment++){
+  const theta=segment/sandSegments*Math.PI*2;
+  const grain=Math.sin(theta*13.1+u*37.7)*.011+Math.sin(theta*39.3-u*79.1)*.006;
+  const rr=u*(1+grain);
+  const x=3.59*rr*Math.cos(theta),z=2.29*rr*Math.sin(theta);
+  const dunes=.025*Math.sin(x*2.7+z*3.2)+.012*Math.sin(x*9.3-z*5.7)+.007*Math.sin(x*22.3+z*17.9);
+  const mound=.29*Math.pow(Math.max(0,1-u*u),1.6);
+  const y=-1.744+mound+(1-u*.55)*dunes;
+  sandVertices.push(x,y,z);
+  const variation=.5+.23*Math.sin(x*8.9+z*5.4)+.15*Math.sin(z*18.2-x*11.7)+.1*Math.sin(x*46.1+z*41.9);
+  sandColor.setRGB(.37+variation*.27,.30+variation*.24,.20+variation*.20);
+  sandColors.push(sandColor.r,sandColor.g,sandColor.b);
+ }
 }
+for(let ring=0;ring<sandRings;ring++)for(let j=0;j<sandSegments;j++){
+ const i=ring*(sandSegments+1)+j,k=i+sandSegments+1;
+ sandIndices.push(i,k,i+1,k,k+1,i+1);
+}
+sandGeo.setAttribute('position',new THREE.Float32BufferAttribute(sandVertices,3));
+sandGeo.setAttribute('color',new THREE.Float32BufferAttribute(sandColors,3));
+sandGeo.setIndex(sandIndices);
 sandGeo.computeVertexNormals();
 const sandMound=new THREE.Mesh(sandGeo,new THREE.MeshStandardMaterial({
- color:0xb9a17a,roughness:1,metalness:0,side:THREE.DoubleSide
+ vertexColors:true,roughness:1,metalness:0,side:THREE.DoubleSide
 }));
-sandMound.rotation.x=-Math.PI/2;
-sandMound.position.y=-1.737;
 sandGroup.add(sandMound);
-const sandDust=new THREE.Mesh(new THREE.PlaneGeometry(7.06,4.48),new THREE.MeshStandardMaterial({
- color:0x8e7857,roughness:1,transparent:true,opacity:.22,side:THREE.DoubleSide
-}));
-sandDust.rotation.x=-Math.PI/2;sandDust.position.y=-1.708;sandGroup.add(sandDust);
 const sandRim=new THREE.Mesh(new THREE.TorusGeometry(3.64,.018,5,100),new THREE.MeshStandardMaterial({color:0x80715c,roughness:1}));
 sandRim.scale.y=.64;sandRim.rotation.x=Math.PI/2;sandRim.position.y=-1.745;sandGroup.add(sandRim);
 // Layered atmospheric fog, soft glow and distant stars.
@@ -158,7 +169,7 @@ const tours=[
  {year:2025,kind:'sand',leftTitle:'2025 Shows:',leftShows:[
   ['🇨🇳','SHANGHAI, CHINA','SHANGHAI STADIUM','JULY 12, 2025'],
   ['🇰🇷','MICHUHOL-GU, INCHEON, SOUTH KOREA','INCHEON MUNHAK STADIUM','JULY 26, 2025']
- ],notice:'SAND-COVERED OVAL STAGE • DRAG TO ROTATE • SCROLL TO ZOOM'}
+ ],notice:'DRAG TO ROTATE • SCROLL TO ZOOM'}
 ];
 // Add older tours to the end of this array; the left arrow will continue backwards.
 let activeTour=0;
