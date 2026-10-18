@@ -8,7 +8,7 @@ body{margin:0;background:#070a13;overflow:hidden}canvas{display:block}
 #header small{font-size:10px;letter-spacing:.55em;color:#a4aebf}h1{font-family:Impact,"Arial Narrow",sans-serif;font-stretch:condensed;font-weight:600;letter-spacing:.10em;font-size:clamp(30px,3.5vw,54px);margin:6px 0 0}
 #header p{font-size:9px;letter-spacing:.33em;color:#98a5b9;margin:7px 0}
 #left,#right{position:fixed;top:23%;bottom:92px;width:clamp(150px,17vw,225px);display:flex;flex-direction:column;gap:0;overflow-y:hidden;scrollbar-width:none;padding:4px 9px 18px 0}
-#left{left:clamp(18px,3.2vw,60px)}#right{right:clamp(18px,3.2vw,60px);overscroll-behavior:contain;touch-action:pan-x}#right::-webkit-scrollbar{display:none}
+#left{left:clamp(18px,3.2vw,60px)}#right{right:clamp(18px,3.2vw,60px);overscroll-behavior:contain;touch-action:pan-x}#right::-webkit-scrollbar{display:none}#right .column-title{position:fixed;top:calc(23% - 3px);right:clamp(18px,3.2vw,60px);width:clamp(150px,17vw,225px);pointer-events:none}#right{padding-top:38px}
 .previous-track{flex-shrink:0}.column-title{font-size:13px;letter-spacing:.08em;font-weight:750;color:#f4f6fb;margin:0 0 20px;position:sticky;top:-4px;padding:8px 0 12px;background:linear-gradient(#080d19 75%,transparent);z-index:2}
 .city{position:relative;padding-left:11px;border-left:1px solid #d7e3ff43;cursor:pointer;transition:opacity .2s;margin-bottom:19px;cursor:default}
 .city:hover{opacity:1}.city .name{font-size:12px;font-weight:800;letter-spacing:.025em}.city .flag{font-size:13px;margin-right:6px}.city .type{font-size:8px;letter-spacing:.18em;color:#9ea8b8;margin:7px 0}
@@ -76,7 +76,7 @@ const orange=new THREE.PointLight(0xff8845,28,16);orange.position.set(-6,-1,1);s
 const blue=new THREE.PointLight(0x528bff,20,16);blue.position.set(5,-2,-2);scene.add(blue);
 let radius=12.8,rotation=-.55,pitch=.08,drag=false,lastX=0,lastY=0,auto=true;
 function cameraUpdate(){camera.position.set(Math.sin(pitch)*1.5,2.6+Math.sin(pitch)*2,radius);camera.lookAt(0,-.15,0)}
-function fitStage(){const w=innerWidth,h=innerHeight;const side=w>680?Math.min(225,Math.max(150,w*.17))+95:0;const freeWidth=Math.max(310,w-2*side);const targetHeight=Math.max(230,h-240);const halfFov=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));const verticalDistance=3.7/(halfFov*(targetHeight/h));const horizontalDistance=3.7/(halfFov*camera.aspect*(freeWidth/w));radius=THREE.MathUtils.clamp(Math.max(verticalDistance,horizontalDistance)*1.05,10.8,25);cameraUpdate()}
+function fitStage(){const w=innerWidth,h=innerHeight;const side=w>680?Math.min(225,Math.max(150,w*.17))+95:0;const freeWidth=Math.max(310,w-2*side);const targetHeight=Math.max(230,h-240);const halfFov=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));const verticalDistance=3.7/(halfFov*(targetHeight/h));const horizontalDistance=3.7/(halfFov*camera.aspect*(freeWidth/w));radius=THREE.MathUtils.clamp(Math.max(verticalDistance*.74,horizontalDistance*.78),10.5,16);cameraUpdate()}
 fitStage();
 cameraUpdate();globeGroup.rotation.y=rotation;
 renderer.domElement.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});
@@ -138,6 +138,6 @@ function movePrevious(dt){
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);fitStage()});
 let prev=performance.now(),lastDraw=0,visible=true;
 const visibilityObserver=new IntersectionObserver(entries=>{visible=entries[0]?.isIntersecting??true},{threshold:0.01});visibilityObserver.observe(renderer.domElement);
-function tick(t){requestAnimationFrame(tick);if(document.hidden||!visible){prev=t;return;}if(t-lastDraw<42)return;lastDraw=t;const dt=Math.min(.08,(t-prev)/1000);prev=t;if(auto&&!drag)rotation+=dt*.025;
+function tick(t){requestAnimationFrame(tick);if(document.hidden||!visible){prev=t;return;}if(t-lastDraw<50)return;lastDraw=t;const dt=Math.min(.08,(t-prev)/1000);prev=t;if(auto&&!drag)rotation+=dt*.025;
 movePrevious(dt);globeGroup.rotation.y=rotation;cloudSphere.rotation.y+=dt*.002;for(let i=0;i<mists.length;i++)mists[i].position.x+=Math.sin(t*.00015+i)*dt*.035;renderer.render(scene,camera)}requestAnimationFrame(tick);
 </script></body></html>

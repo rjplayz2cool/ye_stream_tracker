@@ -11,8 +11,16 @@ screen = '''<main id="worldTourScreen" class="screen" aria-label="Ye World Tour"
 <iframe src="ye-world-tour.html" title="Ye World Tour globe and concert dates" loading="lazy" style="display:block;width:100%;height:calc(100vh - 80px);min-height:650px;border:0;background:#070b12"></iframe>
 </main>
 '''
+new_screen = '''<main id="worldTourScreen" class="screen" aria-label="Ye World Tour" style="padding:0;max-width:none;width:100%;height:calc(100dvh - 92px);min-height:0;overflow:hidden">
+<iframe src="ye-world-tour.html" title="Ye World Tour globe and concert dates" loading="lazy" style="display:block;width:100%;height:100%;min-height:0;border:0;background:#070b12"></iframe>
+</main>'''
 if button in html and toggle in html and 'id="worldTourScreen"' in html:
-    print("World Tour already integrated; no changes.")
+    import re
+    html2 = re.sub(r'<main id="worldTourScreen"(?s:.*?)</main>', new_screen, html, count=1)
+    if html2 == html:
+        raise RuntimeError('Could not update World Tour iframe sizing')
+    path.write_text(html2, encoding='utf-8')
+    print('Updated World Tour iframe sizing.')
 else:
     for needle in (nav, anchor, marker):
         if html.count(needle) != 1:
