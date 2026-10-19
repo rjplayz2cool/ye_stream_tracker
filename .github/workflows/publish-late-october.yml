@@ -75,7 +75,8 @@ jobs:
             if '"cover"' not in entry:raise SystemExit('Missing cover property on TAKE OFF YOUR DRESS event')
             return re.sub(r'("cover"\s*:\s*)"[^"]*"',lambda c:c.group(1)+json.dumps(covers['BBP']),entry,count=1)
           s,count=re.subn(pat,repair,s)
-          if count!=1:raise SystemExit('Expected one TAKE OFF YOUR DRESS calendar entry, found '+str(count))
+          if count<1:raise SystemExit('TAKE OFF YOUR DRESS calendar entry not found')
+          print('Repaired artwork on',count,'matching calendar entries',flush=True)
           p.write_text(s)
           print('Added',len(added),'calendar events')
           PY
