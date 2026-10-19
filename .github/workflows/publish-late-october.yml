@@ -46,15 +46,21 @@ jobs:
           '"THIRSTY V4" Snippet Leaked']
           imagefiles=[f for f in Path('.').rglob('*') if f.suffix.lower() in ('.jpg','.png','.jpeg','.webp')]
           hints={'YEBU':['yebu','thank-god-for-drugs','thank_god_for_drugs'],'BBP':['bbp','bad-bitch-playbook','bad_bitch_playbook'],'V1':['vultures-1','vultures1','vultures_1','vultures 1'],'V2':['vultures-2','vultures2','vultures_2','vultures 2'],'BULLY':['bully'],'LOVE':['love-everyone','love_everyone','loveeveryone'],'SWISH':['swish'],'BEFORE':['before-the-college-dropout','before_the_college_dropout','before the college dropout','before']}
-          # Diagnose cover references without modifying the live site.
-          for label in ('Happy','YEBU','song-cover-04','Bad Bitch Playbook'):
-            occurrences=list(re.finditer(re.escape(label),s,re.I))
-            print('REFERENCE',label,'count',len(occurrences),flush=True)
-            for m in occurrences[:3]:
-              excerpt=s[max(0,m.start()-180):m.end()+220].replace(chr(10),' ')
-              print('CONTEXT',label,repr(excerpt),flush=True)
-          print('ARTWORK FILES:',sorted(str(f) for f in imagefiles),flush=True)
-          raise SystemExit('Inspection only: calendar not modified')
+          covers={}
+          for k,patterns in hints.items():
+            matches=[str(f) for h in patterns for f in imagefiles if h in str(f).lower()]
+            if not matches:
+              raise SystemExit('Missing '+k+' cover; refusing partial update')
+            matches=sorted(set(matches),key=lambda x:(0 if x.startswith('assets/calendar/') else 1,len(x)))
+            covers[k]=matches[0]
+            print('COVER',k,covers[k],flush=True)
+          # The YEBU artwork is an uploaded calendar asset, not an album filename.
+          yebu=Path('assets/calendar/yebu.jpg')
+          if not yebu.is_file():raise SystemExit('Missing assets/calendar/yebu.jpg')
+          covers['YEBU']=str(yebu)
+          bbp=Path('assets/calendar/bbp-2026.jpg')
+          if bbp.is_file():covers['BBP']=str(bbp)
+          print('FINAL COVER MAPPING',covers,flush=True)
           marker='const CALENDAR_ANNUAL_EVENTS=['
           if marker not in s:raise SystemExit('Missing calendar array')
           added=[]
