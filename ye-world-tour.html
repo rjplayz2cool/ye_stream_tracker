@@ -109,6 +109,76 @@ const sandDome=new THREE.Mesh(sandGeo,new THREE.MeshStandardMaterial({
  color:0xe1dfc7,vertexColors:true,roughness:1,metalness:0,side:THREE.DoubleSide
 }));
 sandDome.position.y=platformTopY+.018;sandGroup.add(sandDome);
+// 2024: large rectangular sandy arena floor with an elongated golden
+// hay-covered hill. Separate geometry from both 2025 and 2026 stages.
+const hayStage=new THREE.Group();hayStage.visible=false;scene.add(hayStage);
+const sandFloor=new THREE.Mesh(new THREE.BoxGeometry(8.0,.16,5.0),
+ new THREE.MeshStandardMaterial({color:0xb49a73,roughness:1,metalness:0}));
+sandFloor.position.y=-1.85;hayStage.add(sandFloor);
+const sandTopGeo=new THREE.PlaneGeometry(7.98,4.98,120,80);
+const sandTopPos=sandTopGeo.attributes.position;
+const sandTopColors=[],floorTint=new THREE.Color();
+for(let i=0;i<sandTopPos.count;i++){
+ const x=sandTopPos.getX(i),z=sandTopPos.getY(i);
+ const noise=.012*Math.sin(x*7.1+z*8.3)+.006*Math.sin(x*24.1-z*17.7);
+ sandTopPos.setZ(i,noise);
+ const shade=.92+.04*Math.sin(x*13.2+z*6.7)+.025*Math.sin(z*31-x*18);
+ floorTint.setRGB(.62*shade,.51*shade,.36*shade);
+ sandTopColors.push(floorTint.r,floorTint.g,floorTint.b);
+}
+sandTopGeo.setAttribute('color',new THREE.Float32BufferAttribute(sandTopColors,3));
+sandTopGeo.computeVertexNormals();
+const sandTop=new THREE.Mesh(sandTopGeo,new THREE.MeshStandardMaterial({
+ vertexColors:true,roughness:1,side:THREE.DoubleSide
+}));
+sandTop.rotation.x=-Math.PI/2;sandTop.position.y=-1.762;hayStage.add(sandTop);
+// Low, wide grass-covered hill, softly sloping rather than a steep mountain.
+const hayGeo=new THREE.BufferGeometry(),hayVertices=[],hayColors=[],hayIndices=[];
+const rings=64,segments=144,hayTint=new THREE.Color();
+for(let ring=0;ring<=rings;ring++){
+ const u=ring/rings;
+ for(let j=0;j<=segments;j++){
+  const a=j/segments*Math.PI*2;
+  const edge=1+.025*Math.sin(a*17+u*31)+.013*Math.sin(a*39-u*16);
+  const x=2.95*u*edge*Math.cos(a),z=1.66*u*edge*Math.sin(a);
+  const height=.71*Math.pow(Math.max(0,1-u*u),1.05);
+  const tufts=.026*Math.sin(x*18+z*22)+.014*Math.sin(x*47-z*32);
+  const y=-1.72+height+tufts*(.2+.8*u);
+  hayVertices.push(x,y,z);
+  const variation=.84+.11*Math.sin(x*23+z*13)+.07*Math.sin(z*43-x*35);
+  hayTint.setRGB(.64*variation,.56*variation,.25*variation);
+  hayColors.push(hayTint.r,hayTint.g,hayTint.b);
+ }
+}
+for(let ring=0;ring<rings;ring++)for(let j=0;j<segments;j++){
+ const i=ring*(segments+1)+j,k=i+segments+1;
+ hayIndices.push(i,k,i+1,k,k+1,i+1);
+}
+hayGeo.setAttribute('position',new THREE.Float32BufferAttribute(hayVertices,3));
+hayGeo.setAttribute('color',new THREE.Float32BufferAttribute(hayColors,3));
+hayGeo.setIndex(hayIndices);hayGeo.computeVertexNormals();
+const hayHill=new THREE.Mesh(hayGeo,new THREE.MeshStandardMaterial({
+ vertexColors:true,roughness:1,side:THREE.DoubleSide
+}));hayStage.add(hayHill);
+// Sparse golden grass blades create a visible hay texture at closer zoom.
+const bladeGeo=new THREE.ConeGeometry(.012,.16,3);
+bladeGeo.translate(0,.08,0);
+const bladeMaterial=new THREE.MeshStandardMaterial({color:0xb9a15c,roughness:1,side:THREE.DoubleSide});
+const blades=new THREE.InstancedMesh(bladeGeo,bladeMaterial,2400);
+const bladeDummy=new THREE.Object3D();
+let bladeCount=0;
+for(let i=0;i<2400;i++){
+ const u=Math.sqrt((i*.61803398875)%1)*.975;
+ const a=i*2.3999632297;
+ const x=2.95*u*Math.cos(a),z=1.66*u*Math.sin(a);
+ const h=.71*Math.pow(Math.max(0,1-u*u),1.05);
+ const tufts=.026*Math.sin(x*18+z*22)+.014*Math.sin(x*47-z*32);
+ bladeDummy.position.set(x,-1.72+h+tufts*(.2+.8*u)-.015,z);
+ bladeDummy.rotation.set((i%11-5)*.04,i*.37,(i%9-4)*.05);
+ bladeDummy.scale.setScalar(.55+(i%13)/19);
+ bladeDummy.updateMatrix();blades.setMatrixAt(bladeCount++,bladeDummy.matrix);
+}
+blades.instanceMatrix.needsUpdate=true;hayStage.add(blades);
 // Layered atmospheric fog, soft glow and distant stars.
 const stars=[];for(let i=0;i<450;i++){const r=30+Math.random()*80,a=Math.random()*Math.PI*2,z=Math.random()*2-1,t=Math.sqrt(1-z*z);stars.push(r*t*Math.cos(a),r*z,r*t*Math.sin(a))}
 const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(stars,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xc8dcff,size:.065,transparent:true,opacity:.68,sizeAttenuation:true})));
@@ -163,7 +233,8 @@ const tours=[
  {year:2025,kind:'sand',leftTitle:'2025 Shows:',leftShows:[
   ['🇨🇳','SHANGHAI, CHINA','SHANGHAI STADIUM','JULY 12, 2025'],
   ['🇰🇷','MICHUHOL-GU, INCHEON, SOUTH KOREA','INCHEON MUNHAK STADIUM','JULY 26, 2025']
- ],notice:'DRAG TO ROTATE • SCROLL TO ZOOM'}
+ ],notice:'DRAG TO ROTATE • SCROLL TO ZOOM'},
+ {year:2024,kind:'hay',leftTitle:'2024 Shows:',leftShows:[],notice:'DRAG TO ROTATE • SCROLL TO ZOOM'}
 ];
 // Add older tours to the end of this array; the left arrow will continue backwards.
 let activeTour=0;
@@ -173,9 +244,11 @@ function setTour(index){
  activeTour=index;
  const tour=tours[index],isGlobe=tour.kind==='globe';
  globeGroup.visible=isGlobe;stageEdge.visible=isGlobe;darkBase.visible=isGlobe;
- sandGroup.visible=!isGlobe;
- // Raise the 2025 stage into the center, clear of bottom controls.
- sandGroup.position.y=isGlobe?0:1.15;
+ sandGroup.visible=tour.kind==='sand';
+ hayStage.visible=tour.kind==='hay';
+ // Raise the older stages into the center, clear of bottom controls.
+ sandGroup.position.y=tour.kind==='sand'?1.15:0;
+ hayStage.position.y=tour.kind==='hay'?1.15:0;
  if(!isGlobe){pitch=.18;cameraUpdate();}
  renderShows('left',tour.leftTitle,tour.leftShows);
  document.getElementById('right').style.display=isGlobe?'flex':'none';
@@ -215,5 +288,5 @@ addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updat
 let prev=performance.now(),lastDraw=0,visible=true;
 const visibilityObserver=new IntersectionObserver(entries=>{visible=entries[0]?.isIntersecting??true},{threshold:0.01});visibilityObserver.observe(renderer.domElement);
 function tick(t){requestAnimationFrame(tick);if(document.hidden||!visible){prev=t;return;}if(t-lastDraw<50)return;lastDraw=t;const dt=Math.min(.08,(t-prev)/1000);prev=t;if(auto&&!drag)rotation+=dt*.025;
-if(activeTour===0)movePrevious(dt);globeGroup.rotation.y=rotation;sandGroup.rotation.y=rotation;cloudSphere.rotation.y+=dt*.002;for(let i=0;i<mists.length;i++)mists[i].position.x+=Math.sin(t*.00015+i)*dt*.035;renderer.render(scene,camera)}setTour(0);requestAnimationFrame(tick);
+if(activeTour===0)movePrevious(dt);globeGroup.rotation.y=rotation;sandGroup.rotation.y=rotation;hayStage.rotation.y=rotation;cloudSphere.rotation.y+=dt*.002;for(let i=0;i<mists.length;i++)mists[i].position.x+=Math.sin(t*.00015+i)*dt*.035;renderer.render(scene,camera)}setTour(0);requestAnimationFrame(tick);
 </script></body></html>
