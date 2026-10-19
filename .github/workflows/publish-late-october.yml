@@ -45,11 +45,11 @@ jobs:
           '"FEAR V5" Snippet Leaked',
           '"THIRSTY V4" Snippet Leaked']
           imagefiles=[f for f in Path('.').rglob('*') if f.suffix.lower() in ('.jpg','.png','.jpeg','.webp')]
-          hints={'YEBU':['yebu'],'BBP':['bbp'],'V1':['vultures-1','vultures1'],'V2':['vultures-2','vultures2'],'BULLY':['bully'],'LOVE':['love-everyone'],'SWISH':['swish'],'BEFORE':['before-the-college-dropout','before']}
+          hints={'YEBU':['yebu','thank-god-for-drugs','thank_god_for_drugs'],'BBP':['bbp','bad-bitch-playbook','bad_bitch_playbook'],'V1':['vultures-1','vultures1','vultures_1','vultures 1'],'V2':['vultures-2','vultures2','vultures_2','vultures 2'],'BULLY':['bully'],'LOVE':['love-everyone','love_everyone','loveeveryone'],'SWISH':['swish'],'BEFORE':['before-the-college-dropout','before_the_college_dropout','before the college dropout','before']}
           covers={}
           for k,patterns in hints.items():
             matches=[str(f) for h in patterns for f in imagefiles if h in str(f).lower()]
-            if not matches:raise SystemExit('Missing '+k+' cover; refusing partial update')
+            if not matches:\n              print('COVER NOT FOUND:',k,'searched',patterns)\n              print('AVAILABLE COVER CANDIDATES:',[str(f) for f in imagefiles if 'cover' in str(f).lower()][:150])\n              raise SystemExit('Missing '+k+' cover; refusing partial update')
             covers[k]=sorted(matches,key=len)[0]
           marker='const CALENDAR_ANNUAL_EVENTS=['
           if marker not in s:raise SystemExit('Missing calendar array')
