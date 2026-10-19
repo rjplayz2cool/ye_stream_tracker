@@ -79,16 +79,16 @@ jobs:
           s,count=re.subn(pat,repair,s)
           if count<1:raise SystemExit('TAKE OFF YOUR DRESS calendar entry not found')
           print('Repaired artwork on',count,'matching calendar entries',flush=True)
-          # Remove duplicate late-October entries left by concurrent workflow runs.
-          # Only touch exact titles managed by this workflow; leave all other events alone.
+          # Each calendar object is on one line. Keep the first exact-title match.
+          # Earlier cleanup accidentally double-escaped regex tokens, matching nothing.
           removed=0
           for title in titles:
-            pat=r'(?m)^[ \\t]*\\{[^{}]*"title"\\s*:\\s*'+re.escape(json.dumps(title))+r'[^{}]*\\},?[ \\t]*\\n?'
+            pat=r'(?m)^[ \t]*\{[^\n{}]*"title"\s*:\s*'+re.escape(json.dumps(title))+r'[^\n{}]*\},?[ \t]*\n?'
             matches=list(re.finditer(pat,s))
-            if len(matches)>1:
-              for m in reversed(matches[1:]):
-                s=s[:m.start()]+s[m.end():]
-                removed+=1
+            print('MATCHES',title,len(matches),flush=True)
+            for m in reversed(matches[1:]):
+              s=s[:m.start()]+s[m.end():]
+              removed+=1
           print('Removed',removed,'duplicate late-October events',flush=True)
           p.write_text(s)
           print('Added',len(added),'calendar events')
