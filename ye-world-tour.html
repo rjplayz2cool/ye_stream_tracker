@@ -81,12 +81,12 @@ const sandGroup=new THREE.Group();sandGroup.visible=false;scene.add(sandGroup);
 const platformTopY=-1.78;
 const platformBase=new THREE.Mesh(
  new THREE.CylinderGeometry(4.05,4.09,.14,160),
- new THREE.MeshStandardMaterial({color:0x393b3b,roughness:.96,metalness:0})
+ new THREE.MeshStandardMaterial({color:0xb5b19e,roughness:.96,metalness:0})
 );
 platformBase.scale.z=.68;platformBase.position.y=platformTopY-.09;sandGroup.add(platformBase);
 const platformTop=new THREE.Mesh(
  new THREE.CylinderGeometry(4.045,4.045,.016,160),
- new THREE.MeshStandardMaterial({color:0x585a57,roughness:1,metalness:0})
+ new THREE.MeshStandardMaterial({color:0xc4c0ac,roughness:1,metalness:0})
 );
 platformTop.scale.z=.68;platformTop.position.y=platformTopY;sandGroup.add(platformTop);
 // Elliptical half-sphere: sand shell rests directly on the oval platform.
@@ -98,7 +98,7 @@ for(let i=0;i<positions.count;i++){
  const x=positions.getX(i),y=positions.getY(i),z=positions.getZ(i);
  // Flatten the hemisphere vertically and stretch it into an ellipse.
  const ripple=.006*Math.sin(x*22+z*17)+.004*Math.sin(x*41-z*29);
- positions.setXYZ(i,x*3.48,(y*.93)+(ripple*y),z*2.13);
+ positions.setXYZ(i,x*3.12,(y*.88)+(ripple*y),z*1.91);
  const variation=.96+.025*Math.sin(x*19+z*13)+.014*Math.sin(x*49-z*37);
  shade.setRGB(.87*variation,.86*variation,.73*variation);
  vertexColors.push(shade.r,shade.g,shade.b);
