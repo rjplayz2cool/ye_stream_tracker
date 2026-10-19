@@ -1,0 +1,67 @@
+name: Publish late October calendar entries
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/publish-late-october.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update calendar
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('index.html')
+          s=p.read_text()
+          events=[
+          (19,2024,'PAPERWORK V2','YEBU'),
+          (19,2024,'TAKE OFF YOUR DRESS V2','BBP'),
+          (19,2024,'DEAD V4','V1'),
+          (19,2024,'BELIEVER V14','V2'),
+          (20,2024,'EVERYBODY V1','YEBU'),
+          (20,2024,'SEROTONIN V1','BULLY'),
+          (21,2025,'DRUNK V11','V1'),
+          (22,2020,'Cops Shot The Kid','LOVE'),
+          (23,2020,'Pressure','SWISH'),
+          (25,2001,'KEN D$L','BEFORE'),
+          (29,2024,'FEAR V5','V2'),
+          (31,2024,'THIRSTY V4','V2')]
+          titles=[
+          '"PAPERWORK V2" Leaked',
+          '"TAKE OFF YOUR DRESS V2" Snippet Leaked',
+          '"DEAD V4" Snippet Leaked',
+          '"BELIEVER V14" Snippet Leaked',
+          '"EVERYBODY V1" Snippet Leaked',
+          'Ye Posts "SEROTONIN V1" Snippet To Instagram Story',
+          'Ty Plays "DRUNK V11" To Auger On Stream',
+          'Che Pope Plays "Cops Shot The Kid (feat. Andre 3000)" On Instagram Stream',
+          'Che Pope Live Stream Where "Pressure (ft. Travis Scott)" Was Played Surfaced',
+          'KEN D$L Demo Album Produced By Ye Registered To Library Of Congress',
+          '"FEAR V5" Snippet Leaked',
+          '"THIRSTY V4" Snippet Leaked']
+          imagefiles=[f for f in Path('.').rglob('*') if f.suffix.lower() in ('.jpg','.png','.jpeg','.webp')]
+          hints={'YEBU':['yebu'],'BBP':['bbp'],'V1':['vultures-1','vultures1'],'V2':['vultures-2','vultures2'],'BULLY':['bully'],'LOVE':['love-everyone'],'SWISH':['swish'],'BEFORE':['before-the-college-dropout','before']}
+          covers={}
+          for k,patterns in hints.items():
+            matches=[str(f) for h in patterns for f in imagefiles if h in str(f).lower()]
+            if not matches:raise SystemExit('Missing '+k+' cover; refusing partial update')
+            covers[k]=sorted(matches,key=len)[0]
+          marker='const CALENDAR_ANNUAL_EVENTS=['
+          if marker not in s:raise SystemExit('Missing calendar array')
+          added=[]
+          for (day,year,_,key),title in zip(events,titles):
+            if title not in s:added.append(json.dumps(dict(month=10,day=day,title=title,releaseYear=year,cover=covers[key],event=True))+',')
+          if added:p.write_text(s.replace(marker,marker+'\n'+'\n'.join(added),1))
+          print('Added',len(added),'calendar events')
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || (git commit -m "Add late October calendar dates" && git pull --rebase && git push)
