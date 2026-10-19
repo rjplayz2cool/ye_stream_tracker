@@ -74,31 +74,27 @@ const glow=new THREE.Mesh(new THREE.SphereGeometry(3.58,48,32,0,Math.PI*2,0,Math
 // Low-profile stage edge: a narrow rim at the flat base, not a Saturn ring.
 const stageEdge=new THREE.Mesh(new THREE.TorusGeometry(3.455,.027,6,90),new THREE.MeshBasicMaterial({color:0x687d9d,transparent:true,opacity:.5}));stageEdge.rotation.x=Math.PI/2;stageEdge.position.y=-1.75;scene.add(stageEdge);
 const darkBase=new THREE.Mesh(new THREE.CylinderGeometry(3.44,3.44,.10,80),new THREE.MeshStandardMaterial({color:0x0c1018,roughness:.9}));darkBase.position.y=-1.81;scene.add(darkBase);
-// 2025: low oval sand-covered stadium stage, without the 2026 globe.
+// 2025 stage, based on the Incheon reference: a broad, smooth sand dome
+// with gently sloping sides and a shallow oval perimeter.
 const sandGroup=new THREE.Group();sandGroup.visible=false;scene.add(sandGroup);
-const sandBase=new THREE.Mesh(new THREE.CylinderGeometry(3.65,3.72,.23,100),new THREE.MeshStandardMaterial({color:0x484035,roughness:1}));
-sandBase.scale.z=.64;sandBase.position.y=-1.9;sandGroup.add(sandBase);
-const sandSurface=new THREE.Mesh(new THREE.CylinderGeometry(3.63,3.63,.035,100),new THREE.MeshStandardMaterial({color:0xc0ae86,roughness:1,metalness:0}));
-sandSurface.scale.z=.64;sandSurface.position.y=-1.77;sandGroup.add(sandSurface);
-// Irregular, continuous oval terrain; no rectangular plane beneath the sand.
-const sandGeo=new THREE.BufferGeometry();
-const sandVertices=[],sandColors=[],sandIndices=[];
-const sandRings=56,sandSegments=192;
-const sandColor=new THREE.Color();
+const sandMaterial=new THREE.MeshStandardMaterial({color:0xe0d0a3,roughness:1,metalness:0,vertexColors:true,side:THREE.DoubleSide});
+const sandGeo=new THREE.BufferGeometry(),sandVertices=[],sandColors=[],sandIndices=[];
+const sandRings=90,sandSegments=192;
+const shade=new THREE.Color();
 for(let ring=0;ring<=sandRings;ring++){
  const u=ring/sandRings;
- for(let segment=0;segment<=sandSegments;segment++){
-  const theta=segment/sandSegments*Math.PI*2;
-  const grain=Math.sin(theta*13.1+u*37.7)*.011+Math.sin(theta*39.3-u*79.1)*.006;
-  const rr=u*(1+grain);
-  const x=3.59*rr*Math.cos(theta),z=2.29*rr*Math.sin(theta);
-  const dunes=.025*Math.sin(x*2.7+z*3.2)+.012*Math.sin(x*9.3-z*5.7)+.007*Math.sin(x*22.3+z*17.9);
-  const mound=.29*Math.pow(Math.max(0,1-u*u),1.6);
-  const y=-1.744+mound+(1-u*.55)*dunes;
+ for(let j=0;j<=sandSegments;j++){
+  const a=j/sandSegments*Math.PI*2;
+  const r=u*(1+.004*Math.sin(a*11.3)+.002*Math.sin(a*29.7));
+  const x=3.66*r*Math.cos(a),z=2.33*r*Math.sin(a);
+  // A smooth shallow sand-covered dome, not a flat disk or a sharp mound.
+  const dome=.82*Math.pow(Math.max(0,1-u*u),.82);
+  const broadRipples=.008*Math.sin(x*4.1+z*2.4)+.004*Math.sin(x*11.7-z*8.4);
+  const y=-1.76+dome+broadRipples*(.35+.65*u);
   sandVertices.push(x,y,z);
-  const variation=.5+.23*Math.sin(x*8.9+z*5.4)+.15*Math.sin(z*18.2-x*11.7)+.1*Math.sin(x*46.1+z*41.9);
-  sandColor.setRGB(.37+variation*.27,.30+variation*.24,.20+variation*.20);
-  sandColors.push(sandColor.r,sandColor.g,sandColor.b);
+  const variation=.95+.025*Math.sin(x*5.7+z*3.1)+.015*Math.sin(x*18.2-z*15.9);
+  shade.setRGB(.88*variation,.81*variation,.64*variation);
+  sandColors.push(shade.r,shade.g,shade.b);
  }
 }
 for(let ring=0;ring<sandRings;ring++)for(let j=0;j<sandSegments;j++){
@@ -107,14 +103,15 @@ for(let ring=0;ring<sandRings;ring++)for(let j=0;j<sandSegments;j++){
 }
 sandGeo.setAttribute('position',new THREE.Float32BufferAttribute(sandVertices,3));
 sandGeo.setAttribute('color',new THREE.Float32BufferAttribute(sandColors,3));
-sandGeo.setIndex(sandIndices);
-sandGeo.computeVertexNormals();
-const sandMound=new THREE.Mesh(sandGeo,new THREE.MeshStandardMaterial({
- vertexColors:true,roughness:1,metalness:0,side:THREE.DoubleSide
-}));
-sandGroup.add(sandMound);
-const sandRim=new THREE.Mesh(new THREE.TorusGeometry(3.64,.018,5,100),new THREE.MeshStandardMaterial({color:0x80715c,roughness:1}));
-sandRim.scale.y=.64;sandRim.rotation.x=Math.PI/2;sandRim.position.y=-1.745;sandGroup.add(sandRim);
+sandGeo.setIndex(sandIndices);sandGeo.computeVertexNormals();
+const sandMound=new THREE.Mesh(sandGeo,sandMaterial);sandGroup.add(sandMound);
+// Low dark foundation visible only below the sand perimeter.
+const sandBase=new THREE.Mesh(new THREE.CylinderGeometry(3.66,3.69,.10,144),
+ new THREE.MeshStandardMaterial({color:0x524d3e,roughness:1}));
+sandBase.scale.z=.637;sandBase.position.y=-1.81;sandGroup.add(sandBase);
+const sandRim=new THREE.Mesh(new THREE.TorusGeometry(3.665,.013,6,144),
+ new THREE.MeshStandardMaterial({color:0xa39370,roughness:1}));
+sandRim.scale.y=.637;sandRim.rotation.x=Math.PI/2;sandRim.position.y=-1.759;sandGroup.add(sandRim);
 // Layered atmospheric fog, soft glow and distant stars.
 const stars=[];for(let i=0;i<450;i++){const r=30+Math.random()*80,a=Math.random()*Math.PI*2,z=Math.random()*2-1,t=Math.sqrt(1-z*z);stars.push(r*t*Math.cos(a),r*z,r*t*Math.sin(a))}
 const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(stars,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xc8dcff,size:.065,transparent:true,opacity:.68,sizeAttenuation:true})));
