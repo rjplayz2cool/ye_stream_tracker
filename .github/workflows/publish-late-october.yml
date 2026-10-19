@@ -46,26 +46,15 @@ jobs:
           '"THIRSTY V4" Snippet Leaked']
           imagefiles=[f for f in Path('.').rglob('*') if f.suffix.lower() in ('.jpg','.png','.jpeg','.webp')]
           hints={'YEBU':['yebu','thank-god-for-drugs','thank_god_for_drugs'],'BBP':['bbp','bad-bitch-playbook','bad_bitch_playbook'],'V1':['vultures-1','vultures1','vultures_1','vultures 1'],'V2':['vultures-2','vultures2','vultures_2','vultures 2'],'BULLY':['bully'],'LOVE':['love-everyone','love_everyone','loveeveryone'],'SWISH':['swish'],'BEFORE':['before-the-college-dropout','before_the_college_dropout','before the college dropout','before']}
-          # Find the artwork path associated with Happy in the existing site.
-          def existing_happy_cover():
-            for m in re.finditer('(?i)happy',s):
-              section=s[max(0,m.start()-300):m.end()+500]
-              for candidate in re.findall(r'(?:covers|assets/era-covers)/[a-zA-Z0-9_./-]+[.](?:webp|jpg|jpeg|png)',section,re.I):
-                if Path(candidate).is_file():
-                  print('Happy cover candidate:',candidate)
-                  return candidate
-            return None
-          covers={}
-          happy_cover=existing_happy_cover()
-          if happy_cover:covers['YEBU']=happy_cover
-          for k,patterns in hints.items():
-            if k in covers:continue
-            matches=[str(f) for h in patterns for f in imagefiles if h in str(f).lower()]
-            if not matches:
-              print('COVER NOT FOUND:',k,'searched',patterns)
-              print('AVAILABLE COVER CANDIDATES:',[str(f) for f in imagefiles if 'cover' in str(f).lower()][:150])
-              raise SystemExit('Missing '+k+' cover; refusing partial update')
-            covers[k]=sorted(matches,key=len)[0]
+          # Diagnose cover references without modifying the live site.
+          for label in ('Happy','YEBU','song-cover-04','Bad Bitch Playbook'):
+            occurrences=list(re.finditer(re.escape(label),s,re.I))
+            print('REFERENCE',label,'count',len(occurrences),flush=True)
+            for m in occurrences[:3]:
+              excerpt=s[max(0,m.start()-180):m.end()+220].replace(chr(10),' ')
+              print('CONTEXT',label,repr(excerpt),flush=True)
+          print('ARTWORK FILES:',sorted(str(f) for f in imagefiles),flush=True)
+          raise SystemExit('Inspection only: calendar not modified')
           marker='const CALENDAR_ANNUAL_EVENTS=['
           if marker not in s:raise SystemExit('Missing calendar array')
           added=[]
