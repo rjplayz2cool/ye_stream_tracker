@@ -49,7 +49,10 @@ jobs:
           covers={}
           for k,patterns in hints.items():
             matches=[str(f) for h in patterns for f in imagefiles if h in str(f).lower()]
-            if not matches:\n              print('COVER NOT FOUND:',k,'searched',patterns)\n              print('AVAILABLE COVER CANDIDATES:',[str(f) for f in imagefiles if 'cover' in str(f).lower()][:150])\n              raise SystemExit('Missing '+k+' cover; refusing partial update')
+            if not matches:
+              print('COVER NOT FOUND:',k,'searched',patterns)
+              print('AVAILABLE COVER CANDIDATES:',[str(f) for f in imagefiles if 'cover' in str(f).lower()][:150])
+              raise SystemExit('Missing '+k+' cover; refusing partial update')
             covers[k]=sorted(matches,key=len)[0]
           marker='const CALENDAR_ANNUAL_EVENTS=['
           if marker not in s:raise SystemExit('Missing calendar array')
