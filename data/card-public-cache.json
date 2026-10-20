@@ -1307,5 +1307,35 @@
     "album": "Cruel Summer",
     "cover": "covers/cruel-summer.jpg",
     "source": "Existing album release metadata"
+  },
+  "3OePAyHePd68TTKmy2hjq0": {
+    "releaseDate": "2008-06-03",
+    "album": "The Recession (Bonus Track Version)",
+    "source": "https://music.apple.com/us/album/put-on-feat-kanye-west/1442208759?i=1442209188&uo=4",
+    "artist": "Young Jeezy"
+  },
+  "5aEXsAu4WNpMvY7NaKzmde": {
+    "releaseDate": "2010-08-01",
+    "album": "Cheese (Deluxe Edition)",
+    "source": "https://music.apple.com/us/album/alors-on-danse-feat-kanye-west/1440769621?i=1440769947&uo=4",
+    "artist": "Stromae & Kanye West"
+  },
+  "2kNtAwWATYkqV3CdT20RV0": {
+    "releaseDate": "2008-09-06",
+    "album": "Swagga Like Us (feat. Kanye West & Lil Wayne) - Single",
+    "source": "https://music.apple.com/us/album/swagga-like-us-feat-kanye-west-lil-wayne/1445058542?i=1445058732&uo=4",
+    "artist": "JAŸ-Z & T.I."
+  },
+  "1dqCNBLrl4t7mcPEib9tbk": {
+    "releaseDate": "2009-07-20",
+    "album": "Straight No Chaser",
+    "source": "https://music.apple.com/us/album/supernova-feat-kanye-west/1443656401?i=1443656500&uo=4",
+    "artist": "Mr Hudson"
+  },
+  "5E0vE9eTmGMda06sfHw3MM": {
+    "releaseDate": "2004-03-28",
+    "album": "Afrodisiac",
+    "source": "https://music.apple.com/us/album/talk-about-our-love/16232535?i=16232551&uo=4",
+    "artist": "Brandy featuring Kanye West"
   }
 }
