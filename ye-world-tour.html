@@ -169,6 +169,45 @@ for(let i=0;i<grassCount;i++){
  bladeDummy.updateMatrix();blades.setMatrixAt(i,bladeDummy.matrix);
 }
 blades.instanceMatrix.needsUpdate=true;blades.frustumCulled=false;hayStage.add(blades);
+// 2023: simple raised rectangular performance deck under a tall white
+// fabric tunnel canopy, with sparse dark steel ribs (low polygon count).
+const tentStage=new THREE.Group();tentStage.visible=false;scene.add(tentStage);
+const deck=new THREE.Mesh(new THREE.BoxGeometry(6.9,.28,3.8),new THREE.MeshStandardMaterial({color:0x161a22,roughness:.88}));
+deck.position.y=-1.73;tentStage.add(deck);
+const deckTop=new THREE.Mesh(new THREE.PlaneGeometry(6.88,3.78),new THREE.MeshStandardMaterial({color:0x262932,roughness:.95,side:THREE.DoubleSide}));
+deckTop.rotation.x=-Math.PI/2;deckTop.position.y=-1.585;tentStage.add(deckTop);
+const tentRibMat=new THREE.MeshStandardMaterial({color:0x74818a,metalness:.45,roughness:.7});
+const tentFabricMat=new THREE.MeshStandardMaterial({color:0xdde7e7,transparent:true,opacity:.78,roughness:1,side:THREE.DoubleSide,depthWrite:false});
+const canopyVertices=[],canopyIndices=[];
+const archSegments=18,depthSegments=9;
+for(let d=0;d<=depthSegments;d++){
+ const z=-2.35+d*4.7/depthSegments;
+ for(let j=0;j<=archSegments;j++){
+  const a=Math.PI*j/archSegments;
+  canopyVertices.push(4.25*Math.cos(a),-1.12+4.55*Math.sin(a),z);
+ }
+}
+for(let d=0;d<depthSegments;d++)for(let j=0;j<archSegments;j++){
+ const k=d*(archSegments+1)+j;
+ canopyIndices.push(k,k+archSegments+1,k+1,k+1,k+archSegments+1,k+archSegments+2);
+}
+const canopyGeo=new THREE.BufferGeometry();
+canopyGeo.setAttribute('position',new THREE.Float32BufferAttribute(canopyVertices,3));
+canopyGeo.setIndex(canopyIndices);canopyGeo.computeVertexNormals();
+tentStage.add(new THREE.Mesh(canopyGeo,tentFabricMat));
+for(let d=0;d<=depthSegments;d+=2){
+ const pts=[],z=-2.35+d*4.7/depthSegments;
+ for(let j=0;j<=archSegments;j++){
+  const a=Math.PI*j/archSegments;
+  pts.push(new THREE.Vector3(4.25*Math.cos(a),-1.12+4.55*Math.sin(a),z));
+ }
+ const rib=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),24,.027,4,false),tentRibMat);
+ tentStage.add(rib);
+}
+for(const x of [-4.25,4.25]){
+ const rail=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,4.7,5),tentRibMat);
+ rail.rotation.x=Math.PI/2;rail.position.set(x,-1.12,0);tentStage.add(rail);
+}
 // Layered atmospheric fog, soft glow and distant stars.
 const stars=[];for(let i=0;i<450;i++){const r=30+Math.random()*80,a=Math.random()*Math.PI*2,z=Math.random()*2-1,t=Math.sqrt(1-z*z);stars.push(r*t*Math.cos(a),r*z,r*t*Math.sin(a))}
 const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(stars,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xc8dcff,size:.065,transparent:true,opacity:.68,sizeAttenuation:true})));
@@ -241,7 +280,8 @@ const tours=[
   ['🇰🇷','GOYANG-SI, GYEONGGI-DO, SOUTH KOREA','GOYANG STADIUM · GOYANG SPORTS COMPLEX','AUGUST 23, 2024'],
   ['🇨🇳','HAIKOU, CHINA','WUYUAN RIVER STADIUM','SEPTEMBER 15, 2024'],
   ['🇨🇳','HAIKOU, CHINA','WUYUAN RIVER STADIUM','SEPTEMBER 21, 2024']
- ],notice:'DRAG TO ROTATE • SCROLL TO ZOOM'}
+ ],notice:'DRAG TO ROTATE • SCROLL TO ZOOM'},
+ {year:2023,kind:'tent',leftTitle:'2023 Shows:',leftShows:[],notice:'DRAG TO ROTATE • SCROLL TO ZOOM'}
 ];
 // Add older tours to the end of this array; the left arrow will continue backwards.
 let activeTour=0;
@@ -253,9 +293,11 @@ function setTour(index){
  globeGroup.visible=isGlobe;stageEdge.visible=isGlobe;darkBase.visible=isGlobe;
  sandGroup.visible=tour.kind==='sand';
  hayStage.visible=tour.kind==='hay';
+ tentStage.visible=tour.kind==='tent';
  // Raise the older stages into the center, clear of bottom controls.
  sandGroup.position.y=tour.kind==='sand'?1.15:0;
  hayStage.position.y=tour.kind==='hay'?1.15:0;
+ tentStage.position.y=tour.kind==='tent'?.55:0;
  if(!isGlobe){pitch=.18;cameraUpdate();}
  renderShows('left',tour.leftTitle,tour.leftShows);
  document.getElementById('right').style.display=isGlobe?'flex':'none';
@@ -295,5 +337,5 @@ addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updat
 let prev=performance.now(),lastDraw=0,visible=true;
 const visibilityObserver=new IntersectionObserver(entries=>{visible=entries[0]?.isIntersecting??true},{threshold:0.01});visibilityObserver.observe(renderer.domElement);
 function tick(t){requestAnimationFrame(tick);if(document.hidden||!visible){prev=t;return;}if(t-lastDraw<50)return;lastDraw=t;const dt=Math.min(.08,(t-prev)/1000);prev=t;if(auto&&!drag)rotation+=dt*.025;
-if(activeTour===0)movePrevious(dt);globeGroup.rotation.y=rotation;sandGroup.rotation.y=rotation;hayStage.rotation.y=rotation;cloudSphere.rotation.y+=dt*.002;for(let i=0;i<mists.length;i++)mists[i].position.x+=Math.sin(t*.00015+i)*dt*.035;renderer.render(scene,camera)}setTour(0);requestAnimationFrame(tick);
+if(activeTour===0)movePrevious(dt);globeGroup.rotation.y=rotation;sandGroup.rotation.y=rotation;hayStage.rotation.y=rotation;tentStage.rotation.y=rotation;cloudSphere.rotation.y+=dt*.002;for(let i=0;i<mists.length;i++)mists[i].position.x+=Math.sin(t*.00015+i)*dt*.035;renderer.render(scene,camera)}setTour(0);requestAnimationFrame(tick);
 </script></body></html>
