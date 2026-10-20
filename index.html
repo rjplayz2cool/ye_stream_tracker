@@ -416,7 +416,7 @@ body.detailOpen .modeWrap,body.detailOpen .settingsWrap,body.detailOpen #account
  <div class="yeTrackerHeader"><div><div class="eyebrow">DISCOGRAPHY & ARCHIVE</div><h1>YE TRACKER</h1><p>Explore songs, sessions, artwork, tracklists, and groupbuys.</p></div><a class="yeTrackerSource" href="https://yetracker.net/" target="_blank" rel="noopener noreferrer">Source: Ye Tracker ↗</a></div>
  <div id="yeTrackerTabs" class="yeTrackerTabs" role="tablist" aria-label="Tracker sections"></div>
  <div class="yeTrackerToolbar"><input id="yeTrackerSearch" type="search" placeholder="Enter a song name to see its versions…" aria-label="Search current section"><div id="yeTrackerEraWrap" class="sortWrap"><button id="yeTrackerEraBtn" class="sortBtn" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="yeTrackerEraLabel">All eras</span><span>⌄</span></button><div id="yeTrackerEraPanel" class="sortPanel" role="listbox" aria-label="Filter by era"></div></div></div>
- <div class="yeTrackerMeta"><span id="yeTrackerCount" aria-live="polite">Loading archive…</span><span id="yeTrackerSyncStatus">Syncs hourly · Data updated 2026-10-20 11:46 UTC</span></div>
+ <div class="yeTrackerMeta"><span id="yeTrackerCount" aria-live="polite">Loading archive…</span><span id="yeTrackerSyncStatus">Syncs hourly · Data updated 2026-10-20 12:59 UTC</span></div>
  <details class="yeTrackerKey"><summary>Color key</summary><div id="yeTrackerLegend" class="yeTrackerLegend"></div></details>
  <div id="yeTrackerStatus" class="yeTrackerStatus" role="status">Select Ye Tracker to load the archive.</div>
  <div id="yeTrackerTableWrap" class="yeTrackerTableWrap" hidden><table class="yeTrackerTable"><thead id="yeTrackerHead"></thead><tbody id="yeTrackerBody"></tbody></table></div>
@@ -1494,7 +1494,7 @@ document.addEventListener('keydown',e=>{if(!active()||/INPUT|TEXTAREA|SELECT/.te
 function autoPause(){if(!active()&&running&&!paused)pause();if(active()){if(!running)readBest();draw()}}new MutationObserver(autoPause).observe($('pacmanGame'),{attributes:true,attributeFilter:['hidden']});new MutationObserver(autoPause).observe($('gamesScreen'),{attributes:true,attributeFilter:['class']});document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused)pause()});readBest();draw();
 window.yeArcadeSync.register('pacman',row=>{running=false;paused=false;cancelAnimationFrame(raf);readBest();best=Number(row?.score)||0;draw()});
 })();
-</script><script id="yeTrackerArchive" type="application/octet-stream" data-src="data/ye-tracker-archive.txt?v=a687d8e155b4"></script><script>(()=>{
+</script><script id="yeTrackerArchive" type="application/octet-stream" data-src="data/ye-tracker-archive.txt?v=9fb6fac5e27b"></script><script>(()=>{
 'use strict';
 let data=null,loading=null,section=0,shown=0,selectedEra='',results=[],debounce=null;
 const $=id=>document.getElementById(id),escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
