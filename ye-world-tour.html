@@ -171,20 +171,23 @@ for(let i=0;i<grassCount;i++){
 blades.instanceMatrix.needsUpdate=true;blades.frustumCulled=false;hayStage.add(blades);
 // 2023: simple raised rectangular performance deck under a tall white
 // fabric tunnel canopy, with sparse dark steel ribs (low polygon count).
+// 2023 Wynwood stage: the deck stays fully inside the extended canopy.
 const tentStage=new THREE.Group();tentStage.visible=false;scene.add(tentStage);
-const deck=new THREE.Mesh(new THREE.BoxGeometry(6.9,.28,3.8),new THREE.MeshStandardMaterial({color:0x161a22,roughness:.88}));
-deck.position.y=-1.73;tentStage.add(deck);
-const deckTop=new THREE.Mesh(new THREE.PlaneGeometry(6.88,3.78),new THREE.MeshStandardMaterial({color:0x262932,roughness:.95,side:THREE.DoubleSide}));
-deckTop.rotation.x=-Math.PI/2;deckTop.position.y=-1.585;tentStage.add(deckTop);
-const tentRibMat=new THREE.MeshStandardMaterial({color:0x74818a,metalness:.45,roughness:.7});
-const tentFabricMat=new THREE.MeshStandardMaterial({color:0xdde7e7,transparent:true,opacity:.78,roughness:1,side:THREE.DoubleSide,depthWrite:false});
-const canopyVertices=[],canopyIndices=[];
-const archSegments=18,depthSegments=9;
+const tentWidth=8.5,tentLength=7.5,tentFloor=-1.84;
+const deck=new THREE.Mesh(new THREE.BoxGeometry(8.38,.17,7.36),new THREE.MeshStandardMaterial({color:0x1a1c23,roughness:.93}));
+deck.position.y=tentFloor-.085;tentStage.add(deck);
+const deckTop=new THREE.Mesh(new THREE.PlaneGeometry(8.38,7.36),new THREE.MeshStandardMaterial({color:0x282a30,roughness:.94,side:THREE.DoubleSide}));
+deckTop.rotation.x=-Math.PI/2;deckTop.position.y=tentFloor+.002;tentStage.add(deckTop);
+const tentSteel=new THREE.MeshStandardMaterial({color:0x9aa5a9,metalness:.7,roughness:.34});
+const tentSteelDark=new THREE.MeshStandardMaterial({color:0x59676e,metalness:.72,roughness:.38});
+const tentFabricMat=new THREE.MeshStandardMaterial({color:0xe4ebec,transparent:true,opacity:.70,roughness:1,side:THREE.DoubleSide,depthWrite:false});
+const canopyVertices=[],canopyIndices=[],archSegments=24,depthSegments=14;
+function tentPoint(a,z){return new THREE.Vector3(4.25*Math.cos(a),tentFloor+4.55*Math.sin(a),z)}
 for(let d=0;d<=depthSegments;d++){
- const z=-2.35+d*4.7/depthSegments;
+ const z=-tentLength/2+d*tentLength/depthSegments;
  for(let j=0;j<=archSegments;j++){
-  const a=Math.PI*j/archSegments;
-  canopyVertices.push(4.25*Math.cos(a),-1.12+4.55*Math.sin(a),z);
+  const p=tentPoint(Math.PI*j/archSegments,z);
+  canopyVertices.push(p.x,p.y,p.z);
  }
 }
 for(let d=0;d<depthSegments;d++)for(let j=0;j<archSegments;j++){
@@ -195,18 +198,37 @@ const canopyGeo=new THREE.BufferGeometry();
 canopyGeo.setAttribute('position',new THREE.Float32BufferAttribute(canopyVertices,3));
 canopyGeo.setIndex(canopyIndices);canopyGeo.computeVertexNormals();
 tentStage.add(new THREE.Mesh(canopyGeo,tentFabricMat));
-for(let d=0;d<=depthSegments;d+=2){
- const pts=[],z=-2.35+d*4.7/depthSegments;
- for(let j=0;j<=archSegments;j++){
+// Curved steel tube arches, plus fine diagonal bracing for realistic trusses.
+function steelTube(start,end,r,mat=tentSteel){
+ const delta=new THREE.Vector3().subVectors(end,start);
+ const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,delta.length(),6),mat);
+ mesh.position.copy(start).add(end).multiplyScalar(.5);
+ mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());
+ tentStage.add(mesh);
+}
+for(let d=0;d<=6;d++){
+ const z=-tentLength/2+d*tentLength/6;
+ const points=[];
+ for(let j=0;j<=archSegments;j++)points.push(tentPoint(Math.PI*j/archSegments,z));
+ for(let j=0;j<archSegments;j++)steelTube(points[j],points[j+1],.027);
+ if(d===0||d===6)continue;
+ // A narrow parallel arch makes the ribs read as a metal truss rather than stripes.
+ for(let j=1;j<archSegments;j+=2){
   const a=Math.PI*j/archSegments;
-  pts.push(new THREE.Vector3(4.25*Math.cos(a),-1.12+4.55*Math.sin(a),z));
+  const outer=tentPoint(a,z);
+  const inner=new THREE.Vector3(outer.x*.965,outer.y-.15,z);
+  steelTube(outer,inner,.012,tentSteelDark);
  }
- const rib=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),24,.027,4,false),tentRibMat);
- tentStage.add(rib);
+}
+for(let j=0;j<=archSegments;j+=3){
+ const a=Math.PI*j/archSegments;
+ for(let d=0;d<6;d++){
+  const z0=-tentLength/2+d*tentLength/6,z1=z0+tentLength/6;
+  steelTube(tentPoint(a,z0),tentPoint(a,z1),.017,tentSteelDark);
+ }
 }
 for(const x of [-4.25,4.25]){
- const rail=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,4.7,5),tentRibMat);
- rail.rotation.x=Math.PI/2;rail.position.set(x,-1.12,0);tentStage.add(rail);
+ steelTube(new THREE.Vector3(x,tentFloor,-tentLength/2),new THREE.Vector3(x,tentFloor,tentLength/2),.033);
 }
 // Layered atmospheric fog, soft glow and distant stars.
 const stars=[];for(let i=0;i<450;i++){const r=30+Math.random()*80,a=Math.random()*Math.PI*2,z=Math.random()*2-1,t=Math.sqrt(1-z*z);stars.push(r*t*Math.cos(a),r*z,r*t*Math.sin(a))}
@@ -216,15 +238,15 @@ const mistTex=fogTexture(),mists=[];
 for(let i=0;i<9;i++){const mat=new THREE.SpriteMaterial({map:mistTex,transparent:true,opacity:.14+Math.random()*.18,depthWrite:false,color:i%4===0?0xf0ad77:0xa3b8e6,blending:THREE.AdditiveBlending});const sp=new THREE.Sprite(mat);const a=i/25*Math.PI*2;sp.position.set(Math.cos(a)*(3.5+Math.random()*2.8),-2.7+Math.random()*2.6,-1.8-Math.random()*2);sp.scale.set(3+Math.random()*4,1.2+Math.random()*2,1);scene.add(sp);mists.push(sp)}
 const orange=new THREE.PointLight(0xff8845,28,16);orange.position.set(-6,-1,1);scene.add(orange);
 const blue=new THREE.PointLight(0x528bff,20,16);blue.position.set(5,-2,-2);scene.add(blue);
-let radius=12.8,rotation=-.55,pitch=.08,drag=false,lastX=0,lastY=0,auto=true;
-function cameraUpdate(){camera.position.set(Math.sin(pitch)*1.5,2.6+Math.sin(pitch)*2,radius);camera.lookAt(0,-.15,0)}
+let radius=12.8,rotation=-.55,pitch=.08,drag=false,lastX=0,lastY=0,auto=true,tentView=false;
+function cameraUpdate(){camera.position.set(Math.sin(pitch)*1.5,2.6+Math.sin(pitch)*2,radius);camera.lookAt(0,tentView?-1.03:-.15,0)}
 function fitStage(){const w=innerWidth,h=innerHeight;const side=w>680?Math.min(225,Math.max(150,w*.17))+95:0;const freeWidth=Math.max(310,w-2*side);const targetHeight=Math.max(230,h-240);const halfFov=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));const verticalDistance=3.7/(halfFov*(targetHeight/h));const horizontalDistance=3.7/(halfFov*camera.aspect*(freeWidth/w));radius=THREE.MathUtils.clamp(Math.max(verticalDistance*.74,horizontalDistance*.78),10.5,16);cameraUpdate()}
 fitStage();
 cameraUpdate();globeGroup.rotation.y=rotation;
 renderer.domElement.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});
 renderer.domElement.addEventListener('pointerup',()=>drag=false);
 renderer.domElement.addEventListener('pointermove',e=>{if(!drag)return;rotation+=(e.clientX-lastX)*.0045;pitch=THREE.MathUtils.clamp(pitch+(e.clientY-lastY)*.003,-.6,.6);lastX=e.clientX;lastY=e.clientY;cameraUpdate()});
-renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();radius=THREE.MathUtils.clamp(radius+e.deltaY*.01,9.5,19);cameraUpdate()},{passive:false});
+renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();radius=THREE.MathUtils.clamp(radius+e.deltaY*.01,9.5,25);cameraUpdate()},{passive:false});
 document.getElementById('auto').onclick=()=>{auto=!auto;document.getElementById('auto').textContent=auto?'⏸ Rotation':'▶ Rotation'};
 
 // Tour dates supplied by the site owner. These are displayed as provided, not independently verified.
@@ -299,7 +321,9 @@ function setTour(index){
  // Raise the older stages into the center, clear of bottom controls.
  sandGroup.position.y=tour.kind==='sand'?1.15:0;
  hayStage.position.y=tour.kind==='hay'?1.15:0;
- tentStage.position.y=tour.kind==='tent'?.55:0;
+ tentStage.position.y=0;
+ tentView=tour.kind==='tent';
+ if(tentView)radius=19.5;else fitStage();
  if(!isGlobe){pitch=.18;cameraUpdate();}
  renderShows('left',tour.leftTitle,tour.leftShows);
  document.getElementById('right').style.display=isGlobe?'flex':'none';
