@@ -1,4 +1,3 @@
-<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YE — TOUR 2026</title>
 <style>
 :root{font-family:Inter,Arial,Helvetica,sans-serif;color:#f4f5fa;color-scheme:dark}*{box-sizing:border-box}
@@ -29,12 +28,26 @@ body{margin:0;background:#070a13;overflow:hidden}canvas{display:block}
 #left,#right,#header,#notice{transition:opacity .22s ease}
 #tour-year-tag{position:fixed;z-index:5;bottom:12px;left:15px;font-size:10px;letter-spacing:.18em;color:#9caecb}
 @media(max-width:680px){.tour-year-arrow{width:30px;height:48px;font-size:25px}#tour-older{left:0}#tour-newer{right:0}}
+
+.city{cursor:pointer!important}.city:hover .name{text-decoration:underline}.city:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.sm{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:14px;background:#000b;backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .22s}
+.sm.on{opacity:1;pointer-events:auto}
+.sc{position:relative;width:min(600px,100%);max-height:88vh;overflow:auto;background:#10141d;border:1px solid #ffffff2a;border-radius:22px;padding:24px;color:#fff;font-family:inherit;transform:translateY(20px) scale(.97);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.sm.on .sc{transform:none}
+.sc h2{font-size:26px;line-height:1.05;margin:0 44px 4px 0;letter-spacing:-.01em}
+.sc .x{position:absolute;right:18px;top:18px;width:38px;height:38px;border-radius:50%;border:0;background:#ffffff1c;color:#fff;font-size:18px;cursor:pointer}
+.sc dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin:16px 0}.sc dt{font-size:10px;letter-spacing:.16em;color:#9ea8b8;padding-top:3px}.sc dd{margin:0;font-weight:700;font-size:14px}
+.sc h3{font-size:11px;letter-spacing:.16em;color:#9ea8b8;margin:18px 0 8px}
+.sc ol{margin:0;padding-left:2.3em;display:grid;gap:4px;font-size:14px}
+.sc .dtabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.sc .dtabs button{padding:8px 12px;border-radius:99px;border:1px solid #ffffff44;background:transparent;color:#fff;font:700 11px inherit;cursor:pointer}.sc .dtabs button[aria-pressed=true]{background:#fff;color:#000}
+.sc p{color:#c3cbd8;font-size:13px}.sc .src{font-size:11px;color:#8b95a6}.sc .src a{color:inherit}
 </style></head><body>
 <div id="three"></div><div id="vignette"></div>
 <div id="header"><small>YE LIVE</small><h1>TOUR 2026</h1></div>
 <div id="left"></div><div id="right"></div><button id="tour-older" class="tour-year-arrow" aria-label="Previous tour year" title="Previous tour year">‹</button><button id="tour-newer" class="tour-year-arrow" aria-label="Next tour year" title="Next tour year">›</button><div id="tour-year-tag">2026</div>
 <div id="notice">ROTATING DOME STAGE • SCROLL TO ZOOM</div>
 <div id="foot"><button class="control" id="auto">⏸ Rotation</button></div>
+<script src="tour-data.js"></script>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
 const mount=document.getElementById('three'),scene=new THREE.Scene();scene.background=new THREE.Color(0x080d19);
@@ -274,7 +287,7 @@ const previous=[
 function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function renderShows(id,heading,items){
  const parent=document.getElementById(id);
- parent.innerHTML='<h2 class="column-title">'+heading+'</h2>'+items.map(([flag,city,venue,date])=>'<div class="city"><div class="name"><span class="flag">'+esc(flag)+'</span>'+esc(city)+'</div>'+(venue?'<div class="type">'+esc(venue)+'</div>':'')+'<div class="status">'+esc(date)+'</div></div>').join('');
+ parent.innerHTML='<h2 class="column-title">'+heading+'</h2>'+items.map(([flag,city,venue,date])=>'<div class="city" role="button" tabindex="0" data-city="'+esc(city)+'" data-venue="'+esc(venue||'')+'" data-date="'+esc(date)+'"><div class="name"><span class="flag">'+esc(flag)+'</span>'+esc(city)+'</div>'+(venue?'<div class="type">'+esc(venue)+'</div>':'')+'<div class="status">'+esc(date)+'</div></div>').join('');
 }
 renderShows('left','Upcoming Shows:',upcoming);
 renderShows('right','Previous Shows:',previous);
@@ -336,7 +349,7 @@ function setTour(index){
 }
 olderBtn.addEventListener('click',()=>setTour(activeTour+1));
 newerBtn.addEventListener('click',()=>setTour(activeTour-1));
-document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')setTour(activeTour+1);if(e.key==='ArrowRight')setTour(activeTour-1)});
+document.addEventListener('keydown',e=>{if(modalOpen)return;if(e.key==='ArrowLeft')setTour(activeTour+1);if(e.key==='ArrowRight')setTour(activeTour-1)});
 
 // Automatic, seamless vertical carousel. No manual wheel/touch scrolling.
 const previousColumn=document.getElementById('right');
@@ -351,10 +364,45 @@ previousColumn.appendChild(previousTrack);
 previousColumn.appendChild(previousClone);
 previousColumn.addEventListener('wheel',e=>e.preventDefault(),{passive:false});
 previousColumn.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+
+// ---- Show popup: date, stadium, tour name, setlist (data from tour-data.js / setlist.fm) ----
+const MONTHS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+function isoDates(txt){txt=txt.replace(/^\s*(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/,'$2 $1, $3');const m=txt.toUpperCase().match(/([A-Z]+)\s+(\d+)(?:\s*(&|AND)\s*(\d+)|\s*[–-]\s*(\d+))?,?\s*(\d{4})/);if(!m)return[];const mo=MONTHS.indexOf(m[1]);if(mo<0)return[];
+  const a=+m[2],pad=n=>String(n).padStart(2,'0'),f=d=>m[6]+'-'+pad(mo+1)+'-'+pad(d),out=[];
+  if(m[5]){for(let d=a;d<=+m[5];d++)out.push(f(d))}else{out.push(f(a));if(m[4])out.push(f(+m[4]))}return out}
+const words=s=>new Set(s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').split(/[^a-z0-9]+/).filter(w=>w.length>2));
+function findShows(city,venue,dateTxt){const days=isoDates(dateTxt),all=window.TOUR_SHOWS||[];let hit=all.filter(s=>days.includes(s.date));
+  if(hit.length>days.length){const w=words(city+' '+venue),score=s=>[...words(s.venue+' '+s.city)].filter(x=>w.has(x)).length,best=Math.max(...hit.map(score));if(best>0)hit=hit.filter(s=>score(s)===best)}
+  return hit.sort((a,b)=>a.date.localeCompare(b.date))}
+const LONGM=['January','February','March','April','May','June','July','August','September','October','November','December'],WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const longDate=d=>{const[y,m,dd]=d.split('-').map(Number);return WD[new Date(Date.UTC(y,m-1,dd)).getUTCDay()]+', '+LONGM[m-1]+' '+dd+', '+y};
+const sm=document.createElement('div');sm.className='sm';sm.innerHTML='<div class="sc" role="dialog" aria-modal="true" aria-labelledby="smh"></div>';document.body.appendChild(sm);
+const sc=sm.firstChild;let lastCard=null,modalOpen=false;
+function paintShow(list,i){const s=list[i];
+  const tabs=list.length>1?'<div class="dtabs">'+list.map((x,j)=>'<button type="button" data-j="'+j+'" aria-pressed="'+(j===i)+'">'+esc(longDate(x.date).slice(5))+'</button>').join('')+'</div>':'';
+  sc.innerHTML='<button class="x" type="button" aria-label="Close">✕</button><h2 id="smh">'+esc(s.venue)+'</h2>'+tabs
+   +'<dl><dt>DATE</dt><dd>'+esc(longDate(s.date))+'</dd><dt>STADIUM</dt><dd>'+esc(s.venue+', '+s.city)+'</dd><dt>TOUR</dt><dd>'+(s.tour==='Single show'?'No named tour':esc(s.tour))+'</dd></dl>'
+   +'<h3>SETLIST'+(s.songs.length?' · '+s.songs.length+' SONGS':'')+'</h3>'
+   +(s.songs.length?'<ol>'+s.songs.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>':'<p>'+(s.upcoming?'No setlist yet. This show has not happened.':'No setlist has been added for this show yet.')+'</p>')
+   +'<p class="src">Setlists via <a href="'+esc(s.url)+'" target="_blank" rel="noopener">setlist.fm</a></p>';
+  sc.querySelector('.x').onclick=closeShow;sc.querySelectorAll('.dtabs button').forEach(b=>b.onclick=()=>paintShow(list,+b.dataset.j));sc.scrollTop=0}
+function openShow(card){const list=findShows(card.dataset.city,card.dataset.venue,card.dataset.date);lastCard=card;modalOpen=true;
+  if(list.length)paintShow(list,0);
+  else{sc.innerHTML='<button class="x" type="button" aria-label="Close">✕</button><h2 id="smh">'+esc(card.dataset.city)+'</h2><dl><dt>DATE</dt><dd>'+esc(card.dataset.date)+'</dd><dt>STADIUM</dt><dd>'+esc(card.dataset.venue||'Not listed')+'</dd><dt>TOUR</dt><dd>Not listed</dd></dl><h3>SETLIST</h3><p>No setlist found for this date.</p>';sc.querySelector('.x').onclick=closeShow}
+  sm.classList.add('on');sc.querySelector('.x').focus()}
+function closeShow(){modalOpen=false;sm.classList.remove('on');if(lastCard)lastCard.focus({preventScroll:true})}
+sm.addEventListener('click',e=>{if(e.target===sm)closeShow()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modalOpen)closeShow()},true);
+for(const id of ['left','right']){const el=document.getElementById(id);
+  el.addEventListener('click',e=>{const c=e.target.closest('.city');if(c)openShow(c)});
+  el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('city')){e.preventDefault();openShow(e.target)}})}
+// Pause the scrolling Previous Shows list while hovering it or while a popup is open, so cards hold still to click.
+let hoverPrev=false;const rc=document.getElementById('right');rc.addEventListener('pointerenter',()=>hoverPrev=true);rc.addEventListener('pointerleave',()=>hoverPrev=false);
+
 let previousScroll=0;
 function movePrevious(dt){
   const height=previousTrack.offsetHeight;
-  if(height<=0)return;
+  if(height<=0||modalOpen||hoverPrev)return;
   previousScroll=(previousScroll+dt*22)%height;
   previousColumn.scrollTop=previousScroll;
 }
