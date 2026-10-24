@@ -242,6 +242,35 @@ html .chip:disabled{opacity:.45;cursor:not-allowed}
 .rlScT{display:grid;gap:5px;min-width:0}.rlScT b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rlScT small{color:var(--rc,#fff);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:11px}
 .rlScT .chip{padding:6px 12px;font-size:13px;justify-self:start}
 .rlSc.sold{opacity:.4}.rlSc.pick{box-shadow:0 0 0 3px var(--b1)}.rlSc[data-pick]{cursor:pointer}
+[data-r=EBK]{--rc:#ff1f3d;--rg:#ff1f3d;--pg:#d1001f;--pt:#fff}
+[data-r=Unreleased]{--rc:#ff5a1f;--rg:linear-gradient(90deg,#ff1f3d,#ff8a00,#ff1f3d);--pg:linear-gradient(90deg,#e0102e,#ff8a00,#e0102e);--pt:#fff}
+[data-r=Mythic]{--rc:#ffd86b;--rg:linear-gradient(90deg,#f5b800,#fff,#f5b800);--pg:linear-gradient(90deg,#f5b800,#fff,#f5b800);--pt:#2a1d00}
+[data-r=Legendary]{--rc:#ffc61a;--rg:#ffc61a;--pg:#ffc61a;--pt:#2a1d00}
+[data-r=Epic]{--rc:#a855f7;--rg:#a855f7;--pg:#8b3fe0;--pt:#fff}
+[data-r=Rare]{--rc:#2f55d4;--rg:#2f55d4;--pg:#1d3a9e;--pt:#fff}
+[data-r=Common]{--rc:#8d8d98;--rg:#8d8d98;--pg:#6b6b76;--pt:#fff}
+[data-r=Uncommon]{--rc:#2fb36d;--rg:#2fb36d;--pg:#23925a;--pt:#fff}
+[data-r='Surface Ball']{--rc:#3aa0f0;--rg:#3aa0f0;--pg:#2688d6;--pt:#fff}
+@keyframes rlFlow{from{background-position:0 0,0 0}to{background-position:0 0,200% 0}}
+@keyframes rlFlow1{from{background-position:0 0}to{background-position:200% 0}}
+.rlSc,.rlCard{border:2px solid transparent;background:linear-gradient(#0d0d11,#0d0d11) padding-box,var(--rg,#fff3) border-box;background-size:100% 100%,200% 100%}
+.rlSc[data-r=Unreleased],.rlSc[data-r=Mythic],.rlCard[data-r=Unreleased],.rlCard[data-r=Mythic]{animation:rlFlow 3.2s linear infinite}
+.rlCard{animation-name:pgIn}
+.rlCard[data-r=Unreleased],.rlCard[data-r=Mythic]{animation:rlFlow 3.2s linear infinite}
+.rlRar,.rlScT b+small{display:inline-block;justify-self:start;padding:4px 11px;border-radius:999px;background:var(--pg,#555);color:var(--pt,#fff);font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;background-size:200% 100%}
+.rlRar[data-r=Unreleased],.rlRar[data-r=Mythic],[data-r=Unreleased] .rlScT b+small,[data-r=Mythic] .rlScT b+small{animation:rlFlow1 3.2s linear infinite}
+.rlG{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}
+.rlG>.rlSc{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:12px;border-radius:16px}
+.rlG>.rlSc img,.rlG>.rlSc .rlArt{width:100%;height:auto;aspect-ratio:1;border-radius:12px;font-size:64px}
+.rlG>.rlSc .rlScT{gap:8px}
+.rlG>.rlSc .rlScT b{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;font-size:15px;line-height:1.25;min-height:2.5em}
+.rlG>.rlSc .rlScT small:not(b+small){color:#fffa;font-weight:600;letter-spacing:0;text-transform:none;font-size:13px}
+.rlG>.rlSc .rlScT .chip{width:100%;justify-self:stretch;text-align:center;padding:10px 14px;font-size:14px;margin-top:2px}
+.rlG[style]>.rlSc{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:12px;padding:10px;border-radius:14px}
+.rlG[style]>.rlSc img,.rlG[style]>.rlSc .rlArt{width:64px;height:64px;aspect-ratio:auto;font-size:26px}
+.rlG[style]>.rlSc .rlScT b{display:block;white-space:nowrap;min-height:0;font-size:inherit}
+.rlG[style]>.rlSc .rlScT .chip{width:auto;justify-self:start}
+
 .rlH2{font:900 22px 'Big Shoulders Display';letter-spacing:.04em;margin:22px 0 10px}
 .rlSplit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}@media(max-width:760px){.rlSplit{grid-template-columns:1fr}}
 .rlLog{width:100%;border-collapse:collapse}.rlLog td{padding:8px 10px;border-bottom:1px solid #fff2}
@@ -1039,7 +1068,7 @@ const COST=3500,REWARD=10000,IH=88;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const num=n=>Number(n||0).toLocaleString();
-const RC={EBK:'#ff1f3d',Unreleased:'#8a2be2',Mythic:'#a000ff',Legendary:'#ffbf2f',Epic:'#a66cff',Rare:'#7a7a86',Uncommon:'#2fa874',Common:'#8e8e9a','Surface Ball':'#3a9be0'};/* same colours as the previous site's rarity badges */
+const RC={EBK:'#ff1f3d',Unreleased:'#ff5a1f',Mythic:'#ffd86b',Legendary:'#ffc61a',Epic:'#a855f7',Rare:'#2f55d4',Uncommon:'#2fb36d',Common:'#8d8d98','Surface Ball':'#3aa0f0'};/* same colours as the previous site's rarity badges */
 const cover=v=>{v=String(v||'').trim();if(!v)return'';if(/^(https?:|data:|blob:)/i.test(v))return v;v=v.replace(/^\.\//,'').replace(/^\/+/,'');return /^(covers|assets)\//.test(v)?v:'covers/'+v};
 
 let P=null;const pool=()=>P||(P=(DB.songs||[]).filter(s=>s.kind==='song'&&s.name));
@@ -1098,7 +1127,7 @@ function css(){if($('rlCss'))return;const s=document.createElement('style');s.id
 .rlCard{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:22px;padding:22px;border-radius:22px;background:#0009;border:2px solid var(--rc,#fff);box-shadow:0 0 60px color-mix(in srgb,var(--rc) 40%,transparent);animation:pgIn .6s var(--ease) both}
 .rlCov{aspect-ratio:1;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,var(--a),var(--b));display:grid;place-items:center;font:900 60px 'Big Shoulders Display'}
 .rlCov img{width:100%;height:100%;object-fit:cover}
-.rlRar{display:inline-block;padding:5px 12px;border-radius:999px;background:var(--rc);color:#fff;font-weight:800;font-size:13px}.rlRar[data-r=Mythic]{background:linear-gradient(90deg,#6f00ff,#d600ff)}.rlRar[data-r=Legendary]{background:linear-gradient(90deg,#c06b00,#ffbf2f)}.rlRar[data-r=Epic]{background:linear-gradient(90deg,#6b35c8,#a66cff)}.rlRar[data-r=Rare]{background:#3c3c43}.rlRar[data-r=Common]{background:#55555e}.rlRar[data-r=Uncommon]{background:#247b55}.rlRar[data-r='Surface Ball']{background:#2879b8}.rlRar[data-r=Unreleased]{background:linear-gradient(90deg,#ff1744,#7c00ff,#00d4ff);box-shadow:0 0 22px #8a2be266}.rlRar[data-r=EBK]{background:linear-gradient(90deg,#050505,#7a0000,#050505);box-shadow:0 0 30px #ff001f66;border:1px solid #ff596d}
+
 .rlCard h2{font:900 clamp(30px,4vw,52px)/1 'Big Shoulders Display';margin:10px 0 4px}
 .rlCard p{opacity:.8;margin:0 0 12px}
 .rlCard dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:0}
@@ -1171,7 +1200,7 @@ function animate(final){return new Promise(res=>{
   s.addEventListener('transitionend',fin,{once:true});setTimeout(fin,5200)})}
 
 function cardHTML(r){const c=cover(r.cover),d=r.acquired_at?new Date(r.acquired_at).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):new Date().toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
-  return `<div class="rlCard" style="--rc:${RC[r.rarity]||'#fff'}"><div class="rlCov">${c?`<img src="${esc(c)}" alt="" onerror="this.remove()">`:esc((r.title||'?')[0])}</div><div><span class="rlRar" data-r="${esc(r.rarity||'Common')}">${esc(r.rarity||'Common')}</span><h2>${esc(r.title)}</h2><p>${esc(r.credits||'')}</p><dl><div><dt>Album / era</dt><dd>${esc(r.album||'Unknown')}</dd></div><div><dt>Date pulled</dt><dd>${esc(d)}</dd></div></dl></div></div>`}
+  return `<div class="rlCard" data-r="${esc(r.rarity||'Common')}" style="--rc:${RC[r.rarity]||'#fff'}"><div class="rlCov">${c?`<img src="${esc(c)}" alt="" onerror="this.remove()">`:esc((r.title||'?')[0])}</div><div><span class="rlRar" data-r="${esc(r.rarity||'Common')}">${esc(r.rarity||'Common')}</span><h2>${esc(r.title)}</h2><p>${esc(r.credits||'')}</p><dl><div><dt>Album / era</dt><dd>${esc(r.album||'Unknown')}</dd></div><div><dt>Date pulled</dt><dd>${esc(d)}</dd></div></dl></div></div>`}
 function paint(){
   $('rlBal').textContent=(LIVE&&!user)?'Signed out':num(balance())+' YZYMNY';
   $('rlAcct').textContent=LIVE?(profile?.username||'Sign in'):'Demo';
@@ -1249,7 +1278,7 @@ const QS=r=>Math.round((PRICE[r.rarity]||100)/1.5);
 const dx={shop:null,mkt:null,trd:null,logs:[],sort:'new',mq:'',msort:'low',who:'',mine:new Set(),theirs:new Set(),inbox:null,sent:[]};
 const plog=t=>{dx.logs.unshift({t:new Date(),m:t})};
 const liveNote=box=>{box.innerHTML='<p class="rlEmpty">This section connects to the live database when the site is published. This preview shows the layout with sample data.</p>';return true};
-const sc=(r,extra='',cls='',attr='')=>`<div class="rlSc ${cls}" ${attr} style="--rc:${RC[r.rarity]||'#fff'}">${r.cover?`<img src="${esc(cover(r.cover))}" alt="" onerror="this.outerHTML='<div class=rlArt>${esc((r.title||'?')[0])}</div>'">`:`<div class="rlArt">${esc((r.title||'?')[0])}</div>`}<div class="rlScT"><b>${esc(r.title)}</b><small>${esc(r.rarity)}</small>${extra}</div></div>`;
+const sc=(r,extra='',cls='',attr='')=>`<div class="rlSc ${cls}" ${attr} data-r="${esc(r.rarity)}" style="--rc:${RC[r.rarity]||'#fff'}">${r.cover?`<img src="${esc(cover(r.cover))}" alt="" onerror="this.outerHTML='<div class=rlArt>${esc((r.title||'?')[0])}</div>'">`:`<div class="rlArt">${esc((r.title||'?')[0])}</div>`}<div class="rlScT"><b>${esc(r.title)}</b><small>${esc(r.rarity)}</small>${extra}</div></div>`;
 const fresh=r=>({...r,_id:++UID,acquired_at:new Date().toISOString()});
 const empty=t=>`<p class="rlEmpty">${t}</p>`;
 /* ---- LIVE ECONOMY: real Supabase calls (used only when the site is connected) ---- */
