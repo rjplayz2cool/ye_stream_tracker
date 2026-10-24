@@ -241,7 +241,7 @@ html .chip:disabled{opacity:.45;cursor:not-allowed}
 .rlSc img,.rlSc .rlArt{width:64px;height:64px;border-radius:10px;object-fit:cover;display:grid;place-items:center;background:linear-gradient(135deg,var(--a),var(--b));font:900 26px 'Big Shoulders Display'}
 .rlScT{display:grid;gap:5px;min-width:0}.rlScT b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rlScT small{color:var(--rc,#fff);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:11px}
 .rlScT .chip{padding:6px 12px;font-size:13px;justify-self:start}
-.rlSc.sold{opacity:.4}.rlSc.pick{box-shadow:0 0 0 3px var(--b1)}.rlSc[data-pick]{cursor:pointer}
+.rlSc.sold{opacity:.4}.rlSc.pick{box-shadow:0 0 0 3px var(--b1)}.rlSc[data-pick]{cursor:pointer}.alreadyOwnedBadge{justify-self:start;display:inline-block;padding:3px 8px;border:1px solid #38c97666;border-radius:7px;background:#38c97614;color:#71dda1;font-size:11px;font-weight:800;letter-spacing:0;text-transform:none}
 [data-r=EBK]{--rc:#ff1f3d;--rg:#ff1f3d;--pg:#d1001f;--pt:#fff}
 [data-r=Unreleased]{--rc:#ff5a1f;--rg:linear-gradient(90deg,#ff1f3d,#ff8a00,#ff1f3d);--pg:linear-gradient(90deg,#e0102e,#ff8a00,#e0102e);--pt:#fff}
 [data-r=Mythic]{--rc:#ffd86b;--rg:linear-gradient(90deg,#f5b800,#fff,#f5b800);--pg:linear-gradient(90deg,#f5b800,#fff,#f5b800);--pt:#2a1d00}
@@ -1278,7 +1278,7 @@ const QS=r=>Math.round((PRICE[r.rarity]||100)/1.5);
 const dx={shop:null,mkt:null,trd:null,logs:[],sort:'new',mq:'',msort:'low',who:'',mine:new Set(),theirs:new Set(),inbox:null,sent:[]};
 const plog=t=>{dx.logs.unshift({t:new Date(),m:t})};
 const liveNote=box=>{box.innerHTML='<p class="rlEmpty">This section connects to the live database when the site is published. This preview shows the layout with sample data.</p>';return true};
-const sc=(r,extra='',cls='',attr='')=>`<div class="rlSc ${cls}" ${attr} data-r="${esc(r.rarity)}" style="--rc:${RC[r.rarity]||'#fff'}">${r.cover?`<img src="${esc(cover(r.cover))}" alt="" onerror="this.outerHTML='<div class=rlArt>${esc((r.title||'?')[0])}</div>'">`:`<div class="rlArt">${esc((r.title||'?')[0])}</div>`}<div class="rlScT"><b>${esc(r.title)}</b><small>${esc(r.rarity)}</small>${extra}</div></div>`;
+const sc=(r,extra='',cls='',attr='')=>`<div class="rlSc ${cls}" ${attr} data-r="${esc(r.rarity)}" style="--rc:${RC[r.rarity]||'#fff'}">${r.cover?`<img src="${esc(cover(r.cover))}" alt="" onerror="this.outerHTML='<div class=rlArt>${esc((r.title||'?')[0])}</div>'">`:`<div class="rlArt">${esc((r.title||'?')[0])}</div>`}<div class="rlScT"><b>${esc(r.title)}</b><small>${esc(r.rarity)}</small>${r._own?'<span class="alreadyOwnedBadge">Already Owned</span>':''}${extra}</div></div>`;
 const fresh=r=>({...r,_id:++UID,acquired_at:new Date().toISOString()});
 const empty=t=>`<p class="rlEmpty">${t}</p>`;
 /* ---- LIVE ECONOMY: real Supabase calls (used only when the site is connected) ---- */
@@ -1288,6 +1288,10 @@ const lr=r=>{try{const sp=(typeof SPECIAL!=='undefined'?SPECIAL:[]).find(x=>x.ke
   if(sp)return{...r,cover:sp.cover,credits:r.credits||sp.credits,album:r.album||sp.album};
   const id=String(r.catalog_key||'').split('/').pop(),s=id&&pool().find(x=>String(x.spotify||'').split('/').pop()===id);
   if(s){const c=window.coverFor?coverFor(s):(C?C.localCover(s):'');return{...r,cover:c||r.cover}}}catch(e){}return r};
+const ownKey=r=>String(r&&(r.catalog_key||r.key)||'').split('/').pop();
+const ownSet=rows=>new Set((rows||[]).map(ownKey).filter(Boolean));
+const mark=(r,set)=>({...r,_own:set.has(ownKey(r))});
+const ownsD=r=>demo.inv.some(x=>x.catalog_key&&x.catalog_key===r.catalog_key);
 const lerr=(box,e)=>{box.innerHTML='<p class="rlEmpty">'+esc(e&&e.message||e||'Something went wrong.')+'</p>'};
 const needIn=box=>{if(user)return false;box.innerHTML=empty('Sign in to use this section.');return true};
 const lTok={};const tok=k=>(lTok[k]=(lTok[k]||0)+1);
@@ -1301,10 +1305,10 @@ async function lrwFetch(){
   lrw={claimed,streak,day:claimed?((Math.max(streak,1)-1)%RW_LEN)+1:(streak%RW_LEN)+1,t};return lrw}
 async function liveShop(box){
   if(needIn(box))return;const k=tok('shop');
-  const [s,r]=await Promise.all([lrwFetch(),sb.rpc('daily_shop')]);if(k!==lTok.shop)return;
-  if(r.error)return lerr(box,r.error);
+  const [s,r,oi]=await Promise.all([lrwFetch(),sb.rpc('daily_shop'),sb.from('inventory').select('catalog_key').eq('owner_id',user.id)]);if(k!==lTok.shop)return;
+  if(r.error)return lerr(box,r.error);const own=ownSet(oi.data);
   const rows=Array.isArray(r.data)?r.data:[],end=new Date();end.setHours(24,0,0,0);const ms=Math.max(0,end-Date.now());
-  box.innerHTML=rwHTML(s)+`<div class="rlBar2"><b>Daily Shop</b><span>Refreshes daily</span><span class="sp"></span><span>Balance: ${num(balance())} YZYMNY</span></div><div class="rlG">${rows.map(raw=>{const x=lr(raw),q=qsv(x);return sc(x,`<small style="color:#fff8">Quicksell ${num(q)}</small>`+(raw.purchased?'<small>SOLD</small>':`<button class="chip" data-buy="${Number(raw.slot_no)}" ${balance()<raw.price?'disabled':''}>Buy · ${num(raw.price)}</button>`),raw.purchased?'sold':'')}).join('')||empty('Today’s Shop is empty.')}</div>`;
+  box.innerHTML=rwHTML(s)+`<div class="rlBar2"><b>Daily Shop</b><span>Refreshes daily</span><span class="sp"></span><span>Balance: ${num(balance())} YZYMNY</span></div><div class="rlG">${rows.map(raw=>{const x=mark(lr(raw),own),q=qsv(x);return sc(x,`<small style="color:#fff8">Quicksell ${num(q)}</small>`+(raw.purchased?'<small>SOLD</small>':`<button class="chip" data-buy="${Number(raw.slot_no)}" ${balance()<raw.price?'disabled':''}>Buy · ${num(raw.price)}</button>`),raw.purchased?'sold':'')}).join('')||empty('Today’s Shop is empty.')}</div>`;
   const go=$('rwGo');if(go)go.onclick=async()=>{if(lrw.claimed)return;go.disabled=true;
     const {data,error}=await sb.rpc('claim_daily_reward',{p_local_date:dkey(new Date())});
     if(error){msg=error.message;go.disabled=false;paint();return}
@@ -1329,7 +1333,7 @@ async function liveMkt(box){
   await sb.rpc('expire_market_listings');
   const [m,i,l]=await Promise.all([sb.from('market_view').select('*').order('created_at',{ascending:false}),sb.from('inventory').select('*').eq('owner_id',user.id),sb.from('market_listings').select('inventory_id').eq('seller_id',user.id).eq('active',true)]);
   if(k!==lTok.mkt)return;if(m.error)return lerr(box,m.error);
-  const all=(m.data||[]).filter(x=>Date.parse(x.created_at)+864e5>Date.now()).map(lr),me=profile?.username,listed=new Set((l.data||[]).map(x=>x.inventory_id)),mine=(i.data||[]).filter(r=>!listed.has(r.id)).map(lr);
+  const own=ownSet(i.data),all=(m.data||[]).filter(x=>Date.parse(x.created_at)+864e5>Date.now()).map(x=>mark(lr(x),own)),me=profile?.username,listed=new Set((l.data||[]).map(x=>x.inventory_id)),mine=(i.data||[]).filter(r=>!listed.has(r.id)).map(lr);
   box.innerHTML=`<div class="rlBar2"><input id="mQ" placeholder="Search songs" value="${esc(dx.mq)}"><label>Sort <select id="mS">${[['low','Price: low to high'],['high','Price: high to low'],['rar','Rarest']].map(([v,n])=>`<option value="${v}" ${dx.msort===v?'selected':''}>${n}</option>`).join('')}</select></label><span class="sp"></span><span>Balance: ${num(balance())} YZYMNY</span></div>
   <div class="rlG" id="mL"></div>
   <h3 class="rlH2">List a song</h3><div class="rlBar2"><select id="mP">${mine.map(r=>`<option value="${esc(r.id)}">${esc(r.title)} (${esc(r.rarity)})</option>`).join('')||'<option value="">No songs to list</option>'}</select><input id="mPr" type="number" min="1" placeholder="Price" style="width:130px"><button class="chip" id="mGo">List for sale</button></div>
@@ -1358,7 +1362,7 @@ async function liveTrd(box){
   <h3 class="rlH2">Sent offers</h3><div>${out.map(t=>`<div class="rlNote">To ${esc(t.other_username)}: your <b>${tsum(t.offered_items)}</b> for <b>${tsum(t.requested_items)}</b> <button class="chip" data-tc="${esc(t.id)}">Cancel</button></div>`).join('')||empty('No sent offers.')}</div>`;
   $('tL').onclick=async()=>{const u=$('tU').value.trim();lt.who=u;lt.mine.clear();lt.theirs.clear();lt.mi=[];lt.ti=[];lt.note='';if(!u)return liveTrd(box);
     const [a,b]=await Promise.all([sb.from('inventory').select('*').eq('owner_id',user.id),sb.rpc('trade_user_inventory',{p_username:u})]);
-    if(b.error)lt.note=b.error.message;else if(!(a.data||[]).length||!(b.data||[]).length)lt.note='Both players need at least one song to trade.';else{lt.mi=a.data.map(lr);lt.ti=b.data.map(lr)}
+    if(b.error)lt.note=b.error.message;else if(!(a.data||[]).length||!(b.data||[]).length)lt.note='Both players need at least one song to trade.';else{const own=ownSet(a.data);lt.mi=a.data.map(lr);lt.ti=b.data.map(x=>mark(lr(x),own))}
     liveTrd(box)};
   box.onclick=async e=>{
     const p=e.target.closest('[data-pick]');if(p){const s=p.dataset.pick==='m'?lt.mine:lt.theirs;s.has(p.dataset.id)?s.delete(p.dataset.id):s.add(p.dataset.id);return liveTrd(box)}
@@ -1401,7 +1405,7 @@ function paintShop(){
   const box=$('rl-shop');if(LIVE)return liveShop(box);
   if(!dx.shop)dx.shop=shop8();
   const end=new Date();end.setHours(24,0,0,0);const ms=Math.max(0,end-Date.now()),hh=String(Math.floor(ms/36e5)).padStart(2,'0'),mm=String(Math.floor(ms%36e5/6e4)).padStart(2,'0');
-  box.innerHTML=rwHTML()+`<div class="rlBar2"><b>Daily Shop</b><span>Refreshes in ${hh}:${mm}</span><span class="sp"></span><span>Balance: ${num(demo.balance)} YZYMNY</span><button class="chip" id="shR">Refresh (demo)</button></div><div class="rlG">${dx.shop.map((o,i)=>{const p=PRICE[o.rec.rarity]||500;return sc(o.rec,o.sold?'<small>SOLD</small>':`<button class="chip" data-buy="${i}" ${demo.balance<p?'disabled':''}>Buy · ${num(p)}</button>`,o.sold?'sold':'')}).join('')}</div>`;
+  box.innerHTML=rwHTML()+`<div class="rlBar2"><b>Daily Shop</b><span>Refreshes in ${hh}:${mm}</span><span class="sp"></span><span>Balance: ${num(demo.balance)} YZYMNY</span><button class="chip" id="shR">Refresh (demo)</button></div><div class="rlG">${dx.shop.map((o,i)=>{const p=PRICE[o.rec.rarity]||500;return sc({...o.rec,_own:ownsD(o.rec)},o.sold?'<small>SOLD</small>':`<button class="chip" data-buy="${i}" ${demo.balance<p?'disabled':''}>Buy · ${num(p)}</button>`,o.sold?'sold':'')}).join('')}</div>`;
   $('shR').onclick=()=>{dx.shop=null;paintShop()};
   $('rwGo').onclick=()=>{const s=rwState();if(s.claimed)return;demo.rw={last:s.t,streak:s.streak+1};demo.balance+=RW_BASE;let t='Daily Reward: +'+num(RW_BASE)+' YZYMNY';if(s.day===RW_LEN){demo.bonus++;t+=' and a free roll'}plog(t);msg=s.day===RW_LEN?'Day 7 reward! You earned a free spin.':'';paint();paintShop()};
   $('rwN').onclick=()=>{demo.dayOff++;demo.has=false;demo.paid=false;paint();paintShop()};
@@ -1419,7 +1423,7 @@ function paintMkt(){
   <h3 class="rlH2">Your listings</h3><div class="rlG" id="mMine"></div>`;
   const list=()=>{const q=dx.mq.toLowerCase();let a=dx.mkt.filter(l=>l.seller!=='You'&&(!q||l.rec.title.toLowerCase().includes(q)));
     a.sort(dx.msort==='low'?(x,y)=>x.price-y.price:dx.msort==='high'?(x,y)=>y.price-x.price:(x,y)=>RORD.indexOf(x.rec.rarity)-RORD.indexOf(y.rec.rarity));
-    $('mL').innerHTML=a.map(l=>sc(l.rec,`<small style="color:#fff8">by ${esc(l.seller)}</small><button class="chip" data-mb="${l.id}" ${demo.balance<l.price?'disabled':''}>Buy · ${num(l.price)}</button>`)).join('')||empty('No listings match.');
+    $('mL').innerHTML=a.map(l=>sc({...l.rec,_own:ownsD(l.rec)},`<small style="color:#fff8">by ${esc(l.seller)}</small><button class="chip" data-mb="${l.id}" ${demo.balance<l.price?'disabled':''}>Buy · ${num(l.price)}</button>`)).join('')||empty('No listings match.');
     const mine=dx.mkt.filter(l=>l.seller==='You');$('mMine').innerHTML=mine.map(l=>sc(l.rec,`<button class="chip" data-mc="${l.id}">Cancel · ${num(l.price)}</button>`)).join('')||empty('You have nothing listed.')};
   list();
   $('mQ').oninput=e=>{dx.mq=e.target.value;list()};$('mS').onchange=e=>{dx.msort=e.target.value;list()};
@@ -1437,7 +1441,7 @@ function paintTrd(){
   box.innerHTML=`<p class="rlNote" id="tMsg">Demo players: ${FAKE.join(', ')}.</p>
   <div class="rlBar2"><input id="tU" placeholder="Player username" value="${esc(dx.who)}"><button class="chip" id="tL">Load</button></div>
   ${p?`<div class="rlSplit"><div><h3 class="rlH2">Your songs (tap to offer)</h3><div class="rlG" style="grid-template-columns:1fr">${demo.inv.map(r=>sc(r,'',dx.mine.has(rid(r))?'pick':'',`data-pick="m" data-id="${rid(r)}"`)).join('')||empty('You have no songs.')}</div></div>
-  <div><h3 class="rlH2">${esc(p.name)}'s songs (tap to request)</h3><div class="rlG" style="grid-template-columns:1fr">${p.inv.map(r=>sc(r,'',dx.theirs.has(rid(r))?'pick':'',`data-pick="t" data-id="${rid(r)}"`)).join('')}</div></div></div>
+  <div><h3 class="rlH2">${esc(p.name)}'s songs (tap to request)</h3><div class="rlG" style="grid-template-columns:1fr">${p.inv.map(r=>sc({...r,_own:ownsD(r)},'',dx.theirs.has(rid(r))?'pick':'',`data-pick="t" data-id="${rid(r)}"`)).join('')}</div></div></div>
   <div class="rlBar2" style="margin-top:14px"><button class="chip" id="tS" ${dx.mine.size&&dx.theirs.size?'':'disabled'}>Send offer (${dx.mine.size} for ${dx.theirs.size})</button></div>`:''}
   <h3 class="rlH2">Incoming offers</h3><div id="tIn">${(dx.inbox||[]).map(o=>`<div class="rlNote">${esc(o.from)} offers <b>${sum(o.give)}</b> for your <b>${sum(o.want)}</b> <button class="chip" data-ta="${o.id}">Accept</button> <button class="chip" data-td="${o.id}">Decline</button></div>`).join('')||empty('No incoming offers.')}</div>
   <h3 class="rlH2">Sent offers</h3><div>${dx.sent.map(o=>`<div class="rlNote">To ${esc(o.to)}: your <b>${sum(o.give)}</b> for <b>${sum(o.want)}</b> <button class="chip" data-tp="${o.id}">Pretend they accept</button> <button class="chip" data-tc="${o.id}">Cancel</button></div>`).join('')||empty('No sent offers.')}</div>`;
