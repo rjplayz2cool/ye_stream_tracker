@@ -23,24 +23,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Fix World Tour background bleed
-        run: python3 updates/fix_tour_background.py
-
-      - name: Apply October calendar and artwork update
-        run: python3 updates/oct16_calendar.py
-
-      - name: Enable game YZYMNY rewards
-        run: |
-          python3 updates/arcade_rewards.py
-          node --check arcade/rewards.js
-          node arcade/test-engines.cjs index.html
-          node arcade/test-rewards-client.cjs
-
-      - name: Resolve song-card dates and update card layout
-        run: |
-          python3 updates/enrich_card_metadata.py
-          python3 updates/card_fixes.py
-
       - name: Update Kworb snapshot
         run: python3 update_kworb.py
 
@@ -48,7 +30,7 @@ jobs:
         run: |
           git config user.name "ye-streams-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/card-metadata.js data/card-public-cache.json data/card-metadata-unresolved.json data/card-seed.json data/current.js data/history.js data/history data/last-update.txt index.html data/hosted-audio.json assets/calendar assets/era-covers covers/unreleased-yandhi.webp
+          git add data/card-metadata.js data/card-public-cache.json data/card-metadata-unresolved.json data/card-seed.json data/current.js data/history.js data/history data/last-update.txt index.html data/hosted-audio.json
           git diff --cached --quiet || git commit -m "Update stream data"
           git pull --rebase origin main
           git push
@@ -67,28 +49,6 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
-
-      - name: Verify October calendar cover assets
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          html=Path('index.html').read_text()
-          expected={
-            'WHAT AM I MISSING':'assets/calendar/bbp-2026.jpg',
-            'This One Here':'assets/calendar/bbp-2026.jpg',
-            'HONOR ROLL V10':'assets/calendar/bbp-2026.jpg',
-            'Say You Will - Remix':'assets/calendar/hollywood-bowl-2015.jpg',
-            'When I See It':'assets/calendar/when-i-see-it-2015.jpg',
-          }
-          for phrase,asset in expected.items():
-              entries=[line for line in html.splitlines() if '"month": 10' in line and '"day": 17' in line and phrase in line]
-              assert len(entries)==1 and asset in entries[0], f'Wrong cover for {phrase}'
-              path=Path(asset)
-              assert path.is_file() and path.stat().st_size>500, f'Missing cover image: {asset}'
-              assert path.read_bytes()[:3]==bytes.fromhex('ffd8ff'), f'Invalid JPEG: {asset}'
-              print('OK:',phrase,asset,path.stat().st_size)
-          PY
 
       - name: Upload website
         uses: actions/upload-pages-artifact@v3

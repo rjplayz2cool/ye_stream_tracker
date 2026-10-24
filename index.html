@@ -3182,5 +3182,4 @@ function wire(){
 let hlPinned=false,timer=0;
 window.PH=window.PH||{};
 PH.tours={show(){$('toursScreen').classList.add('activeScreen');if(!built){built=true;wire()}paint();clearInterval(timer);timer=setInterval(()=>{paintNext();paintLists();paintPins();setHL(hl)},60000)},hide(){$('toursScreen').classList.remove('activeScreen');clearInterval(timer)}};
-})();</script>
-</body></html>
+})();</script></body></html>
