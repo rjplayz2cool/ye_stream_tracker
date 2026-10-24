@@ -143,6 +143,11 @@ header{display:flex;justify-content:space-between;align-items:center;padding:18p
 .tPopC ol{margin:0;padding-left:2.3em;display:grid;gap:4px;font-size:14px}
 .tPopC .tptabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.tPopC .tptabs button{padding:8px 12px;border-radius:99px;border:1px solid #ffffff44;background:transparent;color:#fff;font:700 11px inherit;cursor:pointer}.tPopC .tptabs button[aria-pressed=true]{background:#fff;color:#000}
 .tPopC p{color:#c3cbd8;font-size:13px}.tPopC .tpsrc{font-size:11px;color:#8b95a6}.tPopC .tpsrc a{color:inherit}
+</style><style id="albGradCss">
+.rlChip.alb{border:0;color:#fff;text-shadow:0 1px 3px #000c,0 0 2px #0009;background:linear-gradient(115deg,var(--g1),var(--g2),var(--g1));background-size:260% 260%;animation:albShift 7s ease-in-out infinite;box-shadow:inset 0 0 0 1px #ffffff26,0 2px 10px #0006}
+.rlChip.alb.lt{color:#111;text-shadow:0 1px 2px #fff8}
+@keyframes albShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@media(prefers-reduced-motion:reduce){.rlChip.alb{animation:none}}
 </style><style id="gamesCss">#gamesScreen{max-width:1380px;margin:auto;padding:100px 22px 80px;color:#fff}
 #gamesScreen .eyebrow{color:var(--accent2);font-weight:800;letter-spacing:.18em;font-size:12px}
 #gamesScreen .title{font-size:clamp(40px,6vw,76px);font-weight:900;letter-spacing:-.055em;margin:4px 0}
@@ -1245,6 +1250,13 @@ let vAud=null;
 function vaultAudio(sn){const b=$('vPlay');if(!b)return;const stop=()=>{if(vAud){vAud.pause();vAud=null}if($('vPlay'))$('vPlay').textContent='▶ Play'};
   b.onclick=()=>{if(vAud){stop();return}const a=new Audio(encodeURI(sn.src));vAud=a;b.textContent='■ Stop';a.addEventListener('loadedmetadata',()=>{try{a.currentTime=sn.start||0}catch(e){}a.play().catch(()=>{b.textContent='Audio file missing';vAud=null})},{once:true});a.addEventListener('timeupdate',()=>{if(!sn.full&&a.currentTime>=sn.end)stop()});a.addEventListener('ended',stop);a.addEventListener('error',()=>{b.textContent='Audio file missing';vAud=null})};
   const t=setInterval(()=>{if(!$('vPlay')){clearInterval(t);if(vAud){vAud.pause();vAud=null}}},400)}
+const ALB_GRAD={'lateregistration':['#7a4a24','#0b0907'],'graduation':['#7b3fb5','#f0a93a'],'goodassjob':['#4b1f78','#a066dd'],'yeezus2':['#c0181f','#d9bc8f'],
+ 'sohelpmegod':['#8d8d93','#0d0d10'],'war':['#000000','#ffffff'],'swish':['#ffb08a','#ffe066','lt'],'vultures2':['#d6b96b','#0b0b0b'],'yandhi':['#c7b0f2','#ffffff','lt'],
+ 'jesusisking':['#1c3fc4','#5b84ff'],'yebu':['#12204a','#c1121f'],'badbitchplaybook':['#d9b86c','#0a0a0a'],'vultures1':['#6b4528','#0a0806'],'watchthethrone':['#d4a72c','#ffffff','lt'],
+ 'vultures3':['#34588c','#04060a'],'bully':['#8f8f8f','#090909'],'thelifeofpablo':['#ef7d31','#ffb56e'],'turbografx16':['#f58a1f','#2b2a72'],'cuck':['#ead9ba','#c0182a','lt'],
+ 'godscountry':['#2060dd','#04060c'],'donda':['#000000','#2c2c2c'],'donda2':['#090909','#f06a18']};
+const albKey=n=>String(n).toLowerCase().replace(/[^a-z0-9]/g,'');
+const albChips=a=>a.length?a.map(n=>{const g=ALB_GRAD[albKey(n)];return g?`<span class="rlChip alb${g[2]?' '+g[2]:''}" style="--g1:${g[0]};--g2:${g[1]}">${esc(n)}</span>`:`<span class="rlChip">${esc(n)}</span>`}).join(''):'<span class="rlChip dim">None</span>';
 function openVault(x,y){
   const k=String(x.title).replace(/[\u2019]/g,"'").toLowerCase(),v=VINFO[k]||{made:'Unknown',leaked:'—',snips:'—',rel:'—',albums:[],feat:[]};
   const yn=t=>t==='Yes'?'<span style="color:#3ddc84">Yes</span>':t==='No'?'<span style="color:#ff6b7f">No</span>':esc(t);
@@ -1252,7 +1264,7 @@ function openVault(x,y){
   const chips=a=>a.length?a.map(n=>`<span class="rlChip">${esc(n)}</span>`).join(''):'<span class="rlChip dim">None</span>';
   Detail.openRaw(`<div class="dhead"><div class="dcov"><img src="${esc(cover(x.cover))}" alt=""></div><div><h2 id="dTitle">${esc(x.title)}</h2><p>${esc(x.rarity)} · ${esc(x.credits)}</p></div></div>
   <div class="dgrid">${st('Originally made',esc(v.made))}${st('Leaked',yn(v.leaked))}${st('Snippets',yn(v.snips))}${st('Released',yn(v.rel))}${st('Status',y?'FOUND · '+esc(x.rarity.toUpperCase()):'NOT FOUND')}${st('Rarity',esc(x.rarity))}</div>
-  <h3 class="rlH2" style="margin:16px 0 8px">Album${v.albums.length===1?'':'s'}</h3><div class="rlChips">${chips(v.albums)}</div>
+  <h3 class="rlH2" style="margin:16px 0 8px">Album${v.albums.length===1?'':'s'}</h3><div class="rlChips">${albChips(v.albums)}</div>
   <h3 class="rlH2" style="margin:16px 0 8px">Features</h3><div class="rlChips">${chips(v.feat)}</div>${SNIP[x.key||x.catalog_key]?'<div style="margin-top:16px"><button class="chip" id="vPlay">▶ Play</button></div>':''}`,cover(x.cover),TINT[k]);
   const sn=SNIP[x.key||x.catalog_key];if(sn)setTimeout(()=>vaultAudio(sn),0)}
 async function paintCol(){
