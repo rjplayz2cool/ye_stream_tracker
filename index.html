@@ -143,6 +143,24 @@ header{display:flex;justify-content:space-between;align-items:center;padding:18p
 .tPopC ol{margin:0;padding-left:2.3em;display:grid;gap:4px;font-size:14px}
 .tPopC .tptabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.tPopC .tptabs button{padding:8px 12px;border-radius:99px;border:1px solid #ffffff44;background:transparent;color:#fff;font:700 11px inherit;cursor:pointer}.tPopC .tptabs button[aria-pressed=true]{background:#fff;color:#000}
 .tPopC p{color:#c3cbd8;font-size:13px}.tPopC .tpsrc{font-size:11px;color:#8b95a6}.tPopC .tpsrc a{color:inherit}
+</style><style id="vPlCss">
+.vPl{display:flex;align-items:center;gap:12px;height:56px;padding:0 14px 0 10px;border-radius:999px;background:linear-gradient(135deg,#1c1d24,#0c0d11);border:1px solid #ffffff2e;box-shadow:0 8px 28px #0008;color:#fff;overflow:hidden;box-sizing:border-box;max-width:100%;transition:width .6s cubic-bezier(.2,.8,.2,1),left .6s cubic-bezier(.2,.8,.2,1),top .6s cubic-bezier(.2,.8,.2,1),height .6s cubic-bezier(.2,.8,.2,1)}
+.vPl.grow>*{opacity:0}.vPl>*{transition:opacity .35s .15s}
+.vPl .vpB{all:unset;flex:0 0 38px;height:38px;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;cursor:pointer}.vPl .vpB:focus-visible,.vPl .vpM:focus-visible,.vPl .vpX:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.vpMid{flex:1 1 90px;min-width:0;overflow:hidden;display:grid;gap:3px}.vpT{font:700 11px/1 inherit;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vpWave{display:flex;align-items:center;gap:2px;height:26px;cursor:pointer}
+.vpWave i{flex:1;min-width:1px;border-radius:2px;background:#ffffff40;transition:height .5s,background .15s;transform-origin:center}.vpWave i.on{background:#fff}
+.vPl:not(.ready) .vpWave i{animation:vpLoad 1s ease-in-out infinite alternate}.vPl:not(.ready) .vpWave i:nth-child(3n){animation-delay:.2s}.vPl:not(.ready) .vpWave i:nth-child(3n+1){animation-delay:.4s}
+@keyframes vpLoad{to{height:46%}}
+.vpTime{flex:0 0 auto;font:600 11px inherit;opacity:.75;white-space:nowrap;font-variant-numeric:tabular-nums}
+.vpVol{display:flex;align-items:center;gap:4px;flex:0 0 auto}.vpM,.vpX{all:unset;cursor:pointer;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;opacity:.85}.vpM:hover,.vpX:hover{background:#ffffff1c}
+.vpVol input{-webkit-appearance:none;appearance:none;width:64px;height:4px;border-radius:4px;background:linear-gradient(90deg,#fff var(--v,80%),#ffffff33 0);outline:none;cursor:pointer}
+.vpVol input::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#fff}.vpVol input::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:#fff}
+.vpX{display:none}
+.vPl.dock{position:fixed;right:16px;bottom:16px;width:min(380px,calc(100vw - 32px));z-index:6000;height:64px;animation:none}.vPl.dock .vpX{display:grid}.vPl.dock .vpTime{display:none}.vPl.dock .vpVol input{width:52px}
+.vPl.dock.flying{right:auto;bottom:auto}
+@media(max-width:520px){.vpTime{display:none}.vpVol input{width:48px}}
+@media(prefers-reduced-motion:reduce){.vPl,.vPl>*{transition:none}.vPl:not(.ready) .vpWave i{animation:none}}
 </style><style id="albGradCss">
 .rlChip.alb{border:0;color:#fff;text-shadow:0 1px 3px #000c,0 0 2px #0009;background:linear-gradient(115deg,var(--g1),var(--g2),var(--g1));background-size:260% 260%;animation:albShift 7s ease-in-out infinite;box-shadow:inset 0 0 0 1px #ffffff26,0 2px 10px #0006}
 .rlChip.alb.lt{color:#111;text-shadow:0 1px 2px #fff8}
@@ -1247,9 +1265,54 @@ const pickList=[];const reg=o=>pickList.push(o)-1;
 const TINT={'showtime':'#000000','all in love':'#000000','mr ye and jesus':'#c2a074','mitus touch':'#55565c','happy':'#1d3470'};
 const SNIP={"unreleased-can-u-be":{"src":"snippets/source/CAN U BE.mp3","start":0,"end":240.039184,"full":true},"unreleased-this-one-here":{"src":"snippets/source/Showtime.mp3","start":0,"end":291.63102,"full":true},"unreleased-mr-ye-and-jesus":{"src":"snippets/source/MR YE AND JESUS.mp3","start":0,"end":126.275918,"full":true},"unreleased-south-carolina":{"src":"snippets/source/South Carolina.mp3","start":0,"end":266.13551,"full":true},"unreleased-happy":{"src":"snippets/source/Happy.mp3","start":0,"end":12.277551,"full":true},"unreleased-pussy-cost-money":{"src":"snippets/source/PUSSY COST MONEY.mp3","start":0,"end":160.026122,"full":true},"unreleased-all-in-love":{"src":"snippets/source/All In Love.mp3","start":0,"end":185.835102,"full":true},"unreleased-living-so-italian":{"src":"snippets/source/Living-So-Italian-Full.mp3","start":0,"end":189.684376,"full":true},"unreleased-new-body":{"src":"snippets/source/New Body.mp3","start":0,"end":232.829388,"full":true},"unreleased-we-are-young":{"src":"snippets/source/We Are Young.mp3","start":0,"end":23.04,"full":true},"unreleased-everybody":{"src":"snippets/source/EVERYBODY.mp3","start":0,"end":227.265306,"full":true},"unreleased-cash-to-burn":{"src":"snippets/source/Cash To Burn.mp3","start":0,"end":141.061224,"full":true},"unreleased-pay-per-view":{"src":"snippets/source/PAY PER VIEW.mp3","start":0,"end":169.508571,"full":true},"unreleased-mitus-touch":{"src":"snippets/source/Mitus Touch.mp3","start":0,"end":131.004082,"full":true},"unreleased-melrose":{"src":"snippets/source/MELROSE.mp3","start":0,"end":416.156735,"full":true},"unreleased-after-you":{"src":"snippets/source/After You.mp3","start":0,"end":86.543673,"full":true},"unreleased-ye-about-mine":{"src":"snippets/source/YE ABOUT MINE.mp3","start":0,"end":150.125714,"full":true},"ebk-see-me-again":{"src":"snippets/source/See Me Again.mp3","start":0,"end":537.260408,"full":true},"ebk-mamas-boyfriend":{"src":"snippets/source/Mama's Boyfriend.mp3","start":0,"end":185.626122,"full":true},"ebk-flashing-lights-2":{"src":"snippets/source/Flashing Lights 2.mp3","start":0,"end":30.040816,"full":true},"ebk-bittersweet-poetry":{"src":"snippets/source/Bittersweet Poetry.mp3","start":0,"end":225.17551,"full":true}};
 let vAud=null;
-function vaultAudio(sn){const b=$('vPlay');if(!b)return;const stop=()=>{if(vAud){vAud.pause();vAud=null}if($('vPlay'))$('vPlay').textContent='▶ Play'};
-  b.onclick=()=>{if(vAud){stop();return}const a=new Audio(encodeURI(sn.src));vAud=a;b.textContent='■ Stop';a.addEventListener('loadedmetadata',()=>{try{a.currentTime=sn.start||0}catch(e){}a.play().catch(()=>{b.textContent='Audio file missing';vAud=null})},{once:true});a.addEventListener('timeupdate',()=>{if(!sn.full&&a.currentTime>=sn.end)stop()});a.addEventListener('ended',stop);a.addEventListener('error',()=>{b.textContent='Audio file missing';vAud=null})};
-  const t=setInterval(()=>{if(!$('vPlay')){clearInterval(t);if(vAud){vAud.pause();vAud=null}}},400)}
+/* Unreleased player: Play morphs into an oval (play/pause, waveform track, volume). Closing the popup glides it to the bottom-right corner. */
+let VP=null;
+const fmtT=s=>{s=Math.max(0,s|0);return (s/60|0)+':'+String(s%60).padStart(2,'0')};
+const ICON={play:'<svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>',pause:'<svg viewBox="0 0 24 24" width="18" height="18"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',
+ vol:'<svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+ mute:'<svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'};
+function vpStop(){if(!VP)return;try{VP.a.pause();VP.a.src=''}catch(e){}VP.raf&&cancelAnimationFrame(VP.raf);VP.root.remove();VP=null}
+async function vpWave(vp,src){const N=60;let bars=null;
+  try{const buf=await (await fetch(encodeURI(src))).arrayBuffer();const AC=window.AudioContext||window.webkitAudioContext,ctx=new AC();const au=await new Promise((res,rej)=>ctx.decodeAudioData(buf,res,rej));ctx.close&&ctx.close();
+    const ch=au.getChannelData(0),seg=Math.floor(ch.length/N),r=[];for(let b=0;b<N;b++){let s=0,c=0;for(let k=b*seg;k<(b+1)*seg;k+=7){s+=ch[k]*ch[k];c++}r.push(Math.sqrt(s/Math.max(1,c)))}
+    const srt=[...r].sort((a,b)=>a-b),hi=srt[Math.floor(N*.95)]||1;bars=r.map(v=>Math.min(1,v/hi))}catch(e){}
+  if(!VP||VP!==vp)return;vp.bars=bars||Array.from({length:N},(_,k)=>.35+.15*Math.sin(k/3));vp.root.classList.add('ready');
+  vp.wave.innerHTML=vp.bars.map(v=>`<i style="height:${Math.round(10+Math.pow(v,1.8)*90)}%"></i>`).join('');vp.els=[...vp.wave.children];vpTick()}
+function vpTick(){if(!VP)return;const a=VP.a,d=a.duration||VP.sn.end||0,f=d?a.currentTime/d:0;
+  if(VP.els){const n=Math.floor(f*VP.els.length);if(n!==VP.lastN){VP.els.forEach((e,k)=>e.classList.toggle('on',k<n));VP.lastN=n}}
+  VP.time.textContent=fmtT(a.currentTime)+' / '+fmtT(d);VP.raf=requestAnimationFrame(vpTick)}
+function vpBuild(sn,title,key){
+  const r=document.createElement('div');r.className='vPl';
+  r.innerHTML=`<button class="vpB" type="button" aria-label="Pause">${ICON.pause}</button><div class="vpMid"><span class="vpT">${esc(title)}</span><div class="vpWave" role="slider" aria-label="Seek" tabindex="0"></div></div><span class="vpTime">0:00 / 0:00</span>
+   <div class="vpVol"><button class="vpM" type="button" aria-label="Mute">${ICON.vol}</button><input type="range" min="0" max="1" step="0.01" aria-label="Volume"></div><button class="vpX" type="button" aria-label="Close player">✕</button>`;
+  const a=new Audio(encodeURI(sn.src));a.preload='auto';let vol=.8;try{const s=parseFloat(localStorage.getItem('vVol'));if(s>=0&&s<=1)vol=s}catch(e){}a.volume=vol;
+  const vp={root:r,a,sn,key,title,wave:r.querySelector('.vpWave'),time:r.querySelector('.vpTime'),btn:r.querySelector('.vpB'),els:null,lastN:-1,bars:null,raf:0};
+  const rng=r.querySelector('input'),mute=r.querySelector('.vpM');rng.value=vol;
+  const setVol=v=>{a.volume=v;try{localStorage.setItem('vVol',v)}catch(e){}mute.innerHTML=v===0?ICON.mute:ICON.vol;rng.style.setProperty('--v',v*100+'%')};setVol(vol);
+  rng.oninput=()=>{a.muted=false;setVol(+rng.value)};let last=vol||.8;mute.onclick=()=>{if(a.volume>0){last=a.volume;rng.value=0;setVol(0)}else{rng.value=last;setVol(last)}};
+  vp.btn.onclick=()=>{if(a.paused)a.play().catch(()=>{});else a.pause()};
+  a.addEventListener('play',()=>{vp.btn.innerHTML=ICON.pause;vp.btn.setAttribute('aria-label','Pause');r.classList.add('playing')});
+  a.addEventListener('pause',()=>{vp.btn.innerHTML=ICON.play;vp.btn.setAttribute('aria-label','Play');r.classList.remove('playing')});
+  a.addEventListener('ended',()=>{a.currentTime=0;vp.lastN=-1});
+  a.addEventListener('error',()=>{vp.time.textContent='Audio file missing'});
+  const seek=e=>{const b=vp.wave.getBoundingClientRect(),f=Math.min(1,Math.max(0,(e.clientX-b.left)/b.width));if(a.duration)a.currentTime=f*a.duration};
+  vp.wave.onclick=seek;vp.wave.onkeydown=e=>{if(e.key==='ArrowRight')a.currentTime+=5;if(e.key==='ArrowLeft')a.currentTime-=5;if(e.key===' '||e.key==='Enter'){e.preventDefault();vp.btn.click()}};
+  r.querySelector('.vpX').onclick=vpStop;
+  a.addEventListener('loadedmetadata',()=>{try{a.currentTime=sn.start||0}catch(e){}},{once:true});
+  vp.wave.innerHTML=Array.from({length:60},()=>'<i style="height:18%"></i>').join('');
+  return vp}
+function vpDock(){if(!VP||VP.root.classList.contains('dock'))return;const r=VP.root,b=r.getBoundingClientRect();
+  document.body.appendChild(r);r.classList.add('dock','flying');Object.assign(r.style,{left:b.left+'px',top:b.top+'px',width:b.width+'px',height:b.height+'px'});r.getBoundingClientRect();
+  const w=Math.min(380,innerWidth-32),h=64;Object.assign(r.style,{left:(innerWidth-16-w)+'px',top:(innerHeight-16-h)+'px',width:w+'px',height:h+'px'});
+  const done=()=>{r.classList.remove('flying');['left','top','width','height'].forEach(k=>r.style.removeProperty(k))};r.addEventListener('transitionend',function f(e){if(e.propertyName==='top'||e.propertyName==='width'){r.removeEventListener('transitionend',f);done()}});setTimeout(done,900)}
+function vaultAudio(sn,title,key){const b=$('vPlay'),slot=$('vSlot');if(!b||!slot)return;
+  b.onclick=()=>{
+    if(VP&&VP.key===key){/* same song already playing in the corner: bring it back into this popup */const r=VP.root,from=r.getBoundingClientRect();slot.innerHTML='';slot.appendChild(r);r.classList.remove('dock','flying');b.style.display='none';return}
+    vpStop();const w=slot.getBoundingClientRect().width,bw=b.offsetWidth;const vp=vpBuild(sn,title,key);VP=vp;
+    slot.style.minHeight='56px';slot.innerHTML='';const r=vp.root;r.style.width=bw+'px';r.classList.add('grow');slot.appendChild(r);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{r.style.width='100%';r.classList.remove('grow')}));setTimeout(()=>{if(VP===vp)r.style.removeProperty('width')},700);
+    vp.a.play().catch(()=>{vp.time.textContent='Audio file missing'});vpTick();vpWave(vp,sn.src)}}
+{const wait=setInterval(()=>{const s=document.getElementById('dsh');if(!s)return;clearInterval(wait);new MutationObserver(()=>{if(!s.classList.contains('on'))vpDock()}).observe(s,{attributes:true,attributeFilter:['class']})},500)}
 const ALB_GRAD={'lateregistration':['#7a4a24','#0b0907'],'graduation':['#7b3fb5','#f0a93a'],'goodassjob':['#4b1f78','#a066dd'],'yeezus2':['#c0181f','#d9bc8f'],
  'sohelpmegod':['#8d8d93','#0d0d10'],'war':['#000000','#ffffff'],'swish':['#ffb08a','#ffe066','lt'],'vultures2':['#d6b96b','#0b0b0b'],'yandhi':['#c7b0f2','#ffffff','lt'],
  'jesusisking':['#1c3fc4','#5b84ff'],'yebu':['#12204a','#c1121f'],'badbitchplaybook':['#d9b86c','#0a0a0a'],'vultures1':['#6b4528','#0a0806'],'watchthethrone':['#d4a72c','#ffffff','lt'],
@@ -1265,8 +1328,8 @@ function openVault(x,y){
   Detail.openRaw(`<div class="dhead"><div class="dcov"><img src="${esc(cover(x.cover))}" alt=""></div><div><h2 id="dTitle">${esc(x.title)}</h2><p>${esc(x.rarity)} · ${esc(x.credits)}</p></div></div>
   <div class="dgrid">${st('Originally made',esc(v.made))}${st('Leaked',yn(v.leaked))}${st('Snippets',yn(v.snips))}${st('Released',yn(v.rel))}${st('Status',y?'FOUND · '+esc(x.rarity.toUpperCase()):'NOT FOUND')}${st('Rarity',esc(x.rarity))}</div>
   <h3 class="rlH2" style="margin:16px 0 8px">Album${v.albums.length===1?'':'s'}</h3><div class="rlChips">${albChips(v.albums)}</div>
-  <h3 class="rlH2" style="margin:16px 0 8px">Features</h3><div class="rlChips">${chips(v.feat)}</div>${SNIP[x.key||x.catalog_key]?'<div style="margin-top:16px"><button class="chip" id="vPlay">▶ Play</button></div>':''}`,cover(x.cover),TINT[k]);
-  const sn=SNIP[x.key||x.catalog_key];if(sn)setTimeout(()=>vaultAudio(sn),0)}
+  <h3 class="rlH2" style="margin:16px 0 8px">Features</h3><div class="rlChips">${chips(v.feat)}</div>${SNIP[x.key||x.catalog_key]?'<div id="vSlot" style="margin-top:16px"><button class="chip" id="vPlay">▶ Play</button></div>':''}`,cover(x.cover),TINT[k]);
+  const sn=SNIP[x.key||x.catalog_key];if(sn)setTimeout(()=>vaultAudio(sn,x.title,x.key||x.catalog_key),0)}
 async function paintCol(){
   pickList.length=0;
   const box=$('rl-col');
