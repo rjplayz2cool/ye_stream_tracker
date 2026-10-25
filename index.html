@@ -169,6 +169,13 @@ header{display:flex;justify-content:space-between;align-items:center;padding:18p
 .qpR img{width:40px;height:40px;border-radius:8px;object-fit:cover;background:#2a2b33}.qpR b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qpR small{opacity:.6;font-size:12px}.qpR.now small{color:#7dffb0;opacity:1}
 @media(max-width:520px){.vpTime{display:none}.vpVol input{width:40px}}
 @media(prefers-reduced-motion:reduce){.vPl,.vPl>*{transition:none}.vPl.playing .vpC,.vPl:not(.ready) .vpWave i{animation:none}.qpop{animation:none}}
+</style><style id="adminProCss">
+.apHead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 10px}.apHead small{opacity:.6}.apHead input{margin-left:auto;padding:8px 14px;border-radius:99px;border:1px solid #ffffff2e;background:#ffffff10;color:#fff;font:inherit;min-width:200px}
+.apList{display:grid;gap:8px}.apRow{display:grid;grid-template-columns:auto minmax(90px,1fr) minmax(120px,180px) auto auto auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid #ffffff1c;border-radius:14px;background:#ffffff0a}
+.apImg{display:flex;gap:6px;align-items:center}.apAv{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#2a2b33}.apBn{width:72px;height:40px;border-radius:8px;object-fit:cover;background:#2a2b33}.apImg .none{display:grid;place-items:center;font-size:9px;opacity:.55;overflow:hidden}
+.apName small{margin-left:6px;padding:2px 6px;border-radius:99px;background:#fff;color:#000;font-weight:800;font-size:10px}.apIn{padding:8px 10px;border-radius:10px;border:1px solid #ffffff2e;background:#00000055;color:#fff;font:inherit;min-width:0}
+.apRow .chip:disabled{opacity:.35;cursor:not-allowed}
+@media(max-width:820px){.apRow{grid-template-columns:auto 1fr}.apRow .apIn{grid-column:1/-1}}
 </style><style id="albGradCss">
 .rlChip.alb{border:0;color:#fff;text-shadow:0 1px 3px #000c,0 0 2px #0009;background:linear-gradient(115deg,var(--g1),var(--g2),var(--g1));background-size:260% 260%;animation:albShift 7s ease-in-out infinite;box-shadow:inset 0 0 0 1px #ffffff26,0 2px 10px #0006}
 .rlChip.alb.lt{color:#111;text-shadow:0 1px 2px #fff8}
@@ -1633,10 +1640,11 @@ function demoAdm(box,u0,n0,m0,note){
 function paintAdm(){
   const box=$('rl-adm');if(!LIVE)return demoAdm(box);if(profile?.role!=='admin'){box.innerHTML='';return}
   box.innerHTML=`<div class="rlAdmin"><div class="grid"><label>Username<input id="aUser"></label><label>YZYMNY amount (negative removes)<input id="aAmt" type="number"></label><label>Free spins to grant<input id="aSp" type="number" min="1"></label><label>Song title<input id="aSong"></label><label>Luck: number of rolls<input id="aRolls" type="number" min="1"></label><label>Luck: multiplier<input id="aMult" type="number" step="0.1"></label></div>
-  <div class="acts" id="aActs"><button class="chip" data-a="money">Adjust YZYMNY</button><button class="chip" data-a="ty">Give TY</button><button class="chip" data-a="spins">Grant spins</button><button class="chip" data-a="give">Grant song</button><button class="chip" data-a="take">Remove song</button><button class="chip" data-a="luck">Set roll luck</button><button class="chip" data-a="bad">Set bad luck</button><button class="chip" data-a="inv">Load all inventories</button></div><div id="aMsg" aria-live="polite"></div><div id="aInv"></div></div>`;
+  <div class="acts" id="aActs"><button class="chip" data-a="money">Adjust YZYMNY</button><button class="chip" data-a="ty">Give TY</button><button class="chip" data-a="spins">Grant spins</button><button class="chip" data-a="give">Grant song</button><button class="chip" data-a="take">Remove song</button><button class="chip" data-a="luck">Set roll luck</button><button class="chip" data-a="bad">Set bad luck</button><button class="chip" data-a="inv">Load all inventories</button><button class="chip" data-a="pro">Manage profiles</button></div><div id="aMsg" aria-live="polite"></div><div id="aPro"></div><div id="aInv"></div></div>`;
   $('aActs').onclick=async e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a,u=$('aUser').value.trim(),n=x=>Number($(x).value),msgEl=$('aMsg');
     const call=async(fn,p,ok)=>{msgEl.textContent='Working…';const {data,error}=await sb.rpc(fn,p);msgEl.textContent=error?error.message:ok(data);if(!error)load()};
     if(a==='inv')return loadInv();
+    if(a==='pro')return loadPro();
     if(!u){msgEl.textContent='Enter a username.';return}
     if(a==='money')return call('admin_adjust_yzymny',{p_username:u,p_amount:n('aAmt')},()=>'Updated '+u+"'s YZYMNY.");
     if(a==='ty')return call('admin_give_ty',{p_username:u},()=>'Gave TY to '+u+'.');
@@ -1645,6 +1653,20 @@ function paintAdm(){
     if(a==='take')return call('admin_remove_item',{p_username:u,p_title:$('aSong').value.trim()},()=>'Removed song from '+u+'.');
     if(a==='luck')return call('admin_set_roll_luck',{p_username:u,p_rolls:n('aRolls'),p_multiplier:n('aMult')},()=>'Luck set for '+u+'.');
     if(a==='bad')return call('admin_set_bad_luck',{p_username:u,p_rolls:n('aRolls'),p_multiplier:n('aMult')},()=>'Bad luck set for '+u+'.')}}
+async function loadPro(){
+  const box=$('aPro');box.innerHTML='<p class="rlEmpty">Loading profiles…</p>';
+  const {data,error}=await sb.rpc('admin_list_profiles');if(error){box.innerHTML='<p class="rlEmpty">'+esc(error.message)+'</p>';return}
+  const rows=data||[],img=(u,cls)=>u&&/^(https?:|data:|covers\/|assets\/|\.?\/)/i.test(u)?`<img class="${cls}" src="${esc(u)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:`<span class="${cls} none">${u?esc(String(u).slice(0,14)):'none'}</span>`;
+  const draw=q=>{q=(q||'').toLowerCase();const list=rows.filter(r=>!q||String(r.username||'').toLowerCase().includes(q));
+    $('aProL').innerHTML=list.map(r=>`<div class="apRow" data-id="${esc(r.id)}" data-u="${esc(r.username||'')}"><div class="apImg">${img(r.avatar_url,'apAv')}${img(r.banner,'apBn')}</div><div class="apName"><b>${esc(r.username||'(no name)')}</b>${r.role==='admin'?' <small>admin</small>':''}</div>
+      <input class="apIn" value="${esc(r.username||'')}" maxlength="20" aria-label="New username for ${esc(r.username||'')}"><button class="chip" data-p="name">Rename</button><button class="chip rlDanger" data-p="av"${r.avatar_url?'':' disabled'}>Remove picture</button><button class="chip rlDanger" data-p="bn"${r.banner?'':' disabled'}>Remove banner</button></div>`).join('')||'<p class="rlEmpty">No users match.</p>'};
+  box.innerHTML=`<div class="apHead"><b>Profiles</b><small>${rows.length} users</small><input id="aProQ" type="search" placeholder="Search usernames" aria-label="Search profiles"></div><div id="aProL" class="apList"></div>`;draw('');
+  $('aProQ').oninput=e=>draw(e.target.value);
+  $('aProL').onclick=async e=>{const b=e.target.closest('button[data-p]');if(!b||b.disabled)return;const row=b.closest('.apRow'),id=row.dataset.id,u=row.dataset.u,m=$('aMsg'),k=b.dataset.p;
+    if(k==='name'){const nn=row.querySelector('.apIn').value.trim();if(nn===u){m.textContent='That is already their username.';return}
+      m.textContent='Working…';const r=await sb.rpc('admin_set_username',{p_user:id,p_username:nn});if(r.error){m.textContent=r.error.message;return}m.textContent='Renamed '+u+' to '+nn+'.';return loadPro()}
+    const what=k==='av'?'profile picture':'banner';if(!confirm('Remove '+u+"'s "+what+'?'))return;
+    m.textContent='Working…';const r=await sb.rpc('admin_clear_profile_media',{p_user:id,p_avatar:k==='av',p_banner:k==='bn'});if(r.error){m.textContent=r.error.message;return}m.textContent='Removed '+u+"'s "+what+'.';loadPro()}}
 async function loadInv(){
   const box=$('aInv');box.innerHTML='<p class="rlEmpty">Loading inventories…</p>';
   const {data,error}=await sb.rpc('admin_list_inventories');if(error){box.innerHTML='<p class="rlEmpty">'+esc(error.message)+'</p>';return}
