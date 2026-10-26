@@ -1042,11 +1042,13 @@ function nextMark(n){const k=10**Math.floor(Math.log10(Math.max(n,1)));for(const
 function ago(n){return n==null?'—':n<1?'today':n<60?n+' days ago':n<730?Math.round(n/30.4)+' months ago':(n/365).toFixed(1)+' years ago'}
 function fdate(x){if(/^\d{4}$/.test(String(x)))return String(x);const t=Date.parse(x);return Number.isFinite(t)?new Date(t).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric',timeZone:'UTC'}):(x||'—')}
 
+const ALB_NAMES={'808s':'808s & Heartbreak','bully':'BULLY','collegedropout':'The College Dropout','donda':'Donda','donda2':'DONDA 2','graduation':'Graduation','jesusisking':'Jesus Is King','kidsseeghosts':'Kids See Ghosts','lateregistration':'Late Registration','mbdtf':'My Beautiful Dark Twisted Fantasy','tlop':'The Life Of Pablo','vultures1':'VULTURES 1','vultures2':'VULTURES 2','watchthethrone':'Watch The Throne','ye':'ye','yeezus':'Yeezus','cruelsummer':'Cruel Summer','bullydeluxe':'BULLY (Deluxe)'};
+const albLabel=s=>{s=String(s||'').trim();if(!s)return '';const k=s.toLowerCase().replace(/[^a-z0-9]/g,'');if(ALB_NAMES[k])return ALB_NAMES[k];return s===s.toLowerCase()?s.replace(/\b[a-z]/g,c=>c.toUpperCase()):s};
 function info(x,kind){
   const m=meta(x),am=(window.ALBUM_META||{})[x.spotify]||null;let rel=m?.releaseDate||am?.releaseDate||null,peak=m?.billboardPeak||am?.billboardPeak||null,tracks=[];
   if(kind==='album'&&C){try{tracks=C.songsForAlbum(x)}catch(e){}
     if(!rel){const ds=tracks.map(t=>meta(t)?.releaseDate).filter(Boolean).sort();rel=ds[0]||null}}
-  return {rel,peak,tracks,album:m?.album||'',artist:(window.creditsFor?creditsFor(x):(m?.artist||'')),title:(x._displayTitle||x.name||m?.title||'')};
+  return {rel,peak,tracks,album:albLabel(m?.album),artist:(window.creditsFor?creditsFor(x):(m?.artist||'')),title:(x._displayTitle||x.name||m?.title||'')};
 }
 
 function lyrBox(x,I){const t=String(I.title||x.name||'').replace(/\s*[\(\[][^\)\]]*[\)\]]/g,'').replace(/\s+-\s+.*$/,'').trim(),q=encodeURIComponent('Kanye West '+t),sp=x.spotify||'',gid=(window.GENIUS_IDS||{})[idOf(x)];
