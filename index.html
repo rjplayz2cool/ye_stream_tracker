@@ -149,7 +149,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:18p
 .vPl .vpC{flex:0 0 40px;width:40px;height:40px;border-radius:50%;object-fit:cover;background:#2a2b33;transition:transform .4s}.vPl.playing .vpC{animation:vpSpin 14s linear infinite}
 @keyframes vpSpin{to{transform:rotate(360deg)}}
 .vPl .vpB{all:unset;flex:0 0 36px;height:36px;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;cursor:pointer}.vPl .vpB:focus-visible,.vPl .vpM:focus-visible,.vPl .vpX:focus-visible,.vPl .vpN:focus-visible,.vPl .vpQ:focus-visible{outline:2px solid #fff;outline-offset:2px}
-.vpMid{flex:1 1 90px;min-width:0;overflow:hidden;display:grid;gap:3px}.vpT{font:700 12px/1.1 inherit;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vpMid{flex:1 1 90px;min-width:0;overflow:hidden;display:grid;gap:3px}.vpT{font:700 12px/1.1 inherit;opacity:.9;white-space:nowrap;overflow:hidden;container-type:inline-size}.vpT>span{display:inline-block;white-space:nowrap;animation:vpMq 8s ease-in-out infinite alternate}@keyframes vpMq{0%,18%{transform:translateX(0)}82%,100%{transform:translateX(min(0px,calc(100cqw - 100%)))}}@media(prefers-reduced-motion:reduce){.vpT>span{animation:none}}
 .vpWave{display:flex;align-items:center;gap:2px;height:24px;cursor:pointer}
 .vpWave i{flex:1;min-width:1px;border-radius:2px;background:#ffffff40;transition:height .5s,background .15s}.vpWave i.on{background:#fff}
 .vPl:not(.ready) .vpWave i{animation:vpLoad 1s ease-in-out infinite alternate}.vPl:not(.ready) .vpWave i:nth-child(3n){animation-delay:.2s}.vPl:not(.ready) .vpWave i:nth-child(3n+1){animation-delay:.4s}
@@ -1325,7 +1325,7 @@ function spReady(){if(SPC)return Promise.resolve(SPC);if(SPP)return SPP;
           if(was&&d.isPaused&&d.duration&&d.position>=d.duration-1500)plNext(true)});res(c)})};
     const s=document.createElement('script');s.src='https://open.spotify.com/embed/iframe-api/v1';s.async=true;s.onerror=()=>rej(new Error('spotify'));document.head.appendChild(s);setTimeout(()=>rej(new Error('timeout')),15000)})}
 function plLoad(i){const vp=VP;if(!vp)return;vp.idx=i;const it=vp.cur=vp.q[i];
-  vp.root.querySelector('.vpC').src=it.cover||'';vp.root.querySelector('.vpC').style.visibility=it.cover?'visible':'hidden';vp.title.textContent=it.title;vp.title.title=it.title+(it.sub?' · '+it.sub:'');
+  vp.root.querySelector('.vpC').src=it.cover||'';vp.root.querySelector('.vpC').style.visibility=it.cover?'visible':'hidden';vp.title.innerHTML='<span></span>';vp.title.firstChild.textContent=it.title;vp.title.title=it.title+(it.sub?' · '+it.sub:'');
   vp.wave.innerHTML=Array.from({length:60},()=>'<i style="height:18%"></i>').join('');vp.els=null;vp.root.classList.remove('ready');
   const ro=vp.root.querySelector('.vpVol input');ro.disabled=it.k==='s';ro.title=it.k==='s'?'Volume for released songs is controlled in Spotify or your device':'';
   qpPaint();
