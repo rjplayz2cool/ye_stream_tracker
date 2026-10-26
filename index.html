@@ -149,12 +149,12 @@ header{display:flex;justify-content:space-between;align-items:center;padding:18p
 .vPl .vpC{flex:0 0 40px;width:40px;height:40px;border-radius:50%;object-fit:cover;background:#2a2b33;transition:transform .4s}.vPl.playing .vpC{animation:vpSpin 14s linear infinite}
 @keyframes vpSpin{to{transform:rotate(360deg)}}
 .vPl .vpB{all:unset;flex:0 0 36px;height:36px;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;cursor:pointer}.vPl .vpB:focus-visible,.vPl .vpM:focus-visible,.vPl .vpX:focus-visible,.vPl .vpN:focus-visible,.vPl .vpQ:focus-visible{outline:2px solid #fff;outline-offset:2px}
-.vpMid{flex:1 1 90px;min-width:0;overflow:hidden;display:grid;gap:3px}.vpT{font:700 12px/1.1 inherit;opacity:.9;white-space:nowrap;overflow:hidden;container-type:inline-size}.vpT>span{display:inline-block;white-space:nowrap;animation:vpMq 8s ease-in-out infinite alternate}@keyframes vpMq{0%,18%{transform:translateX(0)}82%,100%{transform:translateX(min(0px,calc(100cqw - 100%)))}}@media(prefers-reduced-motion:reduce){.vpT>span{animation:none}}
+.vpMid{flex:1 1 90px;min-width:0;overflow:hidden;display:grid;gap:3px}.vpT{font:700 12px/1.1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;opacity:.9;white-space:nowrap;overflow:hidden}.vpT>span{display:inline-block;white-space:nowrap}.vpT.ov>span{animation:vpMq 8s ease-in-out infinite alternate}@keyframes vpMq{0%,18%{transform:translateX(0)}82%,100%{transform:translateX(var(--mv,0px))}}@media(prefers-reduced-motion:reduce){.vpT.ov>span{animation:none}}
 .vpWave{display:flex;align-items:center;gap:2px;height:24px;cursor:pointer}
 .vpWave i{flex:1;min-width:1px;border-radius:2px;background:#ffffff40;transition:height .5s,background .15s}.vpWave i.on{background:#fff}
 .vPl:not(.ready) .vpWave i{animation:vpLoad 1s ease-in-out infinite alternate}.vPl:not(.ready) .vpWave i:nth-child(3n){animation-delay:.2s}.vPl:not(.ready) .vpWave i:nth-child(3n+1){animation-delay:.4s}
 @keyframes vpLoad{to{height:46%}}
-.vpTime{flex:0 0 auto;font:600 11px inherit;opacity:.75;white-space:nowrap;font-variant-numeric:tabular-nums}
+.vpTime{flex:0 0 auto;font:600 11px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;opacity:.75;white-space:nowrap;font-variant-numeric:tabular-nums}
 .vpVol{display:flex;align-items:center;gap:2px;flex:0 0 auto}.vpM,.vpX,.vpN,.vpQ{all:unset;cursor:pointer;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;opacity:.9;flex:0 0 28px}.vpM:hover,.vpX:hover,.vpN:hover,.vpQ:hover{background:#ffffff1c}
 .vpVol input{-webkit-appearance:none;appearance:none;width:56px;height:4px;border-radius:4px;background:linear-gradient(90deg,#fff var(--v,80%),#ffffff33 0);outline:none;cursor:pointer}.vpVol input:disabled{opacity:.35;cursor:not-allowed}
 .vpVol input::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#fff}.vpVol input::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:#fff}
@@ -163,7 +163,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:18p
 .vPl.dock.flying{right:auto;bottom:auto}
 .qpop{position:fixed;right:16px;bottom:92px;width:min(440px,calc(100vw - 32px));max-height:min(54vh,460px);display:flex;flex-direction:column;background:#101116f2;backdrop-filter:blur(14px);border:1px solid #ffffff2e;border-radius:20px;box-shadow:0 14px 40px #000a;color:#fff;z-index:7000;animation:qpIn .3s cubic-bezier(.2,.8,.2,1)}
 @keyframes qpIn{from{opacity:0;transform:translateY(12px) scale(.97)}}
-.qpH{display:flex;align-items:baseline;gap:10px;padding:14px 16px 8px}.qpH b{font-size:16px}.qpH span{font-size:12px;opacity:.6;flex:1}.qpS{all:unset;cursor:pointer;font:700 12px inherit;padding:6px 10px;border-radius:99px;background:#ffffff1c}.qpS:focus-visible,.qpR:focus-visible{outline:2px solid #fff}
+.qpH{display:flex;align-items:baseline;gap:10px;padding:14px 16px 8px}.qpH b{font-size:16px}.qpH span{font-size:12px;opacity:.6;flex:1}.qpS{all:unset;cursor:pointer;font:700 12px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:6px 10px;border-radius:99px;background:#ffffff1c}.qpS:focus-visible,.qpR:focus-visible{outline:2px solid #fff}
 .qpL{overflow:auto;padding:0 8px 10px;display:grid;gap:2px}
 .qpR{will-change:transform;all:unset;box-sizing:border-box;display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:center;padding:6px 8px;border-radius:12px;cursor:pointer}.qpR:hover{background:#ffffff14}.qpR.now{background:#ffffff1f}
 .qpR img{width:40px;height:40px;border-radius:8px;object-fit:cover;background:#2a2b33}.qpR b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qpR small{opacity:.6;font-size:12px}.qpR.now small{color:#7dffb0;opacity:1}
@@ -1325,7 +1325,7 @@ function spReady(){if(SPC)return Promise.resolve(SPC);if(SPP)return SPP;
           if(was&&d.isPaused&&d.duration&&d.position>=d.duration-1500)plNext(true)});res(c)})};
     const s=document.createElement('script');s.src='https://open.spotify.com/embed/iframe-api/v1';s.async=true;s.onerror=()=>rej(new Error('spotify'));document.head.appendChild(s);setTimeout(()=>rej(new Error('timeout')),15000)})}
 function plLoad(i){const vp=VP;if(!vp)return;vp.idx=i;const it=vp.cur=vp.q[i];
-  vp.root.querySelector('.vpC').src=it.cover||'';vp.root.querySelector('.vpC').style.visibility=it.cover?'visible':'hidden';vp.title.innerHTML='<span></span>';vp.title.firstChild.textContent=it.title;vp.title.title=it.title+(it.sub?' · '+it.sub:'');
+  vp.root.querySelector('.vpC').src=it.cover||'';vp.root.querySelector('.vpC').style.visibility=it.cover?'visible':'hidden';vp.title.innerHTML='<span></span>';vp.title.firstChild.textContent=it.title;vp.title.title=it.title+(it.sub?' · '+it.sub:'');requestAnimationFrame(()=>vpFit(vp));setTimeout(()=>vpFit(vp),700);
   vp.wave.innerHTML=Array.from({length:60},()=>'<i style="height:18%"></i>').join('');vp.els=null;vp.root.classList.remove('ready');
   const ro=vp.root.querySelector('.vpVol input');ro.disabled=it.k==='s';ro.title=it.k==='s'?'Volume for released songs is controlled in Spotify or your device':'';
   qpPaint();
@@ -1333,6 +1333,7 @@ function plLoad(i){const vp=VP;if(!vp)return;vp.idx=i;const it=vp.cur=vp.q[i];
   else{try{vp.a.pause()}catch(e){}vp.sp={pos:0,dur:0,at:performance.now(),playing:false};setPlayingUI(vp,false);vp.time.textContent='Loading…';
     spReady().then(c=>{if(VP!==vp||vp.cur!==it)return;c.loadUri('spotify:track:'+it.id);setTimeout(()=>{if(VP===vp&&vp.cur===it)c.play()},700)}).catch(()=>{if(VP===vp)vp.time.textContent='Open in Spotify'; window.open&&0})}
   vpWave(vp,it)}
+function vpFit(vp){const s=vp.title&&vp.title.firstChild;if(!s||!s.scrollWidth)return;const d=Math.min(0,vp.title.clientWidth-s.scrollWidth);vp.title.style.setProperty('--mv',d+'px');vp.title.classList.toggle('ov',d<-1)}
 function plNext(auto){if(!VP)return;if(VP.idx+1<VP.q.length){VP.nx=Math.max(0,(VP.nx||0)-1);plLoad(VP.idx+1)}else if(!auto){VP.nx=0;plLoad(0)}}
 /* queue popup */
 let QP=null;
@@ -1374,6 +1375,7 @@ function vpBuild(){
   a.addEventListener('ended',()=>plNext(true));a.addEventListener('error',()=>{if(a.getAttribute('src'))vp.time.textContent='Audio file missing'});
   const seek=e=>{const b=vp.wave.getBoundingClientRect(),f=Math.min(1,Math.max(0,(e.clientX-b.left)/b.width));if(vp.cur.k==='f'){if(a.duration)a.currentTime=f*a.duration}else if(SPC&&vp.sp.dur)SPC.seek(f*vp.sp.dur)};
   vp.wave.onclick=seek;vp.wave.onkeydown=e=>{if(e.key==='ArrowRight'&&vp.cur.k==='f')a.currentTime+=5;if(e.key==='ArrowLeft'&&vp.cur.k==='f')a.currentTime-=5;if(e.key===' '||e.key==='Enter'){e.preventDefault();vp.btn.click()}};
+  if(window.ResizeObserver)new ResizeObserver(()=>vpFit(vp)).observe(vp.title);
   r.querySelector('.vpN').onclick=()=>plNext(false);r.querySelector('.vpQ').onclick=qpToggle;r.querySelector('.vpX').onclick=vpStop;
   return vp}
 function vpDock(){if(!VP||VP.root.classList.contains('dock'))return;const r=VP.root,b=r.getBoundingClientRect();
