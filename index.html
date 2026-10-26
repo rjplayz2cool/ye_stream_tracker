@@ -291,7 +291,19 @@ html .chip:disabled{opacity:.45;cursor:not-allowed}
 .rlSc img,.rlSc .rlArt{width:64px;height:64px;border-radius:10px;object-fit:cover;display:grid;place-items:center;background:linear-gradient(135deg,var(--a),var(--b));font:900 26px 'Big Shoulders Display'}
 .rlScT{display:grid;gap:5px;min-width:0}.rlScT b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rlScT small{color:var(--rc,#fff);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:11px}
 .rlScT .chip{padding:6px 12px;font-size:13px;justify-self:start}
-.rlSc.sold{opacity:.4}.rlSc.pick{box-shadow:0 0 0 3px var(--b1)}.rlSc[data-pick]{cursor:pointer}.alreadyOwnedBadge{justify-self:start;display:inline-block;padding:3px 8px;border:1px solid #38c97666;border-radius:7px;background:#38c97614;color:#71dda1;font-size:11px;font-weight:800;letter-spacing:0;text-transform:none}.rlG>.rlSc .alreadyOwnedBadge{position:absolute;top:22px;left:22px;margin:0;padding:4px 9px;background:#06180fe8;border-color:#38c976;box-shadow:0 2px 10px #0008}.rlG[style]>.rlSc .alreadyOwnedBadge{position:static;background:#38c97614}
+.rlSc.sold{opacity:.4}.rlSc.pick{box-shadow:0 0 0 3px var(--b1)}.rlSc[data-pick]{cursor:pointer}
+.rlBar2 select,.rlPane select{appearance:none;-webkit-appearance:none;background:#0d0d11 url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%278%27 viewBox=%270 0 12 8%27%3E%3Cpath d=%27M1 1.5l5 5 5-5%27 fill=%27none%27 stroke=%27%23ffffff%27 stroke-width=%271.8%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E") no-repeat right 15px center;background-size:12px 8px;color:#fff;border:1px solid #ffffff2e;border-radius:999px;padding:10px 40px 10px 18px;font:inherit;font-weight:600;font-size:14px;cursor:pointer;transition:border-color .15s,box-shadow .15s,background-color .15s}
+.rlBar2 select:hover,.rlPane select:hover{border-color:#ffffff70;background-color:#15151b}
+.rlBar2 select:focus-visible,.rlPane select:focus-visible,.rlSearch input:focus-visible{outline:0;border-color:#ff5a7a;box-shadow:0 0 0 3px #ff5a7a33}
+.rlBar2 select option{background:#15151b;color:#fff}
+.rlBar2 label{display:flex;align-items:center;gap:10px;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#fffb}
+.rlBar2 label select{text-transform:none;letter-spacing:0}
+.rlSearch{position:relative;flex:1;min-width:200px;max-width:380px}
+.rlSearch input,.rlBar2 #mQ{width:100%;box-sizing:border-box;background:#0d0d11 url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2715%27 height=%2715%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23ffffffaa%27 stroke-width=%272.4%27 stroke-linecap=%27round%27%3E%3Ccircle cx=%2711%27 cy=%2711%27 r=%277%27/%3E%3Cpath d=%27M20 20l-3.5-3.5%27/%3E%3C/svg%3E") no-repeat 15px center;border:1px solid #ffffff2e;border-radius:999px;padding:10px 16px 10px 40px;color:#fff;font:inherit;font-size:14px;transition:border-color .15s,box-shadow .15s}
+.rlSearch input:hover,.rlBar2 #mQ:hover{border-color:#ffffff70}
+.rlBar2 #mQ:focus-visible{outline:0;border-color:#ff5a7a;box-shadow:0 0 0 3px #ff5a7a33}
+#hCount{color:#fff9;font-size:14px}
+.alreadyOwnedBadge{justify-self:start;display:inline-block;padding:3px 8px;border:1px solid #38c97666;border-radius:7px;background:#38c97614;color:#71dda1;font-size:11px;font-weight:800;letter-spacing:0;text-transform:none}.rlG>.rlSc .alreadyOwnedBadge{position:absolute;top:22px;left:22px;margin:0;padding:4px 9px;background:#06180fe8;border-color:#38c976;box-shadow:0 2px 10px #0008}.rlG[style]>.rlSc .alreadyOwnedBadge{position:static;background:#38c97614}
 [data-r=EBK]{--rc:#ff1f3d;--rg:#ff1f3d;--pg:#d1001f;--pt:#fff}
 [data-r=Unreleased]{--rc:#ff5a1f;--rg:linear-gradient(90deg,#ff1f3d,#ff8a00,#ff1f3d);--pg:linear-gradient(90deg,#e0102e,#ff8a00,#e0102e);--pt:#fff}
 [data-r=Mythic]{--rc:#ffd86b;--rg:linear-gradient(90deg,#f5b800,#fff,#f5b800);--pg:linear-gradient(90deg,#f5b800,#fff,#f5b800);--pt:#2a1d00}
@@ -1477,9 +1489,11 @@ async function liveHist(box){
   const [i,l]=await Promise.all([sb.from('inventory').select('*').eq('owner_id',user.id),sb.from('market_listings').select('inventory_id').eq('seller_id',user.id).eq('active',true)]);
   if(k!==lTok.hist)return;if(i.error)return lerr(box,i.error);
   const listed=new Set((l.data||[]).map(x=>x.inventory_id)),inv=(i.data||[]).map(lr);
-  const cmp={new:(a,b)=>new Date(b.acquired_at)-new Date(a.acquired_at),old:(a,b)=>new Date(a.acquired_at)-new Date(b.acquired_at),rar:(a,b)=>RORD.indexOf(a.rarity)-RORD.indexOf(b.rarity),az:(a,b)=>String(a.title).localeCompare(b.title)}[dx.sort]||(()=>0);
+  const cmp={new:(a,b)=>new Date(b.acquired_at)-new Date(a.acquired_at),old:(a,b)=>new Date(a.acquired_at)-new Date(b.acquired_at),rar:(a,b)=>RORD.indexOf(a.rarity)-RORD.indexOf(b.rarity),rarL:(a,b)=>RORD.indexOf(b.rarity)-RORD.indexOf(a.rarity),az:(a,b)=>String(a.title).localeCompare(b.title),za:(a,b)=>String(b.title).localeCompare(a.title)}[dx.sort]||(()=>0);
   inv.sort(cmp);
-  box.innerHTML=`<div class="rlBar2"><label>Sort <select id="hSort">${[['new','Newest'],['old','Oldest'],['rar','Rarest'],['az','A–Z']].map(([v,n])=>`<option value="${v}" ${dx.sort===v?'selected':''}>${n}</option>`).join('')}</select></label><span>${inv.length} songs</span></div><div class="rlG">${inv.map(r=>sc(r,listed.has(r.id)?'<small>LISTED</small>':`<button class="chip" data-qs="${esc(r.id)}" data-v="${qsv(r)}" data-t="${esc(r.title)}">Quicksell · ${num(qsv(r))}</button>`)).join('')||empty('No songs yet. Roll or buy one from the Shop.')}</div>`;
+  box.innerHTML=`<div class="rlBar2"><div class="rlSearch"><input id="hQ" type="search" placeholder="Search your songs" value="${esc(dx.hq||'')}" autocomplete="off"></div><label>Sort <select id="hSort">${[['new','Newest first'],['old','Oldest first'],['rar','Rarest first'],['rarL','Rarest last'],['az','A–Z'],['za','Z–A']].map(([v,n])=>`<option value="${v}" ${dx.sort===v?'selected':''}>${n}</option>`).join('')}</select></label><span id="hCount"></span></div><div class="rlG" id="hList"></div>`;
+  const drawH=()=>{const q=(dx.hq||'').trim().toLowerCase(),a=q?inv.filter(r=>[r.title,r.credits,r.album,r.rarity].join(' ').toLowerCase().includes(q)):inv;$('hCount').textContent=a.length+(q?' of '+inv.length:'')+' songs';$('hList').innerHTML=a.map(r=>sc(r,listed.has(r.id)?'<small>LISTED</small>':`<button class="chip" data-qs="${esc(r.id)}" data-v="${qsv(r)}" data-t="${esc(r.title)}">Quicksell · ${num(qsv(r))}</button>`)).join('')||empty(q?'No songs match your search.':'No songs yet. Roll or buy one from the Shop.')};drawH();
+  $('hQ').oninput=e=>{dx.hq=e.target.value;drawH()};
   $('hSort').onchange=e=>{dx.sort=e.target.value;liveHist(box)};
   box.onclick=async e=>{const b=e.target.closest('[data-qs]');if(!b)return;if(!confirm('Quicksell '+b.dataset.t+' for '+num(b.dataset.v)+' YZYMNY? This cannot be undone.'))return;
     b.disabled=true;const {error}=await sb.rpc('quicksell_inventory',{p_inventory_id:b.dataset.qs});if(error){alert(error.message);b.disabled=false;return}await load();liveHist(box)}}
@@ -1540,9 +1554,11 @@ async function liveLog(box){
 
 function paintHist(){
   const box=$('rl-hist');if(LIVE)return liveHist(box);
-  const cmp={new:(a,b)=>new Date(b.acquired_at)-new Date(a.acquired_at),old:(a,b)=>new Date(a.acquired_at)-new Date(b.acquired_at),rar:(a,b)=>RORD.indexOf(a.rarity)-RORD.indexOf(b.rarity),az:(a,b)=>a.title.localeCompare(b.title)}[dx.sort];
+  const cmp={new:(a,b)=>new Date(b.acquired_at)-new Date(a.acquired_at),old:(a,b)=>new Date(a.acquired_at)-new Date(b.acquired_at),rar:(a,b)=>RORD.indexOf(a.rarity)-RORD.indexOf(b.rarity),rarL:(a,b)=>RORD.indexOf(b.rarity)-RORD.indexOf(a.rarity),az:(a,b)=>a.title.localeCompare(b.title),za:(a,b)=>b.title.localeCompare(a.title)}[dx.sort];
   const inv=[...demo.inv].sort(cmp);
-  box.innerHTML=`<div class="rlBar2"><label>Sort <select id="hSort">${[['new','Newest'],['old','Oldest'],['rar','Rarest'],['az','A–Z']].map(([v,n])=>`<option value="${v}" ${dx.sort===v?'selected':''}>${n}</option>`).join('')}</select></label><span>${inv.length} songs</span></div><div class="rlG">${inv.map(r=>sc(r,`<button class="chip" data-qs="${rid(r)}">Quicksell · ${num(QS(r))}</button>`)).join('')||empty('No songs yet. Roll or buy one from the Shop.')}</div>`;
+  box.innerHTML=`<div class="rlBar2"><div class="rlSearch"><input id="hQ" type="search" placeholder="Search your songs" value="${esc(dx.hq||'')}" autocomplete="off"></div><label>Sort <select id="hSort">${[['new','Newest first'],['old','Oldest first'],['rar','Rarest first'],['rarL','Rarest last'],['az','A–Z'],['za','Z–A']].map(([v,n])=>`<option value="${v}" ${dx.sort===v?'selected':''}>${n}</option>`).join('')}</select></label><span id="hCount"></span></div><div class="rlG" id="hList"></div>`;
+  const drawH=()=>{const q=(dx.hq||'').trim().toLowerCase(),a=q?inv.filter(r=>[r.title,r.credits,r.album,r.rarity].join(' ').toLowerCase().includes(q)):inv;$('hCount').textContent=a.length+(q?' of '+inv.length:'')+' songs';$('hList').innerHTML=a.map(r=>sc(r,`<button class="chip" data-qs="${rid(r)}">Quicksell · ${num(QS(r))}</button>`)).join('')||empty(q?'No songs match your search.':'No songs yet. Roll or buy one from the Shop.')};drawH();
+  $('hQ').oninput=e=>{dx.hq=e.target.value;drawH()};
   $('hSort').onchange=e=>{dx.sort=e.target.value;paintHist()};
   box.onclick=e=>{const b=e.target.closest('[data-qs]');if(!b)return;const i=demo.inv.findIndex(r=>String(rid(r))===b.dataset.qs);if(i<0)return;const r=demo.inv.splice(i,1)[0];demo.balance+=QS(r);plog('Quicksold '+r.title+' for '+num(QS(r))+' YZYMNY');paint();paintHist()}}
 
