@@ -15,18 +15,26 @@ const css=`
 .tEdge[hidden]{display:none}
 .tEdge b{display:block;width:26px;height:26px;border-top:6px solid #fff;border-right:6px solid #fff;border-radius:3px;rotate:45deg;font-size:0;filter:drop-shadow(0 2px 12px #000b);animation:nudge 2s ease-in-out infinite;transition:scale .3s cubic-bezier(.34,1.45,.5,1)}
 .tEdge.left b{rotate:-135deg;animation-name:nudgeL}
-.tEdge span{font:700 10px/1 system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#fffc;text-shadow:0 1px 8px #000}
 .tEdge:hover b,.tEdge:focus-visible b{scale:1.25}
 .tEdge:focus-visible{outline:3px solid #fff;outline-offset:2px;border-radius:14px}
 @media(min-width:701px){.tScr[data-s=rec],.tScr[data-s=merch]{padding:0 50px}}
-@media(max-width:700px){.tEdge{width:36px;left:2px}.tEdge:not(.left){right:2px;left:auto}.tEdge span{display:none}.tScr[data-s=rec],.tScr[data-s=merch]{padding:0 26px}.tEdge b{width:20px;height:20px;border-width:5px}}
+@media(max-width:700px){.tEdge{width:36px;left:2px}.tEdge:not(.left){right:2px;left:auto}.tScr[data-s=rec],.tScr[data-s=merch]{padding:0 26px}.tEdge b{width:20px;height:20px;border-width:5px}}
 .tHead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:22px 0 14px}
 .tHead h2{margin:0;font:800 clamp(22px,3.4vw,34px)/1 system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase}
 .tHead p{margin:6px 0 0;color:#fff9;font-size:13px}
 .tYSel{position:relative}
-.tYSel select{appearance:none;-webkit-appearance:none;background:#ffffff12;color:#fff;border:1px solid #ffffff33;border-radius:12px;padding:10px 38px 10px 16px;font:700 15px/1 system-ui,sans-serif;letter-spacing:.08em;cursor:pointer}
-.tYSel select:hover{background:#ffffff1f}.tYSel select option{color:#000}
-.tYSel::after{content:"";position:absolute;right:15px;top:50%;width:8px;height:8px;border-right:2px solid #fffc;border-bottom:2px solid #fffc;translate:0 -70%;rotate:45deg;pointer-events:none}
+.tYBtn{display:inline-flex;align-items:center;gap:14px;background:#3a1a1e8c;color:#fff;border:2px solid #ffffffd9;border-radius:15px;padding:9px 16px 9px 20px;font:800 17px/1 system-ui,sans-serif;letter-spacing:.06em;cursor:pointer;backdrop-filter:blur(6px);transition:background .2s,border-color .2s,transform .2s}
+.tYBtn:hover{background:#4d2227a6;border-color:#fff}
+.tYBtn:focus-visible{outline:3px solid #fff6;outline-offset:3px}
+.tYBtn i{width:9px;height:9px;border-right:2px solid #fff;border-bottom:2px solid #fff;rotate:45deg;translate:0 -3px;transition:rotate .25s cubic-bezier(.34,1.45,.5,1),translate .25s}
+.tYSel[data-open=true] .tYBtn i{rotate:225deg;translate:0 2px}
+.tYMenu{position:absolute;right:0;top:calc(100% + 10px);z-index:60;min-width:100%;margin:0;padding:6px;list-style:none;background:#150a0cf0;border:1px solid #ffffff2e;border-radius:16px;box-shadow:0 18px 40px #000a,0 0 0 1px #0006;backdrop-filter:blur(14px);transform-origin:top right;animation:tYIn .18s cubic-bezier(.2,.9,.3,1.1)}
+.tYMenu[hidden]{display:none}
+@keyframes tYIn{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:none}}
+.tYMenu li{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:10px 14px;border-radius:11px;color:#ffffffd9;font:700 15px/1 system-ui,sans-serif;letter-spacing:.06em;cursor:pointer;outline:0;transition:background .12s,color .12s}
+.tYMenu li:hover,.tYMenu li:focus-visible{background:#ffffff1f;color:#fff}
+.tYMenu li[aria-selected=true]{background:#fff;color:#000}
+.tYMenu li[aria-selected=true]::after{content:"";width:5px;height:10px;border-right:2.5px solid #000;border-bottom:2.5px solid #000;rotate:45deg;translate:0 -1px}
 .tChips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
 .tChips button{border:1px solid #ffffff26;background:#ffffff0d;color:#fffc;border-radius:999px;padding:7px 14px;font:600 12px/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .tChips button.on{background:#fff;color:#000;border-color:#fff}
@@ -92,7 +100,7 @@ SC.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.te
 top.after(nav);
 const eL=document.createElement('button'),eR=document.createElement('button');
 eL.className='tEdge left';eR.className='tEdge';eL.type=eR.type='button';
-eL.innerHTML='<b aria-hidden="true">›</b><span></span>';eR.innerHTML='<b aria-hidden="true">›</b><span></span>';
+eL.innerHTML='<b aria-hidden="true">›</b>';eR.innerHTML='<b aria-hidden="true">›</b>';
 eL.onclick=()=>show(cur-1);eR.onclick=()=>show(cur+1);pg.append(eL,eR);
 
 let cur=0,A=null,year=null,recFilter='all',merchFilter='all',loading=null;
@@ -100,18 +108,22 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function show(i){if(i<0||i>=SC.length||i===cur)return;const dir=i<cur;cur=i;
  SC.forEach((s,j)=>{s.el.classList.toggle('on',j===i);s.el.classList.toggle('fromL',dir);s.btn.setAttribute('aria-current',j===i?'true':'false')});
  eL.hidden=i===0;eR.hidden=i===SC.length-1;
- if(i>0)eL.querySelector('span').textContent=SC[i-1].n;if(i<SC.length-1)eR.querySelector('span').textContent=SC[i+1].n;
  eL.setAttribute('aria-label','Go to '+(SC[i-1]?.n||''));eR.setAttribute('aria-label','Go to '+(SC[i+1]?.n||''));
  scrollTo({top:0});if(i>0)ensure().then(()=>render())}
-SC[0].btn.setAttribute('aria-current','true');eL.hidden=true;eR.querySelector('span').textContent='Recordings';eR.setAttribute('aria-label','Go to Recordings');
+SC[0].btn.setAttribute('aria-current','true');eL.hidden=true;eR.setAttribute('aria-label','Go to Recordings');
 function ensure(){if(A)return Promise.resolve();if(loading)return loading;
  loading=new Promise((res,rej)=>{const s=document.createElement('script');s.src='tours-archive.js';s.onload=()=>{A=window.TOUR_ARCHIVE;year=Object.keys(A).sort().pop();res()};s.onerror=()=>{loading=null;rej()};document.head.appendChild(s)})
   .catch(()=>{[recScr,merScr].forEach(e=>e.innerHTML='<div class="tEmpty">Could not load the archive. Refresh and try again.</div>')});return loading}
 document.addEventListener('keydown',e=>{if(pg.hidden||modal&&!modal.hidden||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight')show(cur+1);if(e.key==='ArrowLeft')show(cur-1)});
 new MutationObserver(()=>{[eL,eR].forEach(b=>b.style.display=pg.hidden?'none':'')}).observe(pg,{attributes:true,attributeFilter:['hidden']});[eL,eR].forEach(b=>b.style.display=pg.hidden?'none':'');
 
-function yearSel(){const ys=Object.keys(A).sort().reverse();return `<div class="tYSel"><select aria-label="Year">${ys.map(y=>`<option value="${y}"${y===year?' selected':''}>${y}</option>`).join('')}</select></div>`}
-function bindYear(el){el.querySelector('select').onchange=e=>{year=e.target.value;recFilter='all';merchFilter='all';render()}}
+function yearSel(){const ys=Object.keys(A).sort().reverse();return `<div class="tYSel" data-open="false"><button type="button" class="tYBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="Year"><span>${year}</span><i></i></button><ul class="tYMenu" role="listbox" aria-label="Year" hidden>${ys.map(y=>`<li role="option" tabindex="-1" data-y="${y}" aria-selected="${y===year}">${y}</li>`).join('')}</ul></div>`}
+function bindYear(el){const box=el.querySelector('.tYSel'),btn=box.querySelector('.tYBtn'),menu=box.querySelector('.tYMenu'),items=[...menu.querySelectorAll('li')];
+ const setOpen=o=>{box.dataset.open=o;btn.setAttribute('aria-expanded',o);menu.hidden=!o;if(o){(menu.querySelector('[aria-selected=true]')||items[0]).focus()}};
+ const pick=li=>{year=li.dataset.y;recFilter='all';merchFilter='all';render()};
+ btn.onclick=e=>{e.stopPropagation();setOpen(menu.hidden)};
+ items.forEach((li,i)=>{li.onclick=e=>{e.stopPropagation();pick(li)};li.onkeydown=e=>{if(e.key==='ArrowDown'){e.preventDefault();items[Math.min(i+1,items.length-1)].focus()}else if(e.key==='ArrowUp'){e.preventDefault();items[Math.max(i-1,0)].focus()}else if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(li)}else if(e.key==='Escape'||e.key==='Tab'){e.stopPropagation();setOpen(false);btn.focus()}}});
+ const away=e=>{if(!box.isConnected){document.removeEventListener('click',away);return}if(!box.contains(e.target))setOpen(false)};document.addEventListener('click',away)}
 function render(){if(!A)return;if(cur===1)renderRec();if(cur===2)renderMerch()}
 
 /* ---- Recordings ---- */
