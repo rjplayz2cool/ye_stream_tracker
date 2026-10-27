@@ -153,15 +153,53 @@ function vlabel(k){return (window.TOUR_ARCHIVE_VENUES||{})[k]||k.toUpperCase()}
 /* white-background removal */
 if(!document.getElementById('tWhiteOutSvg')){const d=document.createElement('div');d.id='tWhiteOutSvg';d.innerHTML='<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="tWhiteOut" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -66.67 -66.67 -66.67 0 198" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter></svg>';document.body.appendChild(d)}
 const cutCache=new Map(),Qm=[];let run=0;
-function cut(bm){const s=Math.min(1,700/Math.max(bm.width,bm.height)),w=Math.max(1,Math.round(bm.width*s)),h=Math.max(1,Math.round(bm.height*s));
+function cut(bm){const s=Math.min(1,900/Math.max(bm.width,bm.height)),w=Math.max(1,Math.round(bm.width*s)),h=Math.max(1,Math.round(bm.height*s));
  const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(bm,0,0,w,h);
- const id=x.getImageData(0,0,w,h),d=id.data,seen=new Uint8Array(w*h),st=[];
- const push=i=>{if(seen[i])return;const o=i*4;if(d[o+3]>200&&d[o]>=249&&d[o+1]>=249&&d[o+2]>=249){seen[i]=1;st.push(i)}};
+ const toUrl=()=>new Promise(r=>cv.toBlob(b=>r(URL.createObjectURL(b)),'image/png'));
+ const id=x.getImageData(0,0,w,h),d=id.data,N=w*h;
+ /* background colour = median of the opaque border pixels */
+ const bx=[],by=[],bz=[];let bord=0,clear=0;
+ const sample=i=>{const o=i*4;bord++;if(d[o+3]<200){clear++;return}bx.push(d[o]);by.push(d[o+1]);bz.push(d[o+2])};
+ for(let i=0;i<w;i++){sample(i);sample((h-1)*w+i)}for(let j=1;j<h-1;j++){sample(j*w);sample(j*w+w-1)}
+ if(clear>bord*.5||bx.length<8)return toUrl();
+ const med=a=>{a.sort((p,q)=>p-q);return a[a.length>>1]};const BR=med(bx),BG=med(by),BB=med(bz);
+ if(Math.min(BR,BG,BB)<232)return toUrl();
+ const seen=new Uint8Array(N),st=[],T=11;
+ const push=i=>{if(seen[i])return;const o=i*4;if(d[o+3]>200&&Math.abs(d[o]-BR)<=T&&Math.abs(d[o+1]-BG)<=T&&Math.abs(d[o+2]-BB)<=T){seen[i]=1;st.push(i)}};
  for(let i=0;i<w;i++){push(i);push((h-1)*w+i)}for(let j=0;j<h;j++){push(j*w);push(j*w+w-1)}
- while(st.length){const i=st.pop(),xx=i%w;if(xx>0)push(i-1);if(xx<w-1)push(i+1);if(i>=w)push(i-w);if(i<w*(h-1))push(i+w)}
- for(let i=0;i<w*h;i++)if(seen[i])d[i*4+3]=0;
- for(let i=0;i<w*h;i++){if(seen[i])continue;const xx=i%w;if((xx>0&&seen[i-1])||(xx<w-1&&seen[i+1])||(i>=w&&seen[i-w])||(i<w*(h-1)&&seen[i+w])){const o=i*4,m=Math.min(d[o],d[o+1],d[o+2]);if(m>=215)d[o+3]=Math.round(255*(1-(m-215)/40))}}
- x.putImageData(id,0,0);return new Promise(r=>cv.toBlob(b=>r(URL.createObjectURL(b)),'image/png'))}
+ while(st.length){const i=st.pop(),xx=i%w;if(xx>0)push(i-1);if(xx<w-1)push(i+1);if(i>=w)push(i-w);if(i<N-w)push(i+w)}
+ /* drop tiny detached specks (compression noise) */
+ {const comp=new Int32Array(N);const sizes=[0];let cid=0;
+  for(let s0=0;s0<N;s0++){if(seen[s0]||comp[s0])continue;cid++;let sz=0;const stk=[s0];comp[s0]=cid;
+   while(stk.length){const i=stk.pop();sz++;const xx=i%w;
+    if(xx>0&&!seen[i-1]&&!comp[i-1]){comp[i-1]=cid;stk.push(i-1)}
+    if(xx<w-1&&!seen[i+1]&&!comp[i+1]){comp[i+1]=cid;stk.push(i+1)}
+    if(i>=w&&!seen[i-w]&&!comp[i-w]){comp[i-w]=cid;stk.push(i-w)}
+    if(i<N-w&&!seen[i+w]&&!comp[i+w]){comp[i+w]=cid;stk.push(i+w)}}
+   sizes.push(sz)}
+  const big=Math.max(...sizes);
+  for(let i=0;i<N;i++)if(!seen[i]&&sizes[comp[i]]<big*.012)seen[i]=1}
+ /* distance (1..3) of each kept pixel from the removed background */
+ const lay=new Uint8Array(N);let front=[];
+ const nb=i=>{const xx=i%w,r=[];if(xx>0)r.push(i-1);if(xx<w-1)r.push(i+1);if(i>=w)r.push(i-w);if(i<N-w)r.push(i+w);return r};
+ for(let i=0;i<N;i++)if(!seen[i]&&nb(i).some(j=>seen[j])){lay[i]=1;front.push(i)}
+ for(let L=2;L<=3;L++){const nx=[];for(const i of front)for(const j of nb(i))if(!seen[j]&&!lay[j]){lay[j]=L;nx.push(j)}front=nx}
+ const out=new Uint8ClampedArray(d);
+ for(let i=0;i<N;i++){const o=i*4;
+  if(seen[i]){out[o+3]=0;continue}
+  if(!lay[i])continue;
+  /* garment colour near this pixel, taken from pixels 4+ steps in from the edge */
+  const px=i%w,py=(i-px)/w;let fr=0,fg=0,fb=0,n=0;
+  for(let dy=-5;dy<=5;dy++){const yy=py+dy;if(yy<0||yy>=h)continue;for(let dx=-5;dx<=5;dx++){const xx=px+dx;if(xx<0||xx>=w)continue;const j=yy*w+xx;if(seen[j]||lay[j])continue;const q=j*4;if(d[q+3]<200)continue;fr+=d[q];fg+=d[q+1];fb+=d[q+2];n++}}
+  if(!n)continue;fr/=n;fg/=n;fb/=n;
+  const vr=BR-fr,vg=BG-fg,vb=BB-fb,vv=vr*vr+vg*vg+vb*vb;
+  if(vv<1800)continue; /* white garment on white: keep as is */
+  let a=((BR-d[o])*vr+(BG-d[o+1])*vg+(BB-d[o+2])*vb)/vv;a=Math.max(0,Math.min(1,a));
+  if(a>.96)continue;
+  a=a<.12?0:Math.min(1,(a-.12)/.76);a=a*a*(3-2*a);
+  out[o]=fr;out[o+1]=fg;out[o+2]=fb;out[o+3]=Math.round(a*255)}
+ id.data.set(out);x.putImageData(id,0,0);return toUrl()}
+window.TOURS_CUT=bm=>cut(bm);
 function clean(u){if(cutCache.has(u))return cutCache.get(u);const p=fetch(u,{mode:'cors',referrerPolicy:'no-referrer'}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.blob()}).then(b=>createImageBitmap(b)).then(cut);cutCache.set(u,p);return p}
 function missing(img){const box=img.parentElement;img.hidden=true;if(img.classList.contains('fr')){box.classList.add('x');if(!box.querySelector('i'))box.insertAdjacentHTML('beforeend','<i style="font-style:normal">NO IMAGE</i>');const mc=box.closest('.mc');mc&&mc.classList.add('noflip')}}
 function pump(){while(run<4&&Qm.length){const img=Qm.shift();run++;
