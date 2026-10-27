@@ -1059,7 +1059,7 @@ document.addEventListener('toggle',e=>{const d=e.target;if(!d.classList||!d.clas
   const f=document.createElement('iframe');f.className='dvidFrame';f.title='Music video';f.loading='lazy';f.allow='accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen';f.allowFullscreen=true;f.referrerPolicy='strict-origin-when-cross-origin';f.src='https://www.youtube-nocookie.com/embed/'+id+'?rel=0';m.append(f)},true);
 document.addEventListener('toggle',e=>{const d=e.target;if(!d.classList||!d.classList.contains('dlyr')||!d.open||!d.dataset.gid)return;const m=d.querySelector('.dlyrEmbed');if(!m||m.firstChild)return;const id=String(d.dataset.gid).replace(/\D/g,'');if(!id)return;
   const f=document.createElement('iframe');f.className='dlyrFrame';f.title='Lyrics from Genius';f.setAttribute('sandbox','allow-scripts allow-popups allow-popups-to-escape-sandbox');f.loading='lazy';
-  f.srcdoc='<!doctype html><html><head><meta charset="utf-8"><base target="_blank"><style>body{margin:0;padding:12px;font:14px/1.5 system-ui,sans-serif;background:#fff;color:#111}</style></head><body><div id="rg_embed_link_'+id+'" class="rg_embed_link" data-song-id="'+id+'">Loading lyrics from Genius…</div><script crossorigin src="https://genius.com/songs/'+id+'/embed.js"><\/script><script>addEventListener("message",e=>{const d=e.data;if(d&&d.type==="ye-crossword-height"){const f=document.getElementById("yeCrosswordFrame");if(f&&e.source===f.contentWindow)f.style.height=Math.max(560,Math.min(2400,d.h))+"px"}});</script></body></html>';
+  f.srcdoc='<!doctype html><html><head><meta charset="utf-8"><base target="_blank"><style>body{margin:0;padding:12px;font:14px/1.5 system-ui,sans-serif;background:#fff;color:#111}</style></head><body><div id="rg_embed_link_'+id+'" class="rg_embed_link" data-song-id="'+id+'">Loading lyrics from Genius…</div><script crossorigin src="https://genius.com/songs/'+id+'/embed.js"><\/script></body></html>';
   m.append(f)},true);
 function open(x,kind){
   if(!x)return;ensure();cur={x,kind:kind||'song'};range='ALL';prevFocus=document.activeElement;
@@ -3443,4 +3443,4 @@ function wire(){
 let hlPinned=false,timer=0;
 window.PH=window.PH||{};
 PH.tours={show(){$('toursScreen').classList.add('activeScreen');if(!built){built=true;wire()}paint();clearInterval(timer);timer=setInterval(()=>{paintNext();paintLists();paintPins();setHL(hl)},60000)},hide(){$('toursScreen').classList.remove('activeScreen');clearInterval(timer)}};
-})();</script></body></html>
+})();</script><script>addEventListener("message",e=>{const d=e.data;if(d&&d.type==="ye-crossword-height"){const f=document.getElementById("yeCrosswordFrame");if(f&&e.source===f.contentWindow)f.style.height=Math.max(560,Math.min(2400,d.h))+"px"}});</script></body></html>
