@@ -73,6 +73,7 @@ const css=`
 .mcI{aspect-ratio:1;background:#16161a;position:relative}
 .mcI img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:opacity .3s}
 .mcI img.bk{opacity:0}.mc.flip .mcI img.bk,.mc:hover .mcI img.bk.h{opacity:1}.mc.flip .mcI img.fr,.mc:hover .mcI img.fr.h{opacity:0}
+.mcI img.thr{filter:url(#tWhiteOut)}.mcI.x{display:grid;place-items:center;color:#fff6;font:700 10px/1 system-ui,sans-serif;letter-spacing:.12em}.mcI.x img{display:none}
 .mcN{padding:9px 10px 11px;font:700 11px/1.25 system-ui,sans-serif;letter-spacing:.07em;text-transform:uppercase}
 .mcF{position:absolute;right:7px;top:7px;font:700 9px/1 system-ui,sans-serif;letter-spacing:.1em;background:#000a;padding:4px 6px;border-radius:6px}
 `;
@@ -149,13 +150,33 @@ function closeModal(){if(!modal||modal.hidden)return;const v=modal.querySelector
 
 /* ---- Merch ---- */
 function vlabel(k){return (window.TOUR_ARCHIVE_VENUES||{})[k]||k.toUpperCase()}
+/* white-background removal */
+if(!document.getElementById('tWhiteOutSvg')){const d=document.createElement('div');d.id='tWhiteOutSvg';d.innerHTML='<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="tWhiteOut" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -66.67 -66.67 -66.67 0 198" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter></svg>';document.body.appendChild(d)}
+const cutCache=new Map(),Qm=[];let run=0;
+function cut(bm){const s=Math.min(1,700/Math.max(bm.width,bm.height)),w=Math.max(1,Math.round(bm.width*s)),h=Math.max(1,Math.round(bm.height*s));
+ const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(bm,0,0,w,h);
+ const id=x.getImageData(0,0,w,h),d=id.data,seen=new Uint8Array(w*h),st=[];
+ const push=i=>{if(seen[i])return;const o=i*4;if(d[o+3]>200&&d[o]>=249&&d[o+1]>=249&&d[o+2]>=249){seen[i]=1;st.push(i)}};
+ for(let i=0;i<w;i++){push(i);push((h-1)*w+i)}for(let j=0;j<h;j++){push(j*w);push(j*w+w-1)}
+ while(st.length){const i=st.pop(),xx=i%w;if(xx>0)push(i-1);if(xx<w-1)push(i+1);if(i>=w)push(i-w);if(i<w*(h-1))push(i+w)}
+ for(let i=0;i<w*h;i++)if(seen[i])d[i*4+3]=0;
+ for(let i=0;i<w*h;i++){if(seen[i])continue;const xx=i%w;if((xx>0&&seen[i-1])||(xx<w-1&&seen[i+1])||(i>=w&&seen[i-w])||(i<w*(h-1)&&seen[i+w])){const o=i*4,m=Math.min(d[o],d[o+1],d[o+2]);if(m>=215)d[o+3]=Math.round(255*(1-(m-215)/40))}}
+ x.putImageData(id,0,0);return new Promise(r=>cv.toBlob(b=>r(URL.createObjectURL(b)),'image/png'))}
+function clean(u){if(cutCache.has(u))return cutCache.get(u);const p=fetch(u,{mode:'cors',referrerPolicy:'no-referrer'}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.blob()}).then(b=>createImageBitmap(b)).then(cut);cutCache.set(u,p);return p}
+function missing(img){const box=img.parentElement;img.hidden=true;if(img.classList.contains('fr')){box.classList.add('x');if(!box.querySelector('i'))box.insertAdjacentHTML('beforeend','<i style="font-style:normal">NO IMAGE</i>');const mc=box.closest('.mc');mc&&mc.classList.add('noflip')}}
+function pump(){while(run<4&&Qm.length){const img=Qm.shift();run++;
+ const done=()=>{run--;pump()};
+ clean(img.dataset.u).then(u=>{img.src=u;done()},err=>{img.classList.add('thr');img.onerror=()=>{img.onerror=null;missing(img)};img.src=img.dataset.u;done()})}}
+const mio='IntersectionObserver'in window?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){mio.unobserve(e.target);Qm.push(e.target);pump()}}),{rootMargin:'400px'}):null;
+function watchImgs(scope){scope.querySelectorAll('img[data-u]').forEach(i=>{if(mio)mio.observe(i);else{Qm.push(i);pump()}})}
+
 function renderMerch(){const Y=A[year];if(!Y){merScr.innerHTML='';return}
  const vs=[...new Set(Y.merch.map(m=>m.v))];if(merchFilter!=='all'&&!vs.includes(merchFilter))merchFilter='all';
  const groups=vs.filter(v=>merchFilter==='all'||v===merchFilter);
  merScr.innerHTML=`<div class="tHead"><div><h2>Tour Merch</h2><p>${Y.merch.length} items · ${year}</p></div>${yearSel()}</div>
  ${vs.length>1?`<div class="tChips">${['all',...vs].map(v=>`<button type="button" data-v="${esc(v)}" class="${v===merchFilter?'on':''}">${v==='all'?'All':esc(vlabel(v))}</button>`).join('')}</div>`:''}
- ${groups.length?groups.map(v=>`<section class="mSec"><h3>${esc(vlabel(v))}</h3><div class="mGrid">${Y.merch.filter(m=>m.v===v).map(m=>{const base='https://media.yetour.xyz/merch/'+encodeURIComponent(m.v)+'/';return `<button type="button" class="mc" aria-label="${esc(m.n)}"><div class="mcI"><img class="fr${m.b?' h':''}" loading="lazy" referrerpolicy="no-referrer" alt="${esc(m.n)}" src="${base+encodeURIComponent(m.f)}">${m.b?`<img class="bk h" loading="lazy" referrerpolicy="no-referrer" alt="" src="${base+encodeURIComponent(m.b)}"><span class="mcF">FLIP</span>`:''}</div><div class="mcN">${esc(m.n)}</div></button>`}).join('')}</div></section>`).join(''):'<div class="tEmpty">No merch listed for this year.</div>'}`;
- bindYear(merScr);
+ ${groups.length?groups.map(v=>`<section class="mSec"><h3>${esc(vlabel(v))}</h3><div class="mGrid">${Y.merch.filter(m=>m.v===v).map(m=>{const base='https://media.yetour.xyz/merch/'+encodeURIComponent(m.v)+'/';return `<button type="button" class="mc" aria-label="${esc(m.n)}"><div class="mcI"><img class="fr${m.b?' h':''}" alt="${esc(m.n)}" data-u="${base+encodeURIComponent(m.f)}">${m.b?`<img class="bk h" alt="" data-u="${base+encodeURIComponent(m.b)}"><span class="mcF">FLIP</span>`:''}</div><div class="mcN">${esc(m.n)}</div></button>`}).join('')}</div></section>`).join(''):'<div class="tEmpty">No merch listed for this year.</div>'}`;
+ bindYear(merScr);watchImgs(merScr);
  merScr.querySelectorAll('.tChips button').forEach(b=>b.onclick=()=>{merchFilter=b.dataset.v;renderMerch()});
- merScr.querySelectorAll('.mc').forEach(c=>c.onclick=()=>c.classList.toggle('flip'))}
+ merScr.querySelectorAll('.mc').forEach(c=>c.onclick=()=>{if(!c.classList.contains('noflip'))c.classList.toggle('flip')})}
 })();
