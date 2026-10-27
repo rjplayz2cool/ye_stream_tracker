@@ -202,18 +202,25 @@ function cut(bm){const s=Math.min(1,900/Math.max(bm.width,bm.height)),w=Math.max
 window.TOURS_CUT=bm=>cut(bm);
 function clean(u){if(cutCache.has(u))return cutCache.get(u);const p=fetch(u,{mode:'cors',referrerPolicy:'no-referrer'}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.blob()}).then(b=>createImageBitmap(b)).then(cut);cutCache.set(u,p);return p}
 function missing(img){const box=img.parentElement;img.hidden=true;if(img.classList.contains('fr')){box.classList.add('x');if(!box.querySelector('i'))box.insertAdjacentHTML('beforeend','<i style="font-style:normal">NO IMAGE</i>');const mc=box.closest('.mc');mc&&mc.classList.add('noflip')}}
+function firstOk(list,i=0){return clean(list[i]).catch(err=>{if(i+1<list.length)return firstOk(list,i+1);throw err})}
 function pump(){while(run<4&&Qm.length){const img=Qm.shift();run++;
- const done=()=>{run--;pump()};
- clean(img.dataset.u).then(u=>{img.src=u;done()},err=>{img.classList.add('thr');img.onerror=()=>{img.onerror=null;missing(img)};img.src=img.dataset.u;done()})}}
+ const done=()=>{run--;pump()};let list;try{list=JSON.parse(img.dataset.u)}catch{list=[img.dataset.u]}
+ firstOk(list).then(u=>{img.src=u;done()},err=>{img.classList.add('thr');img.onerror=()=>{img.onerror=null;missing(img)};img.src=list[0];done()})}}
 const mio='IntersectionObserver'in window?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){mio.unobserve(e.target);Qm.push(e.target);pump()}}),{rootMargin:'400px'}):null;
 function watchImgs(scope){scope.querySelectorAll('img[data-u]').forEach(i=>{if(mio)mio.observe(i);else{Qm.push(i);pump()}})}
 
+function mUrls(y,v,file){const e=encodeURIComponent,f=/^https?:/.test(file)?null:file.split('/').map(e).join('/'),H='https://media.yetour.xyz/';
+ if(!f)return [file];
+ if(y==='2021')return [H+'donda/merch/'+f];
+ if(y==='2023')return [H+'vultures/2023/merch/'+f];
+ if(y==='2024')return [H+'2024/merch/'+f,H+'merch/2024/'+f,H+'2024/merch/'+e(v)+'/'+f];
+ return [H+'merch/'+e(v)+'/'+f]}
 function renderMerch(){const Y=A[year];if(!Y){merScr.innerHTML='';return}
  const vs=[...new Set(Y.merch.map(m=>m.v))];if(merchFilter!=='all'&&!vs.includes(merchFilter))merchFilter='all';
  const groups=vs.filter(v=>merchFilter==='all'||v===merchFilter);
  merScr.innerHTML=`<div class="tHead"><div><h2>Tour Merch</h2><p>${Y.merch.length} items · ${year}</p></div>${yearSel()}</div>
  ${vs.length>1?`<div class="tChips">${['all',...vs].map(v=>`<button type="button" data-v="${esc(v)}" class="${v===merchFilter?'on':''}">${v==='all'?'All':esc(vlabel(v))}</button>`).join('')}</div>`:''}
- ${groups.length?groups.map(v=>`<section class="mSec"><h3>${esc(vlabel(v))}</h3><div class="mGrid">${Y.merch.filter(m=>m.v===v).map(m=>{const base='https://media.yetour.xyz/merch/'+encodeURIComponent(m.v)+'/';return `<button type="button" class="mc" aria-label="${esc(m.n)}"><div class="mcI"><img class="fr${m.b?' h':''}" alt="${esc(m.n)}" data-u="${base+encodeURIComponent(m.f)}">${m.b?`<img class="bk h" alt="" data-u="${base+encodeURIComponent(m.b)}"><span class="mcF">FLIP</span>`:''}</div><div class="mcN">${esc(m.n)}</div></button>`}).join('')}</div></section>`).join(''):'<div class="tEmpty">No merch listed for this year.</div>'}`;
+ ${groups.length?groups.map(v=>`<section class="mSec"><h3>${esc(vlabel(v))}</h3><div class="mGrid">${Y.merch.filter(m=>m.v===v).map(m=>{const fu=mUrls(year,m.v,m.f),bu=m.b?mUrls(year,m.v,m.b):null;return `<button type="button" class="mc" aria-label="${esc(m.n)}"><div class="mcI"><img class="fr${m.b?' h':''}" alt="${esc(m.n)}" data-u="${esc(JSON.stringify(fu))}">${m.b?`<img class="bk h" alt="" data-u="${esc(JSON.stringify(bu))}"><span class="mcF">FLIP</span>`:''}</div><div class="mcN">${esc(m.n)}</div></button>`}).join('')}</div></section>`).join(''):'<div class="tEmpty">No merch listed for this year.</div>'}`;
  bindYear(merScr);watchImgs(merScr);
  merScr.querySelectorAll('.tChips button').forEach(b=>b.onclick=()=>{merchFilter=b.dataset.v;renderMerch()});
  merScr.querySelectorAll('.mc').forEach(c=>c.onclick=()=>{if(!c.classList.contains('noflip'))c.classList.toggle('flip')})}
