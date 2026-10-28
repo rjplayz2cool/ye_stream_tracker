@@ -191,24 +191,27 @@ function cut(bm){const s=Math.min(1,900/Math.max(bm.width,bm.height)),w=Math.max
    sizes.push(sz)}
   const big=Math.max(...sizes);
   for(let i=0;i<N;i++)if(!seen[i]&&sizes[comp[i]]<big*.012)seen[i]=1}
- /* distance (1..3) of each kept pixel from the removed background */
+ /* distance (1..L) of each kept pixel from the removed background; L grows with image size */
+ const LMAX=Math.max(4,Math.min(10,Math.round(Math.max(w,h)/110))),R=LMAX+2;
  const lay=new Uint8Array(N);let front=[];
  const nb=i=>{const xx=i%w,r=[];if(xx>0)r.push(i-1);if(xx<w-1)r.push(i+1);if(i>=w)r.push(i-w);if(i<N-w)r.push(i+w);return r};
  for(let i=0;i<N;i++)if(!seen[i]&&nb(i).some(j=>seen[j])){lay[i]=1;front.push(i)}
- for(let L=2;L<=3;L++){const nx=[];for(const i of front)for(const j of nb(i))if(!seen[j]&&!lay[j]){lay[j]=L;nx.push(j)}front=nx}
+ for(let L=2;L<=LMAX;L++){const nx=[];for(const i of front)for(const j of nb(i))if(!seen[j]&&!lay[j]){lay[j]=L;nx.push(j)}front=nx}
  const out=new Uint8ClampedArray(d);
  for(let i=0;i<N;i++){const o=i*4;
   if(seen[i]){out[o+3]=0;continue}
   if(!lay[i])continue;
-  /* garment colour near this pixel, taken from pixels 4+ steps in from the edge */
-  const px=i%w,py=(i-px)/w;let fr=0,fg=0,fb=0,n=0;
-  for(let dy=-5;dy<=5;dy++){const yy=py+dy;if(yy<0||yy>=h)continue;for(let dx=-5;dx<=5;dx++){const xx=px+dx;if(xx<0||xx>=w)continue;const j=yy*w+xx;if(seen[j]||lay[j])continue;const q=j*4;if(d[q+3]<200)continue;fr+=d[q];fg+=d[q+1];fb+=d[q+2];n++}}
-  if(!n)continue;fr/=n;fg/=n;fb/=n;
+  /* garment colour near this pixel: pixels beyond the soft edge, else the darkest nearby pixel */
+  const px=i%w,py=(i-px)/w;let fr=0,fg=0,fb=0,n=0,dk=1e9,dr=0,dg=0,db=0;
+  for(let dy=-R;dy<=R;dy++){const yy=py+dy;if(yy<0||yy>=h)continue;for(let dx=-R;dx<=R;dx++){const xx=px+dx;if(xx<0||xx>=w)continue;const j=yy*w+xx;if(seen[j])continue;const q=j*4;if(d[q+3]<200)continue;
+    if(!lay[j]){fr+=d[q];fg+=d[q+1];fb+=d[q+2];n++}
+    const lum=d[q]+d[q+1]+d[q+2];if(lum<dk){dk=lum;dr=d[q];dg=d[q+1];db=d[q+2]}}}
+  if(n){fr/=n;fg/=n;fb/=n}else{fr=dr;fg=dg;fb=db}
   const vr=BR-fr,vg=BG-fg,vb=BB-fb,vv=vr*vr+vg*vg+vb*vb;
   if(vv<1800)continue; /* white garment on white: keep as is */
   let a=((BR-d[o])*vr+(BG-d[o+1])*vg+(BB-d[o+2])*vb)/vv;a=Math.max(0,Math.min(1,a));
-  if(a>.96)continue;
-  a=a<.12?0:Math.min(1,(a-.12)/.76);a=a*a*(3-2*a);
+  if(a>.97)continue;
+  a=a<.18?0:Math.min(1,(a-.18)/.7);a=a*a*(3-2*a);
   out[o]=fr;out[o+1]=fg;out[o+2]=fb;out[o+3]=Math.round(a*255)}
  id.data.set(out);x.putImageData(id,0,0);return toUrl()}
 window.TOURS_CUT=bm=>cut(bm);
