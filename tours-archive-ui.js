@@ -44,7 +44,7 @@ const css=`
 .rc.na{cursor:default;opacity:.55}.rc.na:hover{transform:none}
 .rcImg{position:relative;aspect-ratio:16/9;background:#111 center/cover;overflow:hidden}
 .rcImg img{width:100%;height:100%;object-fit:cover;display:block;transition:scale .5s}
-.rc:hover .rcImg img{scale:1.05}
+.rc:hover .rcImg img,.rc:hover .rcImg video{scale:1.05}.rcImg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s,scale .5s;pointer-events:none}.rcImg video.rdy{opacity:1}
 .rcTag,.rcSpec{position:absolute;top:10px;padding:4px 8px;border-radius:7px;background:#000a;color:#fff;font:700 10px/1 system-ui,sans-serif;letter-spacing:.1em;backdrop-filter:blur(6px)}
 .rcTag{left:10px}.rcSpec{right:10px}
 .rcPlay{position:absolute;inset:0;margin:auto;width:52px;height:52px;border-radius:50%;background:#000a;display:grid;place-items:center;opacity:0;transition:opacity .2s;backdrop-filter:blur(6px)}
@@ -150,13 +150,21 @@ function ytTitle(url){if(ytName[url]!==undefined)return Promise.resolve(ytName[u
  try{const c=localStorage.getItem('ytn:'+url);if(c){ytName[url]=c;return Promise.resolve(c)}}catch{}
  return fetch('https://noembed.com/embed?url='+encodeURIComponent(url)).then(r=>r.json()).then(j=>{const n=j.author_name||'';ytName[url]=n;try{if(n)localStorage.setItem('ytn:'+url,n)}catch{}return n}).catch(()=>{ytName[url]='';return ''})}
 function credHTML(s){return s.cr?`Credit · <a href="${esc(s.cr)}" target="_blank" rel="noopener noreferrer" data-yt="${esc(s.cr)}">YouTube</a>`:(s.c==='visualizer'?'Official visualizer from Ye':'Official stream from Ye')}
+/* 2026 live-show covers: a still frame taken from inside the recording itself (poster stays until the frame is ready) */
+const fio='IntersectionObserver'in window?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){fio.unobserve(e.target);startFrame(e.target)}}),{rootMargin:'300px'}):null;
+function startFrame(v){const u=v.dataset.src;if(!u)return;
+ v.addEventListener('loadedmetadata',()=>{const d=v.duration;if(isFinite(d)&&d>0)try{v.currentTime=Math.max(5,Math.min(d*.14,d-5))}catch{}},{once:true});
+ v.addEventListener('seeked',()=>{v.classList.add('rdy');v.pause();},{once:true});
+ v.addEventListener('error',()=>{v.remove()},{once:true});
+ v.preload='metadata';v.src=u}
+function frameCovers(scope){scope.querySelectorAll('video.rcFr').forEach(v=>{if(fio)fio.observe(v);else startFrame(v)})}
 function renderRec(){const Y=A[year];if(!Y){recScr.innerHTML='';return}
  const cats=[...new Set(Y.shows.map(s=>s.c))];if(recFilter!=='all'&&!cats.includes(recFilter))recFilter='all';
  const list=Y.shows.filter(s=>recFilter==='all'||s.c===recFilter);
  recScr.innerHTML=`<div class="tHead"><div><h2>Show Recordings</h2><p>${Y.shows.filter(s=>s.v).length} recordings · ${year}</p></div>${yearSel()}</div>
  ${cats.length>1?`<div class="tChips">${['all',...cats].map(c=>`<button type="button" data-c="${c}" class="${c===recFilter?'on':''}">${c==='all'?'All':(CAT[c]||c)}</button>`).join('')}</div>`:''}
- ${list.length?`<div class="rGrid">${list.map(s=>{const i=Y.shows.indexOf(s);return `<article class="rc${s.v?'':' na'}" data-i="${i}" ${s.v?'tabindex="0" role="button"':''} aria-label="${esc(s.n)}"><div class="rcImg"><img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(s.img)}"><span class="rcTag">${esc(s.v?(CAT[s.c]||s.c):'Not yet available')}</span>${s.sp?`<span class="rcSpec">${esc(s.sp)}</span>`:''}<i class="rcPlay"></i></div><div class="rcB"><h3>${esc(s.n)}</h3><div class="rcCred${s.cr?'':' off'}">${s.v?credHTML(s):'Recording not released yet'}</div></div></article>`}).join('')}</div>`:'<div class="tEmpty">No recordings for this year yet.</div>'}`;
- bindYear(recScr);
+ ${list.length?`<div class="rGrid">${list.map(s=>{const i=Y.shows.indexOf(s);return `<article class="rc${s.v?'':' na'}" data-i="${i}" ${s.v?'tabindex="0" role="button"':''} aria-label="${esc(s.n)}"><div class="rcImg"><img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(s.img)}">${year==='2026'&&s.c==='live'&&s.v?`<video class="rcFr" muted playsinline preload="none" tabindex="-1" aria-hidden="true" data-src="${esc(s.v)}"></video>`:''}<span class="rcTag">${esc(s.v?(CAT[s.c]||s.c):'Not yet available')}</span>${s.sp?`<span class="rcSpec">${esc(s.sp)}</span>`:''}<i class="rcPlay"></i></div><div class="rcB"><h3>${esc(s.n)}</h3><div class="rcCred${s.cr?'':' off'}">${s.v?credHTML(s):'Recording not released yet'}</div></div></article>`}).join('')}</div>`:'<div class="tEmpty">No recordings for this year yet.</div>'}`;
+ bindYear(recScr);frameCovers(recScr);
  recScr.querySelectorAll('.tChips button').forEach(b=>b.onclick=()=>{recFilter=b.dataset.c;renderRec()});
  recScr.querySelectorAll('.rc:not(.na)').forEach(c=>{const open=()=>openModal(Y.shows[+c.dataset.i]);c.onclick=e=>{if(e.target.closest('a'))return;open()};c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}}});
  recScr.querySelectorAll('a[data-yt]').forEach(a=>ytTitle(a.dataset.yt).then(n=>{if(n)a.textContent=n+' (YouTube)'}))}
