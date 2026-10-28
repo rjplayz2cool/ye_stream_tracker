@@ -173,12 +173,13 @@ function cut(bm){const s=Math.min(1,900/Math.max(bm.width,bm.height)),w=Math.max
  const bx=[],by=[],bz=[];let bord=0,clear=0;
  const sample=i=>{const o=i*4;bord++;if(d[o+3]<200){clear++;return}bx.push(d[o]);by.push(d[o+1]);bz.push(d[o+2])};
  for(let i=0;i<w;i++){sample(i);sample((h-1)*w+i)}for(let j=1;j<h-1;j++){sample(j*w);sample(j*w+w-1)}
- if(clear>bord*.5||bx.length<8)return toUrl();
- const med=a=>{a.sort((p,q)=>p-q);return a[a.length>>1]};const BR=med(bx),BG=med(by),BB=med(bz);
- if(Math.min(BR,BG,BB)<232)return toUrl();
+ const TR=clear>bord*.5;if(!TR&&bx.length<8)return toUrl();
+ const med=a=>{a.sort((p,q)=>p-q);return a[a.length>>1]};const BR=TR?255:med(bx),BG=TR?255:med(by),BB=TR?255:med(bz);
+ if(!TR&&Math.min(BR,BG,BB)<215)return toUrl();
  const seen=new Uint8Array(N),st=[],T=11;
  const push=i=>{if(seen[i])return;const o=i*4;if(d[o+3]>200&&Math.abs(d[o]-BR)<=T&&Math.abs(d[o+1]-BG)<=T&&Math.abs(d[o+2]-BB)<=T){seen[i]=1;st.push(i)}};
  for(let i=0;i<w;i++){push(i);push((h-1)*w+i)}for(let j=0;j<h;j++){push(j*w);push(j*w+w-1)}
+ if(TR){for(let i=0;i<N;i++)if(d[i*4+3]<40)seen[i]=1}
  while(st.length){const i=st.pop(),xx=i%w;if(xx>0)push(i-1);if(xx<w-1)push(i+1);if(i>=w)push(i-w);if(i<N-w)push(i+w)}
  /* drop tiny detached specks (compression noise) */
  {const comp=new Int32Array(N);const sizes=[0];let cid=0;
@@ -212,7 +213,7 @@ function cut(bm){const s=Math.min(1,900/Math.max(bm.width,bm.height)),w=Math.max
   let a=((BR-d[o])*vr+(BG-d[o+1])*vg+(BB-d[o+2])*vb)/vv;a=Math.max(0,Math.min(1,a));
   if(a>.97)continue;
   a=a<.18?0:Math.min(1,(a-.18)/.7);a=a*a*(3-2*a);
-  out[o]=fr;out[o+1]=fg;out[o+2]=fb;out[o+3]=Math.round(a*255)}
+  out[o]=fr;out[o+1]=fg;out[o+2]=fb;out[o+3]=Math.round(Math.min(a*255,TR?d[o+3]:255))}
  id.data.set(out);x.putImageData(id,0,0);return toUrl()}
 window.TOURS_CUT=bm=>cut(bm);
 function clean(u){if(cutCache.has(u))return cutCache.get(u);const p=fetch(u,{mode:'cors',referrerPolicy:'no-referrer'}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.blob()}).then(b=>createImageBitmap(b)).then(cut);cutCache.set(u,p);return p}
