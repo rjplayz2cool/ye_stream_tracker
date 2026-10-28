@@ -3401,6 +3401,7 @@ function setHL(ids){hl=ids;document.querySelectorAll('.tPin').forEach(p=>p.class
 function focusShow(id){const s=all.find(a=>a.id===id);if(!s)return;const c=cur().filter(x=>x.city===s.city&&x.lat===s.lat).map(x=>x.id);const [x,y]=px(s.lon,s.lat);
   setHL(c);setVB(box([[x,y]],230));showTip(c);$('tMap').closest('.tMapCard').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'center'})}
 
+const YE_CAPS=new Set('PREACHER MAN|BULLY|FATHER|ALL THE LOVE|THIS A MUST|PUNCH DRUNK|BEAUTY AND THE BEAST|MAMAS FAVORITE|WHATEVER WORKS|SISTERS AND BROTHERS|HIGHS AND LOWS|I CANT WAIT|WHITE LINES|LAST BREATH|THIS ONE HERE|DAMN'.split('|'));const yeCaps=t=>{const m=String(t).match(/^(.*?)(\s*\(.*\))?$/);return YE_CAPS.has(m[1].trim().toUpperCase().replace(/['’]/g,''))?m[1].toUpperCase()+(m[2]||''):t};
 /* Show popup: date, stadium, tour name, setlist. Setlist data is loaded on first click from tour-data.js (setlist.fm). */
 let TD=null,TDp=null;const loadTD=()=>TD?Promise.resolve(TD):TDp||(TDp=new Promise(res=>{const s=document.createElement('script');s.src='tour-data.js';s.onload=()=>res(TD=window.TOUR_SHOWS||[]);s.onerror=()=>res(TD=[]);document.head.appendChild(s)}));
 const wordsOf=s=>new Set(String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').split(/[^a-z0-9]+/).filter(w=>w.length>2));
@@ -3417,7 +3418,7 @@ function tpPaint(s,found,i){const f=found[i],tabs=found.length>1?'<div class="tp
   tpc.innerHTML=`<button class="tpx" type="button" aria-label="Close">✕</button><h2 id="tph">${esc((f&&f.venue)||s.venue||'Venue TBA')}</h2>${tabs}
    <dl><dt>Date</dt><dd>${esc(fullDate(s.date))}</dd><dt>Stadium</dt><dd>${esc(((f&&f.venue)||s.venue||'Venue TBA')+', '+s.city)}</dd><dt>Tour</dt><dd>${esc(tour)}</dd></dl>
    <h3>Setlist${songs.length?' · '+songs.length+' songs':''}</h3>
-   ${songs.length?'<ol>'+songs.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>':'<p>'+(f&&f.upcoming||isUp(s)?'No setlist yet. This show has not happened.':'No setlist has been added for this show yet.')+'</p>'}
+   ${songs.length?'<ol>'+songs.map(x=>'<li>'+esc(yeCaps(x))+'</li>').join('')+'</ol>':'<p>'+(f&&f.upcoming||isUp(s)?'No setlist yet. This show has not happened.':'No setlist has been added for this show yet.')+'</p>'}
    ${f?`<p class="tpsrc">Setlists via <a href="${esc(f.url)}" target="_blank" rel="noopener">setlist.fm</a></p>`:''}`;
   tpc.querySelector('.tpx').onclick=tpClose;tpc.querySelectorAll('.tptabs button').forEach(b=>b.onclick=()=>tpPaint(s,found,+b.dataset.j));tpc.scrollTop=0}
 function openPop(id,btn){const s=all.find(a=>a.id===id);if(!s)return;tpLast=btn;
