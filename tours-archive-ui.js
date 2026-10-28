@@ -84,6 +84,23 @@ const css=`
 .mcI img.thr{filter:url(#tWhiteOut)}.mcI.x{display:grid;place-items:center;color:#fff6;font:700 10px/1 system-ui,sans-serif;letter-spacing:.12em}.mcI.x img{display:none}
 .mcN{padding:9px 10px 11px;font:700 11px/1.25 system-ui,sans-serif;letter-spacing:.07em;text-transform:uppercase}
 .mcF{position:absolute;right:7px;top:7px;font:700 9px/1 system-ui,sans-serif;letter-spacing:.1em;background:#000a;padding:4px 6px;border-radius:6px}
+.mcF{display:none}.mc{cursor:pointer}
+.yv{position:fixed;inset:0;z-index:2147483000;background:#fff;color:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:ui-monospace,'SFMono-Regular','Cascadia Mono',Menlo,Consolas,'Liberation Mono',monospace;animation:yvIn .22s ease;overscroll-behavior:contain;touch-action:pan-y}
+.yv[hidden]{display:none}@keyframes yvIn{from{opacity:0}to{opacity:1}}
+.yv :where(button){all:unset;cursor:pointer;display:grid;place-items:center;color:#000;-webkit-tap-highlight-color:transparent}
+.yv :where(button):focus-visible{outline:1px solid #000;outline-offset:3px}
+.yvB{position:absolute;left:10px;top:10px;width:40px;height:40px}
+.yvStage{position:relative;width:min(100vw,760px);height:min(52vh,470px);display:flex;align-items:center;justify-content:center;margin-top:-6vh}
+.yvStage img{max-width:min(62vw,400px);max-height:100%;object-fit:contain;transition:opacity .18s ease,transform .22s ease;user-select:none;-webkit-user-drag:none}
+.yvStage img.o{opacity:0}.yvStage img.l{transform:translateX(-18px)}.yvStage img.r{transform:translateX(18px)}
+.yvA{position:absolute;top:50%;width:44px;height:44px;margin-top:-22px}.yvA.l{left:0}.yvA.r{right:0}
+.yv svg{width:15px;height:15px;stroke:#000;stroke-width:2.6;fill:none;stroke-linecap:square}
+.yvDots{display:flex;gap:7px;height:8px;margin-top:30px;align-items:center}
+.yvDots i{width:4px;height:4px;border-radius:50%;background:#d6d6d6;transition:background .2s}.yvDots i.on{background:#000}
+.yvN{margin-top:14px;font-size:16px;line-height:1.2;letter-spacing:.02em;text-transform:uppercase;text-align:center;padding:0 16px}
+.yvP{margin-top:30px;font:16px/1.2 -apple-system,'Helvetica Neue',Arial,sans-serif}
+.yv .yvErr{font-size:12px;letter-spacing:.1em;color:#888}
+@media(max-width:640px){.yvStage{height:46vh}.yvA.l{left:4px}.yvA.r{right:4px}.yvStage img{max-width:70vw}}
 `;
 const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
@@ -112,7 +129,7 @@ function show(i){if(i<0||i>=SC.length||i===cur)return;const dir=i<cur;cur=i;
  scrollTo({top:0});if(i>0)ensure().then(()=>render())}
 SC[0].btn.setAttribute('aria-current','true');eL.hidden=true;eR.setAttribute('aria-label','Go to Recordings');
 function ensure(){if(A)return Promise.resolve();if(loading)return loading;
- loading=new Promise((res,rej)=>{const s=document.createElement('script');s.src='tours-archive.js?v=1793150181';s.onload=()=>{A=window.TOUR_ARCHIVE;year=Object.keys(A).sort().pop();res()};s.onerror=()=>{loading=null;rej()};document.head.appendChild(s)})
+ loading=new Promise((res,rej)=>{const s=document.createElement('script');s.src='tours-archive.js?v=1793152020';s.onload=()=>{A=window.TOUR_ARCHIVE;year=Object.keys(A).sort().pop();res()};s.onerror=()=>{loading=null;rej()};document.head.appendChild(s)})
   .catch(()=>{[recScr,merScr].forEach(e=>e.innerHTML='<div class="tEmpty">Could not load the archive. Refresh and try again.</div>')});return loading}
 document.addEventListener('keydown',e=>{if(pg.hidden||modal&&!modal.hidden||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight')show(cur+1);if(e.key==='ArrowLeft')show(cur-1)});
 new MutationObserver(()=>{[eL,eR].forEach(b=>b.style.display=pg.hidden?'none':'')}).observe(pg,{attributes:true,attributeFilter:['hidden']});[eL,eR].forEach(b=>b.style.display=pg.hidden?'none':'');
@@ -231,6 +248,31 @@ function mUrls(y,v,file){const e=encodeURIComponent,f=/^https?:/.test(file)?null
  if(y==='2023')return [H+'vultures/2023/merch/'+f];
  if(y==='2024')return [H+'2024/merch/'+f,H+'merch/2024/'+f,H+'2024/merch/'+e(v)+'/'+f];
  return [H+'merch/'+e(v)+'/'+f]}
+/* ---- merch product viewer ---- */
+let yv=null,yvPrev=null;
+function openViewer(m,srcs){
+ if(!srcs.length)return;
+ yvPrev=document.activeElement;
+ const svg=d=>'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="'+d+'"/></svg>';
+ const L=svg('M10.5 2 4.5 8l6 6'),R=svg('M5.5 2l6 6-6 6');
+ yv=document.createElement('div');yv.className='yv';yv.setAttribute('role','dialog');yv.setAttribute('aria-modal','true');yv.setAttribute('aria-label',m.n);
+ const multi=srcs.length>1;
+ yv.innerHTML='<button type="button" class="yvB" aria-label="Back">'+L+'</button><div class="yvStage"><img alt="'+esc(m.n)+'" draggable="false">'+(multi?'<button type="button" class="yvA l" aria-label="Previous view">'+L+'</button><button type="button" class="yvA r" aria-label="Next view">'+R+'</button>':'')+'</div><div class="yvDots">'+(multi?srcs.map(()=>'<i></i>').join(''):'')+'</div><div class="yvN">'+esc(m.n)+'</div>'+(m.p?'<div class="yvP">'+esc(m.p)+'</div>':'');
+ document.body.appendChild(yv);document.documentElement.style.overflow='hidden';
+ const img=yv.querySelector('.yvStage img'),dots=[...yv.querySelectorAll('.yvDots i')];let k=0,busy=false;
+ srcs.forEach(u=>{const t=new Image();t.src=u});
+ const set=(n,dir)=>{if(busy)return;busy=true;const go=()=>{k=(n+srcs.length)%srcs.length;img.onload=()=>{img.className='';busy=false};img.onerror=()=>{img.className='';busy=false};img.src=srcs[k];dots.forEach((d,q)=>d.classList.toggle('on',q===k))};
+  if(dir&&img.src){img.className='o '+(dir>0?'l':'r');setTimeout(()=>{go();img.classList.add(dir>0?'r':'l');requestAnimationFrame(()=>requestAnimationFrame(()=>{img.className=''}))},170)}else go()};
+ set(0,0);
+ const close=()=>{document.removeEventListener('keydown',key,true);yv.remove();yv=null;document.documentElement.style.overflow='';try{yvPrev&&yvPrev.focus()}catch{}};
+ const step=d=>{if(multi)set(k+d,d)};
+ const key=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}else if(e.key==='ArrowRight'){e.preventDefault();step(1)}else if(e.key==='ArrowLeft'){e.preventDefault();step(-1)}};
+ document.addEventListener('keydown',key,true);
+ yv.querySelector('.yvB').onclick=close;
+ if(multi){yv.querySelector('.yvA.l').onclick=()=>step(-1);yv.querySelector('.yvA.r').onclick=()=>step(1)}
+ let x0=null;yv.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});
+ yv.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>50)step(dx<0?1:-1)},{passive:true});
+ yv.querySelector('.yvB').focus({preventScroll:true})}
 function renderMerch(){const Y=A[year];if(!Y){merScr.innerHTML='';return}
  const vs=[...new Set(Y.merch.map(m=>m.v))];if(merchFilter!=='all'&&!vs.includes(merchFilter))merchFilter='all';
  const groups=vs.filter(v=>merchFilter==='all'||v===merchFilter);
@@ -239,5 +281,5 @@ function renderMerch(){const Y=A[year];if(!Y){merScr.innerHTML='';return}
  ${groups.length?groups.map(v=>`<section class="mSec"><h3>${esc(vlabel(v))}</h3><div class="mGrid">${Y.merch.filter(m=>m.v===v).map(m=>{const fu=mUrls(year,m.v,m.f),bu=m.b?mUrls(year,m.v,m.b):null;return `<button type="button" class="mc" aria-label="${esc(m.n)}"><div class="mcI"><img class="fr${m.b?' h':''}" alt="${esc(m.n)}" data-u="${esc(JSON.stringify(fu))}">${m.b?`<img class="bk h" alt="" data-u="${esc(JSON.stringify(bu))}"><span class="mcF">FLIP</span>`:''}</div><div class="mcN">${esc(m.n)}</div></button>`}).join('')}</div></section>`).join(''):'<div class="tEmpty">No merch listed for this year.</div>'}`;
  bindYear(merScr);watchImgs(merScr);
  merScr.querySelectorAll('.tChips button').forEach(b=>b.onclick=()=>{merchFilter=b.dataset.v;renderMerch()});
- merScr.querySelectorAll('.mc').forEach(c=>c.onclick=()=>{if(!c.classList.contains('noflip'))c.classList.toggle('flip')})}
+ merScr.querySelectorAll('.mc').forEach((c,ix)=>{const m=Y.merch.filter(q=>groups.includes(q.v)).sort((a,b)=>groups.indexOf(a.v)-groups.indexOf(b.v))[ix];c.onclick=()=>{if(c.querySelector('.mcI.x')||!m)return;const imgs=[...c.querySelectorAll('img')];const srcs=imgs.map(i=>i.hidden?'':(i.currentSrc||i.src||(()=>{try{return JSON.parse(i.dataset.u)[0]}catch{return ''}})())).filter(Boolean);openViewer(m,srcs)}})}
 })();
