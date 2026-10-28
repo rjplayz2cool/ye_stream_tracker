@@ -78,7 +78,7 @@ const css=`
 .mGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .mc{position:relative;background:#ffffff0b;border:1px solid #ffffff1c;border-radius:14px;overflow:hidden;cursor:pointer;padding:0;color:#fff;text-align:left;transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .2s}
 .mc:hover,.mc:focus-visible{transform:translateY(-3px);border-color:#ffffff55;outline:0}
-.mcI{aspect-ratio:1;background:#16161a;position:relative}
+.mcI{aspect-ratio:1;background:#fff;position:relative}
 .mcI img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:opacity .3s}
 .mcI img.bk{opacity:0}.mc.flip .mcI img.bk,.mc:hover .mcI img.bk.h{opacity:1}.mc.flip .mcI img.fr,.mc:hover .mcI img.fr.h{opacity:0}
 .mcI img.thr{filter:url(#tWhiteOut)}.mcI.x{display:grid;place-items:center;color:#fff6;font:700 10px/1 system-ui,sans-serif;letter-spacing:.12em}.mcI.x img{display:none}
@@ -218,10 +218,10 @@ function cut(bm){const s=Math.min(1,900/Math.max(bm.width,bm.height)),w=Math.max
 window.TOURS_CUT=bm=>cut(bm);
 function clean(u){if(cutCache.has(u))return cutCache.get(u);const get=c=>fetch(u,{mode:'cors',referrerPolicy:'no-referrer',cache:c}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.blob()});const px=()=>fetch('https://wsrv.nl/?n=-1&url='+encodeURIComponent(u.replace(/^https?:\/\//,'')),{mode:'cors',referrerPolicy:'no-referrer'}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.blob()});const p=get('default').catch(()=>get('reload')).catch(px).then(b=>createImageBitmap(b)).then(cut);cutCache.set(u,p);return p}
 function missing(img){const box=img.parentElement;img.hidden=true;if(img.classList.contains('fr')){box.classList.add('x');if(!box.querySelector('i'))box.insertAdjacentHTML('beforeend','<i style="font-style:normal">NO IMAGE</i>');const mc=box.closest('.mc');mc&&mc.classList.add('noflip')}}
-function firstOk(list,i=0){return clean(list[i]).catch(err=>{if(i+1<list.length)return firstOk(list,i+1);throw err})}
+function firstOk(list,i=0){return new Promise((res,rej)=>{const t=new Image();t.onload=()=>res(list[i]);t.onerror=()=>rej(new Error('img'));t.src=list[i]}).catch(err=>{if(i+1<list.length)return firstOk(list,i+1);throw err})}
 function pump(){while(run<4&&Qm.length){const img=Qm.shift();run++;
  const done=()=>{run--;pump()};let list;try{list=JSON.parse(img.dataset.u)}catch{list=[img.dataset.u]}
- firstOk(list).then(u=>{img.src=u;done()},err=>{img.classList.add('thr');img.onerror=()=>{img.onerror=null;missing(img)};img.src=list[0];done()})}}
+ firstOk(list).then(u=>{img.src=u;done()},err=>{img.onerror=()=>{img.onerror=null;missing(img)};img.src=list[0];done()})}}
 const mio='IntersectionObserver'in window?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){mio.unobserve(e.target);Qm.push(e.target);pump()}}),{rootMargin:'400px'}):null;
 function watchImgs(scope){scope.querySelectorAll('img[data-u]').forEach(i=>{if(mio)mio.observe(i);else{Qm.push(i);pump()}})}
 
