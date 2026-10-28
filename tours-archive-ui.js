@@ -112,7 +112,7 @@ function show(i){if(i<0||i>=SC.length||i===cur)return;const dir=i<cur;cur=i;
  scrollTo({top:0});if(i>0)ensure().then(()=>render())}
 SC[0].btn.setAttribute('aria-current','true');eL.hidden=true;eR.setAttribute('aria-label','Go to Recordings');
 function ensure(){if(A)return Promise.resolve();if(loading)return loading;
- loading=new Promise((res,rej)=>{const s=document.createElement('script');s.src='tours-archive.js';s.onload=()=>{A=window.TOUR_ARCHIVE;year=Object.keys(A).sort().pop();res()};s.onerror=()=>{loading=null;rej()};document.head.appendChild(s)})
+ loading=new Promise((res,rej)=>{const s=document.createElement('script');s.src='tours-archive.js?v=1793150181';s.onload=()=>{A=window.TOUR_ARCHIVE;year=Object.keys(A).sort().pop();res()};s.onerror=()=>{loading=null;rej()};document.head.appendChild(s)})
   .catch(()=>{[recScr,merScr].forEach(e=>e.innerHTML='<div class="tEmpty">Could not load the archive. Refresh and try again.</div>')});return loading}
 document.addEventListener('keydown',e=>{if(pg.hidden||modal&&!modal.hidden||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight')show(cur+1);if(e.key==='ArrowLeft')show(cur-1)});
 new MutationObserver(()=>{[eL,eR].forEach(b=>b.style.display=pg.hidden?'none':'')}).observe(pg,{attributes:true,attributeFilter:['hidden']});[eL,eR].forEach(b=>b.style.display=pg.hidden?'none':'');
@@ -216,7 +216,7 @@ function cut(bm){const s=Math.min(1,900/Math.max(bm.width,bm.height)),w=Math.max
   out[o]=fr;out[o+1]=fg;out[o+2]=fb;out[o+3]=Math.round(Math.min(a*255,TR?d[o+3]:255))}
  id.data.set(out);x.putImageData(id,0,0);return toUrl()}
 window.TOURS_CUT=bm=>cut(bm);
-function clean(u){if(cutCache.has(u))return cutCache.get(u);const p=fetch(u,{mode:'cors',referrerPolicy:'no-referrer'}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.blob()}).then(b=>createImageBitmap(b)).then(cut);cutCache.set(u,p);return p}
+function clean(u){if(cutCache.has(u))return cutCache.get(u);const get=c=>fetch(u,{mode:'cors',referrerPolicy:'no-referrer',cache:c}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.blob()});const p=get('default').catch(e=>{if(/^http /.test(e.message))throw e;return get('reload')}).then(b=>createImageBitmap(b)).then(cut);cutCache.set(u,p);return p}
 function missing(img){const box=img.parentElement;img.hidden=true;if(img.classList.contains('fr')){box.classList.add('x');if(!box.querySelector('i'))box.insertAdjacentHTML('beforeend','<i style="font-style:normal">NO IMAGE</i>');const mc=box.closest('.mc');mc&&mc.classList.add('noflip')}}
 function firstOk(list,i=0){return clean(list[i]).catch(err=>{if(i+1<list.length)return firstOk(list,i+1);throw err})}
 function pump(){while(run<4&&Qm.length){const img=Qm.shift();run++;
