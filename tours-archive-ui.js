@@ -163,7 +163,7 @@ function closeModal(){if(!modal||modal.hidden)return;const v=modal.querySelector
 /* ---- Merch ---- */
 function vlabel(k){return (window.TOUR_ARCHIVE_VENUES||{})[k]||k.toUpperCase()}
 /* white-background removal */
-if(!document.getElementById('tWhiteOutSvg')){const d=document.createElement('div');d.id='tWhiteOutSvg';d.innerHTML='<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="tWhiteOut" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -66.67 -66.67 -66.67 0 198" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter></svg>';document.body.appendChild(d)}
+if(!document.getElementById('tWhiteOutSvg')){const d=document.createElement('div');d.id='tWhiteOutSvg';d.innerHTML='<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="tWhiteOut" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -66.67 -66.67 -66.67 0 198" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in" result="k"/><feMorphology in="k" operator="erode" radius="1"/></filter></svg>';document.body.appendChild(d)}
 const cutCache=new Map(),Qm=[];let run=0;
 function cut(bm){const s=Math.min(1,900/Math.max(bm.width,bm.height)),w=Math.max(1,Math.round(bm.width*s)),h=Math.max(1,Math.round(bm.height*s));
  const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(bm,0,0,w,h);
@@ -216,7 +216,7 @@ function cut(bm){const s=Math.min(1,900/Math.max(bm.width,bm.height)),w=Math.max
   out[o]=fr;out[o+1]=fg;out[o+2]=fb;out[o+3]=Math.round(Math.min(a*255,TR?d[o+3]:255))}
  id.data.set(out);x.putImageData(id,0,0);return toUrl()}
 window.TOURS_CUT=bm=>cut(bm);
-function clean(u){if(cutCache.has(u))return cutCache.get(u);const get=c=>fetch(u,{mode:'cors',referrerPolicy:'no-referrer',cache:c}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.blob()});const p=get('default').catch(e=>{if(/^http /.test(e.message))throw e;return get('reload')}).then(b=>createImageBitmap(b)).then(cut);cutCache.set(u,p);return p}
+function clean(u){if(cutCache.has(u))return cutCache.get(u);const get=c=>fetch(u,{mode:'cors',referrerPolicy:'no-referrer',cache:c}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.blob()});const px=()=>fetch('https://wsrv.nl/?n=-1&url='+encodeURIComponent(u.replace(/^https?:\/\//,'')),{mode:'cors',referrerPolicy:'no-referrer'}).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.blob()});const p=get('default').catch(()=>get('reload')).catch(px).then(b=>createImageBitmap(b)).then(cut);cutCache.set(u,p);return p}
 function missing(img){const box=img.parentElement;img.hidden=true;if(img.classList.contains('fr')){box.classList.add('x');if(!box.querySelector('i'))box.insertAdjacentHTML('beforeend','<i style="font-style:normal">NO IMAGE</i>');const mc=box.closest('.mc');mc&&mc.classList.add('noflip')}}
 function firstOk(list,i=0){return clean(list[i]).catch(err=>{if(i+1<list.length)return firstOk(list,i+1);throw err})}
 function pump(){while(run<4&&Qm.length){const img=Qm.shift();run++;
