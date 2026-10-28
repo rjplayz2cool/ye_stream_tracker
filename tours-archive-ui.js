@@ -86,7 +86,7 @@ const css=`
 .mcF{position:absolute;right:7px;top:7px;font:700 9px/1 system-ui,sans-serif;letter-spacing:.1em;background:#000a;padding:4px 6px;border-radius:6px}
 .mcF{display:none}.mc{cursor:pointer}
 .yv{position:fixed;inset:0;z-index:2147483000;background:#fff;color:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:ui-monospace,'SFMono-Regular','Cascadia Mono',Menlo,Consolas,'Liberation Mono',monospace;animation:yvIn .22s ease;overscroll-behavior:contain;touch-action:pan-y}
-.yv[hidden]{display:none}@keyframes yvIn{from{opacity:0}to{opacity:1}}
+.yv[hidden]{display:none}@keyframes yvIn{from{opacity:0}to{opacity:1}}@keyframes yvOut{from{opacity:1;transform:none}to{opacity:0;transform:scale(.97)}}.yv.out{animation:yvOut .26s ease forwards;pointer-events:none}
 .yv :where(button){all:unset;cursor:pointer;display:grid;place-items:center;color:#000;-webkit-tap-highlight-color:transparent}
 .yv :where(button):focus-visible{outline:1px solid #000;outline-offset:3px}
 .yvB{position:absolute;left:10px;top:10px;width:40px;height:40px}
@@ -264,7 +264,7 @@ function openViewer(m,srcs){
  const set=(n,dir)=>{if(busy)return;busy=true;const go=()=>{k=(n+srcs.length)%srcs.length;img.onload=()=>{img.className='';busy=false};img.onerror=()=>{img.className='';busy=false};img.src=srcs[k];dots.forEach((d,q)=>d.classList.toggle('on',q===k))};
   if(dir&&img.src){img.className='o '+(dir>0?'l':'r');setTimeout(()=>{go();img.classList.add(dir>0?'r':'l');requestAnimationFrame(()=>requestAnimationFrame(()=>{img.className=''}))},170)}else go()};
  set(0,0);
- const close=()=>{document.removeEventListener('keydown',key,true);yv.remove();yv=null;document.documentElement.style.overflow='';try{yvPrev&&yvPrev.focus()}catch{}};
+ let closing=false;const close=()=>{if(closing)return;closing=true;document.removeEventListener('keydown',key,true);const el=yv;yv=null;el.classList.add('out');document.documentElement.style.overflow='';try{yvPrev&&yvPrev.focus({preventScroll:true})}catch{}let gone=false;const rm=()=>{if(!gone){gone=true;el.remove()}};el.addEventListener('animationend',rm);setTimeout(rm,400)};
  const step=d=>{if(multi)set(k+d,d)};
  const key=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}else if(e.key==='ArrowRight'){e.preventDefault();step(1)}else if(e.key==='ArrowLeft'){e.preventDefault();step(-1)}};
  document.addEventListener('keydown',key,true);
