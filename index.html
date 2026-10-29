@@ -2,6 +2,7 @@
 <html lang="en"><head><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script>window.__YE_LIVE=!!(window.supabase&&window.YE_SUPABASE&&YE_SUPABASE.url&&YE_SUPABASE.anonKey&&!String(YE_SUPABASE.url).includes("YOUR_"))</script><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>YE Streams</title>
+<link rel="icon" href="favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0a0a0a"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="YE Streams"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Hanken+Grotesk:wght@400;600;800&family=Anton&family=Montserrat:wght@500;600&family=Reenie+Beanie&display=swap" rel="stylesheet">
 <style>
@@ -3501,4 +3502,4 @@ function wire(){
 let hlPinned=false,timer=0;
 window.PH=window.PH||{};
 PH.tours={show(){$('toursScreen').classList.add('activeScreen');if(!built){built=true;wire()}paint();clearInterval(timer);timer=setInterval(()=>{paintNext();paintLists();paintPins();setHL(hl)},60000)},hide(){$('toursScreen').classList.remove('activeScreen');clearInterval(timer)}};
-})();</script><script>addEventListener("message",e=>{const d=e.data;if(d&&d.type==="ye-crossword-height"){const f=document.getElementById("yeCrosswordFrame");if(f&&e.source===f.contentWindow)f.style.height=Math.max(560,Math.min(2400,d.h))+"px"}});</script><script src="tours-archive-ui.js?v=1793234737" defer></script></body></html>
+})();</script><script>addEventListener("message",e=>{const d=e.data;if(d&&d.type==="ye-crossword-height"){const f=document.getElementById("yeCrosswordFrame");if(f&&e.source===f.contentWindow)f.style.height=Math.max(560,Math.min(2400,d.h))+"px"}});</script><script src="tours-archive-ui.js?v=1793234737" defer></script><script>if('serviceWorker'in navigator&&location.protocol!=='file:')addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script></body></html>
