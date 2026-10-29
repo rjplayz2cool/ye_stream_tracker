@@ -1,6 +1,0 @@
-(() => {
-  if (!('serviceWorker' in navigator)) return;
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker?v=3', { scope: '/', updateViaCache: 'none' }).catch(() => {});
-  });
-})();
