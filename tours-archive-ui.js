@@ -65,6 +65,7 @@ const css=`
 .rcMTop small{display:block;margin-top:5px;color:#fff9;font-size:12px}
 .rcX{border:0;background:#ffffff1a;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;flex:none}
 .rcX:hover{background:#ffffff33}
+.rcYt{position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden}.rcYt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .rcMBox video{display:block;width:100%;max-height:60vh;background:#000;border-radius:12px}
 .rcErr{margin:8px 0 0;color:#ffb4b4;font-size:13px}
 .rcMCred{margin:14px 0 0;padding:12px 14px;border-radius:12px;background:#ffffff0d;font-size:13px;line-height:1.5}
@@ -149,7 +150,7 @@ const ytName={};
 function ytTitle(url){if(ytName[url]!==undefined)return Promise.resolve(ytName[url]);
  try{const c=localStorage.getItem('ytn:'+url);if(c){ytName[url]=c;return Promise.resolve(c)}}catch{}
  return fetch('https://noembed.com/embed?url='+encodeURIComponent(url)).then(r=>r.json()).then(j=>{const n=j.author_name||'';ytName[url]=n;try{if(n)localStorage.setItem('ytn:'+url,n)}catch{}return n}).catch(()=>{ytName[url]='';return ''})}
-function credHTML(s){return s.cr?`Credit · <a href="${esc(s.cr)}" target="_blank" rel="noopener noreferrer" data-yt="${esc(s.cr)}">YouTube</a>`:(s.c==='visualizer'?'Official visualizer from Ye':'Official stream from Ye')}
+function credHTML(s){return s.cr?`Credit · <a href="${esc(s.cr)}" target="_blank" rel="noopener noreferrer" ${s.cn?'':`data-yt="${esc(s.cr)}"`}>${s.cn?esc(s.cn)+' (YouTube)':'YouTube'}</a>`:(s.c==='visualizer'?'Official visualizer from Ye':'Official stream from Ye')}
 /* 2026 live-show covers: a still frame taken from inside the recording itself (poster stays until the frame is ready) */
 const fio='IntersectionObserver'in window?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){fio.unobserve(e.target);startFrame(e.target)}}),{rootMargin:'300px'}):null;
 function startFrame(v){const u=v.dataset.src;if(!u)return;
@@ -161,9 +162,9 @@ function frameCovers(scope){scope.querySelectorAll('video.rcFr').forEach(v=>{if(
 function renderRec(){const Y=A[year];if(!Y){recScr.innerHTML='';return}
  const cats=[...new Set(Y.shows.map(s=>s.c))];if(recFilter!=='all'&&!cats.includes(recFilter))recFilter='all';
  const list=Y.shows.filter(s=>recFilter==='all'||s.c===recFilter);
- recScr.innerHTML=`<div class="tHead"><div><h2>Show Recordings</h2><p>${Y.shows.filter(s=>s.v).length} recordings · ${year}</p></div>${yearSel()}</div>
+ recScr.innerHTML=`<div class="tHead"><div><h2>Show Recordings</h2><p>${Y.shows.filter(s=>s.v||s.yt).length} recordings · ${year}</p></div>${yearSel()}</div>
  ${cats.length>1?`<div class="tChips">${['all',...cats].map(c=>`<button type="button" data-c="${c}" class="${c===recFilter?'on':''}">${c==='all'?'All':(CAT[c]||c)}</button>`).join('')}</div>`:''}
- ${list.length?`<div class="rGrid">${list.map(s=>{const i=Y.shows.indexOf(s);return `<article class="rc${s.v?'':' na'}" data-i="${i}" ${s.v?'tabindex="0" role="button"':''} aria-label="${esc(s.n)}"><div class="rcImg"><img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(s.img)}">${year==='2026'&&s.c==='live'&&s.v?`<video class="rcFr" muted playsinline preload="none" tabindex="-1" aria-hidden="true" data-src="${esc(s.v)}"></video>`:''}<span class="rcTag">${esc(s.v?(CAT[s.c]||s.c):'Not yet available')}</span>${s.sp?`<span class="rcSpec">${esc(s.sp)}</span>`:''}<i class="rcPlay"></i></div><div class="rcB"><h3>${esc(s.n)}</h3><div class="rcCred${s.cr?'':' off'}">${s.v?credHTML(s):'Recording not released yet'}</div></div></article>`}).join('')}</div>`:'<div class="tEmpty">No recordings for this year yet.</div>'}`;
+ ${list.length?`<div class="rGrid">${list.map(s=>{const i=Y.shows.indexOf(s);return `<article class="rc${s.v||s.yt?'':' na'}" data-i="${i}" ${s.v||s.yt?'tabindex="0" role="button"':''} aria-label="${esc(s.n)}"><div class="rcImg"><img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(s.img)}">${year==='2026'&&s.c==='live'&&s.v&&!s.yt?`<video class="rcFr" muted playsinline preload="none" tabindex="-1" aria-hidden="true" data-src="${esc(s.v)}"></video>`:''}<span class="rcTag">${esc(s.v||s.yt?(CAT[s.c]||s.c):'Not yet available')}</span>${s.sp?`<span class="rcSpec">${esc(s.sp)}</span>`:''}<i class="rcPlay"></i></div><div class="rcB"><h3>${esc(s.n)}</h3><div class="rcCred${s.cr?'':' off'}">${s.v||s.yt?credHTML(s):'Recording not released yet'}</div></div></article>`}).join('')}</div>`:'<div class="tEmpty">No recordings for this year yet.</div>'}`;
  bindYear(recScr);frameCovers(recScr);
  recScr.querySelectorAll('.tChips button').forEach(b=>b.onclick=()=>{recFilter=b.dataset.c;renderRec()});
  recScr.querySelectorAll('.rc:not(.na)').forEach(c=>{const open=()=>openModal(Y.shows[+c.dataset.i]);c.onclick=e=>{if(e.target.closest('a'))return;open()};c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}}});
@@ -175,15 +176,15 @@ function secs(t){return String(t).split(':').reduce((a,x)=>a*60+(+x||0),0)}
 function openModal(s){if(!modal){modal=document.createElement('div');modal.className='rcM';modal.hidden=true;modal.innerHTML='<div class="rcMBox" role="dialog" aria-modal="true"></div>';document.body.appendChild(modal);modal.onclick=e=>{if(e.target===modal)closeModal()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)closeModal()})}
  const box=modal.firstChild;
  box.innerHTML=`<div class="rcMTop"><div><h3>${esc(s.n)}</h3><small>${esc([CAT[s.c]||s.c,s.sp,year].filter(Boolean).join(' · '))}</small></div><button type="button" class="rcX" aria-label="Close">✕</button></div>
- <video controls playsinline preload="metadata" poster="${esc(s.img)}" src="${esc(s.v)}"></video><div class="rcErr" hidden>This video could not be played here. <a href="https://yetour.xyz/" target="_blank" rel="noopener noreferrer" style="color:#fff">Open it on yetour.xyz</a>.</div>
- <div class="rcMCred"><b>Credits</b>${s.cr?`Video by <a href="${esc(s.cr)}" target="_blank" rel="noopener noreferrer" data-yt="${esc(s.cr)}">the original uploader on YouTube</a>`:(s.c==='visualizer'?'Official visualizer from Ye.':'Official stream from Ye.')}</div>
- ${s.ts.length?`<div class="rcTs"><b>Timestamps</b><div class="rcTsL">${s.ts.map(t=>`<button type="button" data-t="${secs(t[1])}"><span>${esc(t[0])}</span><i>${esc(t[1])}</i></button>`).join('')}</div></div>`:''}`;
- const v=box.querySelector('video');v.onerror=()=>{box.querySelector('.rcErr').hidden=false};
+ ${s.yt?`<div class="rcYt"><iframe title="${esc(s.n)}" src="https://www.youtube-nocookie.com/embed/${esc(s.yt)}?rel=0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`:`<video controls playsinline preload="metadata" poster="${esc(s.img)}" src="${esc(s.v)}"></video>`}<div class="rcErr" hidden>This video could not be played here. <a href="https://yetour.xyz/" target="_blank" rel="noopener noreferrer" style="color:#fff">Open it on yetour.xyz</a>.</div>
+ <div class="rcMCred"><b>Credits</b>${s.cr?`Video by <a href="${esc(s.cr)}" target="_blank" rel="noopener noreferrer" ${s.cn?'':`data-yt="${esc(s.cr)}"`}>${s.cn?esc(s.cn)+' on YouTube':'the original uploader on YouTube'}</a>`:(s.c==='visualizer'?'Official visualizer from Ye.':'Official stream from Ye.')}</div>
+ ${(s.ts||[]).length?`<div class="rcTs"><b>Timestamps</b><div class="rcTsL">${s.ts.map(t=>`<button type="button" data-t="${secs(t[1])}"><span>${esc(t[0])}</span><i>${esc(t[1])}</i></button>`).join('')}</div></div>`:''}`;
+ const v=box.querySelector('video'),fr=box.querySelector('iframe');if(v)v.onerror=()=>{box.querySelector('.rcErr').hidden=false};
  box.querySelector('.rcX').onclick=closeModal;
- box.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{v.currentTime=+b.dataset.t;v.play().catch(()=>{});v.scrollIntoView({block:'nearest',behavior:'smooth'})});
+ box.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{if(fr){fr.src='https://www.youtube-nocookie.com/embed/'+s.yt+'?rel=0&autoplay=1&start='+(+b.dataset.t);fr.scrollIntoView({block:'nearest',behavior:'smooth'});return}v.currentTime=+b.dataset.t;v.play().catch(()=>{});v.scrollIntoView({block:'nearest',behavior:'smooth'})});
  box.querySelectorAll('a[data-yt]').forEach(a=>ytTitle(a.dataset.yt).then(n=>{if(n)a.textContent=n+' on YouTube'}));
  modal.hidden=false;document.body.style.overflow='hidden';box.querySelector('.rcX').focus()}
-function closeModal(){if(!modal||modal.hidden)return;const v=modal.querySelector('video');if(v){v.pause();v.removeAttribute('src');v.load()}modal.hidden=true;document.body.style.overflow=''}
+function closeModal(){if(!modal||modal.hidden)return;const v=modal.querySelector('video');if(v){v.pause();v.removeAttribute('src');v.load()}const fr=modal.querySelector('iframe');if(fr)fr.src='about:blank';modal.hidden=true;document.body.style.overflow=''}
 
 /* ---- Merch ---- */
 function vlabel(k){return (window.TOUR_ARCHIVE_VENUES||{})[k]||k.toUpperCase()}
