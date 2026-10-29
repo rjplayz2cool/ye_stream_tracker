@@ -1,41 +1,18 @@
-import json,re,sys
-from playwright.sync_api import sync_playwright
-out={'media':[],'requests':[],'tabs':{},'html_len':0}
-with sync_playwright() as p:
-    b=p.chromium.launch();pg=b.new_page(viewport={'width':1400,'height':900})
-    seen=set()
-    def onreq(r):
-        u=r.url
-        if u not in seen and ('yetour' in u or u.endswith('.json')):seen.add(u);out['requests'].append(u)
-    pg.on('request',onreq)
+import json,re,os,urllib.request
+os.makedirs('recovery-index/yetour',exist_ok=True)
+def get(u):
+    return urllib.request.urlopen(urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0'}),timeout=30).read()
+html=get('https://yetour.xyz/').decode('utf-8','ignore')
+open('recovery-index/yetour/index.html','w',encoding='utf-8').write(html)
+urls=set(re.findall(r'(?:src|href)="((?:https://yetour\.xyz)?/?(?:js|css|data)/[^"]+)"',html))
+rep={'fetched':[],'errors':[]}
+for u in sorted(urls):
+    full=u if u.startswith('http') else 'https://yetour.xyz/'+u.lstrip('/')
     try:
-        pg.goto('https://yetour.xyz/',wait_until='domcontentloaded',timeout=60000);pg.wait_for_timeout(8000)
-    except Exception as e:out['goto_err']=str(e)[:300]
-    try:
-        out['html_len']=len(pg.content())
-        # click every visible tab / button once, record text and images
-        labels=pg.eval_on_selector_all('button,a,[role=tab],li','els=>[...new Set(els.map(e=>(e.innerText||'').trim()).filter(t=>t&&t.length<40))]')
-        out['labels']=labels
-        for lab in labels:
-            if re.search(r'merch|live|recording|jakarta|gelora|bung',lab,re.I):
-                try:
-                    pg.get_by_text(lab,exact=True).first.click(timeout=3000);pg.wait_for_timeout(1500)
-                    out['tabs'][lab]={'text':pg.inner_text('body')[:6000],'imgs':pg.eval_on_selector_all('img','els=>els.map(i=>({src:i.currentSrc||i.src,alt:i.alt}))')}
-                except Exception as e:out['tabs'][lab]={'err':str(e)[:150]}
-        out['media']=sorted(u for u in out['requests'] if 'media.yetour' in u)
-        out['scripts']=pg.eval_on_selector_all('script[src]','els=>els.map(e=>e.src)')
-        # grab text of every same-origin script for data
-        data={}
-        for s in out['scripts']:
-            if 'yetour' in s:
-                try:
-                    t=pg.evaluate('u=>fetch(u).then(r=>r.text())',s)
-                    data[s]=[m for m in set(re.findall(r'https?://[^"\'\s\\)]+',t)) if 'yetour' in m or re.search(r'jakarta|gelora',m,re.I)][:400]
-                    data[s+'#jakarta']=[t[max(0,m.start()-200):m.end()+400] for m in re.finditer(r'(?i)gelora|jakarta',t)][:12]
-                except Exception as e:data[s]=str(e)[:100]
-        out['script_data']=data
-    except Exception as e:out['err']=str(e)[:300]
-    b.close()
-import os;os.makedirs('recovery-index',exist_ok=True)
-json.dump(out,open('recovery-index/yetour-inspection.json','w'),indent=1)
-print('done',len(out['media']))
+        t=get(full).decode('utf-8','ignore');n=re.sub(r'[^A-Za-z0-9._-]','_',full.split('yetour.xyz/')[1])
+        open('recovery-index/yetour/'+n,'w',encoding='utf-8').write(t);rep['fetched'].append([full,len(t)])
+        # follow data references
+        for m in re.findall(r'["\'`]((?:/|\.\./)?[\w/.-]+\.(?:json|js))(?:\?[^"\'`]*)?["\'`]',t):
+            pass
+    except Exception as e:rep['errors'].append([full,str(e)[:100]])
+json.dump(rep,open('recovery-index/yetour/report.json','w'),indent=1)
