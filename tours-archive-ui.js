@@ -44,7 +44,7 @@ const css=`
 .rc.na{cursor:default;opacity:.55}.rc.na:hover{transform:none}
 .rcImg{position:relative;aspect-ratio:16/9;background:#111 center/cover;overflow:hidden}
 .rcImg img{width:100%;height:100%;object-fit:cover;display:block;transition:scale .5s}
-.rc:hover .rcImg img,.rc:hover .rcImg video{scale:1.05}.rcImg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s,scale .5s;pointer-events:none}.rcImg video.rdy{opacity:1}
+.rc:hover .rcImg img,.rc:hover .rcImg video{scale:1.05}.rcImg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s,scale .5s;pointer-events:none}.rcImg video.rdy{opacity:1}.rcImg img.rcPo{opacity:0;transition:opacity .4s,scale .5s}.rcImg img.rcPo.on{opacity:1}
 .rcTag,.rcSpec{position:absolute;top:10px;padding:4px 8px;border-radius:7px;background:#000a;color:#fff;font:700 10px/1 system-ui,sans-serif;letter-spacing:.1em;backdrop-filter:blur(6px)}
 .rcTag{left:10px}.rcSpec{right:10px}
 .rcPlay{position:absolute;inset:0;margin:auto;width:52px;height:52px;border-radius:50%;background:#000a;display:grid;place-items:center;opacity:0;transition:opacity .2s;backdrop-filter:blur(6px)}
@@ -156,7 +156,7 @@ const fio='IntersectionObserver'in window?new IntersectionObserver(es=>es.forEac
 function startFrame(v){const u=v.dataset.src;if(!u)return;
  v.addEventListener('loadedmetadata',()=>{const d=v.duration;if(isFinite(d)&&d>0)try{v.currentTime=Math.max(5,Math.min(d*.14,d-5))}catch{}},{once:true});
  v.addEventListener('seeked',()=>{v.classList.add('rdy');v.pause();},{once:true});
- v.addEventListener('error',()=>{v.remove()},{once:true});
+ const po=()=>{const m=v.parentNode&&v.parentNode.querySelector('img.rcPo');if(m)m.classList.add('on')};v.addEventListener('error',()=>{po();v.remove()},{once:true});setTimeout(()=>{if(!v.classList.contains('rdy'))po()},12000);
  v.preload='metadata';v.src=u}
 function frameCovers(scope){scope.querySelectorAll('video.rcFr').forEach(v=>{if(fio)fio.observe(v);else startFrame(v)})}
 function renderRec(){const Y=A[year];if(!Y){recScr.innerHTML='';return}
@@ -164,7 +164,7 @@ function renderRec(){const Y=A[year];if(!Y){recScr.innerHTML='';return}
  const list=Y.shows.filter(s=>recFilter==='all'||s.c===recFilter);
  recScr.innerHTML=`<div class="tHead"><div><h2>Show Recordings</h2><p>${Y.shows.filter(s=>s.v||s.yt).length} recordings · ${year}</p></div>${yearSel()}</div>
  ${cats.length>1?`<div class="tChips">${['all',...cats].map(c=>`<button type="button" data-c="${c}" class="${c===recFilter?'on':''}">${c==='all'?'All':(CAT[c]||c)}</button>`).join('')}</div>`:''}
- ${list.length?`<div class="rGrid">${list.map(s=>{const i=Y.shows.indexOf(s);return `<article class="rc${s.v||s.yt?'':' na'}" data-i="${i}" ${s.v||s.yt?'tabindex="0" role="button"':''} aria-label="${esc(s.n)}"><div class="rcImg"><img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(s.img)}">${year==='2026'&&s.c==='live'&&s.v&&!s.yt?`<video class="rcFr" muted playsinline preload="none" tabindex="-1" aria-hidden="true" data-src="${esc(s.v)}"></video>`:''}<span class="rcTag">${esc(s.v||s.yt?(CAT[s.c]||s.c):'Not yet available')}</span>${s.sp?`<span class="rcSpec">${esc(s.sp)}</span>`:''}<i class="rcPlay"></i></div><div class="rcB"><h3>${esc(s.n)}</h3><div class="rcCred${s.cr?'':' off'}">${s.v||s.yt?credHTML(s):'Recording not released yet'}</div></div></article>`}).join('')}</div>`:'<div class="tEmpty">No recordings for this year yet.</div>'}`;
+ ${list.length?`<div class="rGrid">${list.map(s=>{const i=Y.shows.indexOf(s);return `<article class="rc${s.v||s.yt?'':' na'}" data-i="${i}" ${s.v||s.yt?'tabindex="0" role="button"':''} aria-label="${esc(s.n)}"><div class="rcImg"><img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(s.img)}"${year==='2026'&&s.c==='live'&&s.v&&!s.yt?' class="rcPo"':''}>${year==='2026'&&s.c==='live'&&s.v&&!s.yt?`<video class="rcFr" muted playsinline preload="none" tabindex="-1" aria-hidden="true" data-src="${esc(s.v)}"></video>`:''}<span class="rcTag">${esc(s.v||s.yt?(CAT[s.c]||s.c):'Not yet available')}</span>${s.sp?`<span class="rcSpec">${esc(s.sp)}</span>`:''}<i class="rcPlay"></i></div><div class="rcB"><h3>${esc(s.n)}</h3><div class="rcCred${s.cr?'':' off'}">${s.v||s.yt?credHTML(s):'Recording not released yet'}</div></div></article>`}).join('')}</div>`:'<div class="tEmpty">No recordings for this year yet.</div>'}`;
  bindYear(recScr);frameCovers(recScr);
  recScr.querySelectorAll('.tChips button').forEach(b=>b.onclick=()=>{recFilter=b.dataset.c;renderRec()});
  recScr.querySelectorAll('.rc:not(.na)').forEach(c=>{const open=()=>openModal(Y.shows[+c.dataset.i]);c.onclick=e=>{if(e.target.closest('a'))return;open()};c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}}});
