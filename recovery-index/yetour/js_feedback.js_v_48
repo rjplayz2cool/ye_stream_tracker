@@ -1,0 +1,96 @@
+const yetourDiagnostics = (() => {
+  const events = [];
+  const startedAt = new Date().toISOString();
+  const keep = (type, value) => {
+    events.push({ timestamp: new Date().toISOString(), type, message: String(value || 'Unknown client event').slice(0, 800) });
+    if (events.length > 100) events.shift();
+  };
+  ['error', 'warn'].forEach((level) => {
+    const original = console[level];
+    console[level] = function (...args) {
+      keep(`console.${level}`, args.map((arg) => {
+        try { return typeof arg === 'string' ? arg : JSON.stringify(arg); } catch (_) { return '[unserializable]'; }
+      }).join(' '));
+      return original.apply(this, args);
+    };
+  });
+  window.addEventListener('error', (event) => keep('window.error', event.message || 'Unhandled browser error'));
+  window.addEventListener('unhandledrejection', (event) => keep('unhandledrejection', event.reason?.message || event.reason || 'Unhandled promise rejection'));
+  return () => ({
+    version: 1,
+    started_at: startedAt,
+    generated_at: new Date().toISOString(),
+    page: window.location.pathname,
+    user_agent: navigator.userAgent,
+    language: navigator.language,
+    online: navigator.onLine,
+    viewport: { width: window.innerWidth, height: window.innerHeight, pixel_ratio: window.devicePixelRatio || 1 },
+    events: events.slice()
+  });
+})();
+
+function downloadDiagnosticsFile() {
+  const blob = new Blob([JSON.stringify(yetourDiagnostics(), null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `yetour-diagnostics-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+  return blob;
+}
+
+function initFeedback() {
+  if (!feedbackSubmitBtn) return;
+  const diagnosticsButton = document.getElementById('feedback-download-diagnostics-btn');
+  const attachDiagnosticsButton = document.getElementById('feedback-attach-diagnostics-btn');
+  const diagnosticsStatus = document.getElementById('feedback-diagnostics-status');
+  let preparedDiagnostics = null;
+
+  diagnosticsButton?.addEventListener('click', () => {
+    preparedDiagnostics = yetourDiagnostics();
+    downloadDiagnosticsFile();
+    if (diagnosticsStatus) diagnosticsStatus.textContent = 'DIAGNOSTICS DOWNLOADED AND READY TO ATTACH.';
+  });
+
+  attachDiagnosticsButton?.addEventListener('click', () => {
+    preparedDiagnostics = yetourDiagnostics();
+    if (diagnosticsStatus) diagnosticsStatus.textContent = 'DIAGNOSTICS ATTACHED TO YOUR NEXT FEEDBACK SUBMISSION.';
+  });
+
+  feedbackSubmitBtn.addEventListener('click', async () => {
+    const feedbackText = feedbackTextInput.value.trim();
+    const instagram = feedbackInstagramInput.value.trim();
+    if (!feedbackText) { showFeedbackStatus('FEEDBACK TEXT IS REQUIRED', 'error'); return; }
+    feedbackSubmitBtn.disabled = true;
+    showFeedbackStatus('SUBMITTING...', 'success');
+    try {
+      let diagnostics = preparedDiagnostics;
+      const activeYear = window.activeYear || '2026';
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback: feedbackText, instagram, year: activeYear, diagnostics })
+      });
+      const result = await response.json();
+      if (response.ok) {
+        showFeedbackStatus('FEEDBACK SUBMITTED SUCCESSFULLY', 'success');
+        feedbackTextInput.value = '';
+        feedbackInstagramInput.value = '';
+        preparedDiagnostics = null;
+        if (diagnosticsStatus) diagnosticsStatus.textContent = '';
+      } else showFeedbackStatus((result.error || 'SUBMISSION FAILED').toUpperCase(), 'error');
+    } catch (err) {
+      console.error(err);
+      showFeedbackStatus(String(err.message || 'NETWORK ERROR. PLEASE TRY AGAIN.').toUpperCase(), 'error');
+    } finally { feedbackSubmitBtn.disabled = false; }
+  });
+}
+
+function showFeedbackStatus(msg, type) {
+  if (!feedbackStatus) return;
+  feedbackStatus.textContent = msg;
+  feedbackStatus.className = `feedback-status ${type}`;
+}

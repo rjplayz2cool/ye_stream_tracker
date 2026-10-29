@@ -1,0 +1,677 @@
+const SUBMISSIONS_ORIGIN = "https://submissions.yetour.xyz";
+
+function getYediaMediaUrl(filename) {
+  const path = String(filename || "").replace(/^\/+/, "");
+  return path.includes("/") ? `${SUBMISSIONS_ORIGIN}/${path}` : `/uploads/${path}`;
+}
+
+function initYedia() {
+  if (!uploadShowSelect) return;
+
+  uploadShowSelect.innerHTML = '<option value="" disabled selected>SELECT SHOW</option>';
+
+  showsData.filter(s => s.category === 'live').forEach(show => {
+    const opt = document.createElement('option');
+    opt.value = show.id;
+    opt.textContent = show.name;
+    uploadShowSelect.appendChild(opt);
+
+    const btn = document.createElement('button');
+    btn.className = 'yedia-filter-btn';
+    btn.dataset.yediaFilter = String(show.id);
+    btn.textContent = show.name;
+    btn.addEventListener('click', () => {
+      const filter = String(show.id);
+      if (filter === currentYediaFilter) return;
+      currentYediaFilter = filter;
+      document.querySelectorAll('.yedia-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+      loadApprovedMedia();
+    });
+    yediaFilterBar.appendChild(btn);
+  });
+
+  const allBtn = yediaFilterBar.querySelector('[data-yedia-filter="all"]');
+  if (allBtn) {
+    allBtn.addEventListener('click', () => {
+      if (currentYediaFilter === 'all') return;
+      currentYediaFilter = 'all';
+      document.querySelectorAll('.yedia-filter-btn').forEach(b => b.classList.toggle('active', b === allBtn));
+      loadApprovedMedia();
+    });
+  }
+
+  let concertsData = null;
+
+  const uploadModeBtns = document.querySelectorAll('.upload-mode-btn');
+  uploadModeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      uploadModeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentUploadMode = btn.getAttribute('data-mode') || 'auto';
+      if (currentUploadMode === 'manual') {
+        uploadStatus.textContent = '';
+        uploadStatus.className = 'upload-status';
+        updateUploadModeVisibility(true);
+      } else if (currentUploadMode === 'auto') {
+        updateUploadModeVisibility(false);
+        if (uploadFileInput.files.length > 0) {
+          triggerAutoMetadataScan(uploadFileInput.files[0]);
+        }
+      }
+    });
+  });
+
+  function haversineDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  function switchToManualMode(message) {
+    currentUploadMode = 'manual';
+    currentScanToken++;
+    const modeBtns = document.querySelectorAll('.upload-mode-btn');
+    modeBtns.forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-mode') === 'manual');
+    });
+    updateUploadModeVisibility(true);
+    showStatus(message || 'COULD NOT FIND METADATA — SELECT SHOW MANUALLY', 'error');
+  }
+
+  async function triggerAutoMetadataScan(file) {
+    if (!file || currentUploadMode !== 'auto') return;
+
+    // Video metadata matching would upload the full file a second time. Videos
+    // use explicit show selection instead, so the original upload happens once.
+    const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|m4v|webm)$/i.test(file.name);
+    if (isVideo) {
+      switchToManualMode('SELECT A SHOW MANUALLY FOR VIDEO UPLOADS');
+      return;
+    }
+
+    const token = ++currentScanToken;
+    showStatus('SCANNING METADATA...', 'loading');
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('year', window.activeYear || '2026');
+    try {
+      const response = await fetch('/api/scan-metadata', { method: 'POST', body: formData });
+      if (token !== currentScanToken || currentUploadMode !== 'auto') return;
+      if (response.ok) {
+        const meta = await response.json();
+        if (token !== currentScanToken || currentUploadMode !== 'auto') return;
+        if (meta.show_id !== null && meta.show_id !== undefined) {
+          uploadShowSelect.value = String(meta.show_id);
+          updateUploadModeVisibility(true);
+          showStatus(`AUTO-DETECTED: ${meta.show_name || 'SHOW'}`, 'success');
+          setTimeout(() => {
+            if (uploadStatus.textContent.includes('AUTO-DETECTED')) {
+              uploadStatus.textContent = '';
+              uploadStatus.className = 'upload-status';
+            }
+          }, 3000);
+        } else {
+          switchToManualMode('COULD NOT FIND METADATA — SELECT SHOW MANUALLY');
+        }
+      } else {
+        switchToManualMode('COULD NOT FIND METADATA — SELECT SHOW MANUALLY');
+      }
+    } catch (e) {
+      if (token !== currentScanToken || currentUploadMode !== 'auto') return;
+      switchToManualMode('SCAN ERROR — SELECT SHOW MANUALLY');
+    }
+  }
+
+  const uploadFilePreview = document.getElementById('upload-file-preview');
+
+  uploadFileInput.addEventListener('change', async () => {
+    if (uploadFileInput.files.length > 0) {
+      const file = uploadFileInput.files[0];
+      uploadFileLabel.textContent = file.name.toUpperCase();
+      uploadFileLabel.classList.add('selected');
+
+      const isVid = file.type.startsWith('video/') || /\.(mp4|mov|m4v)$/i.test(file.name);
+      const imgPreview = document.getElementById('upload-file-preview');
+      const vidPreview = document.getElementById('upload-video-preview');
+
+      clearPreviewObjectUrl();
+      currentPreviewObjectUrl = URL.createObjectURL(file);
+      if (isVid) {
+        if (imgPreview) imgPreview.style.display = 'none';
+        if (vidPreview) {
+          vidPreview.src = currentPreviewObjectUrl;
+          vidPreview.style.display = 'block';
+          vidPreview.play().catch(() => { });
+        }
+      } else {
+        if (vidPreview) {
+          vidPreview.pause();
+          vidPreview.src = '';
+          vidPreview.style.display = 'none';
+        }
+        if (imgPreview) {
+          imgPreview.src = currentPreviewObjectUrl;
+          imgPreview.style.display = 'block';
+        }
+      }
+
+      if (currentUploadMode === 'auto') {
+        triggerAutoMetadataScan(file);
+      }
+    } else {
+      clearPreviewObjectUrl();
+      uploadFileLabel.textContent = 'TAP TO SELECT PHOTO / VIDEO';
+      uploadFileLabel.classList.remove('selected');
+      const imgPreview = document.getElementById('upload-file-preview');
+      const vidPreview = document.getElementById('upload-video-preview');
+      if (imgPreview) { imgPreview.src = ''; imgPreview.style.display = 'none'; }
+      if (vidPreview) { vidPreview.pause(); vidPreview.src = ''; vidPreview.style.display = 'none'; }
+    }
+  });
+
+  yediaUploadCta.addEventListener('click', openUploadModal);
+  uploadModalClose.addEventListener('click', closeUploadModal);
+  uploadModalOverlay.addEventListener('click', e => {
+    if (e.target === uploadModalOverlay) closeUploadModal();
+  });
+
+  uploadSubmitBtn.addEventListener('click', handleYediaSubmit);
+
+  if (yediaDownload) {
+    yediaDownload.addEventListener('click', () => {
+      const photo = yediaMediaItems[currentYediaIndex];
+      if (photo) {
+        track("media_download_clicked", {
+          type: "yedia",
+          title: photo.show_name || "Yedia Photo"
+        });
+      }
+    });
+  }
+
+  if (currentFilter === 'upload') {
+    loadApprovedMedia();
+  }
+}
+
+var currentUploadMode = 'auto';
+var currentPreviewObjectUrl = null;
+var currentScanToken = 0;
+
+function clearPreviewObjectUrl() {
+  if (currentPreviewObjectUrl) {
+    URL.revokeObjectURL(currentPreviewObjectUrl);
+    currentPreviewObjectUrl = null;
+  }
+}
+
+function updateUploadModeVisibility(showDetected = false) {
+  const uploadShowField = document.getElementById('upload-show-field');
+  if (!uploadShowField) return;
+  if (currentUploadMode === 'auto') {
+    if (showDetected) {
+      uploadShowField.style.display = 'flex';
+    } else {
+      uploadShowField.style.display = 'none';
+    }
+  } else {
+    uploadShowField.style.display = 'flex';
+  }
+}
+
+function resetUploadModalState() {
+  currentUploadMode = 'auto';
+  currentScanToken++;
+  clearPreviewObjectUrl();
+  const uploadModeBtns = document.querySelectorAll('.upload-mode-btn');
+  uploadModeBtns.forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-mode') === 'auto');
+  });
+  if (uploadShowSelect) uploadShowSelect.value = '';
+  if (uploadFileInput) uploadFileInput.value = '';
+  if (uploadFileLabel) {
+    uploadFileLabel.textContent = 'TAP TO SELECT PHOTO / VIDEO';
+    uploadFileLabel.classList.remove('selected');
+  }
+  const uploadFilePreview = document.getElementById('upload-file-preview');
+  if (uploadFilePreview) {
+    uploadFilePreview.src = '';
+    uploadFilePreview.style.display = 'none';
+  }
+  const uploadVideoPreview = document.getElementById('upload-video-preview');
+  if (uploadVideoPreview) {
+    uploadVideoPreview.pause();
+    uploadVideoPreview.src = '';
+    uploadVideoPreview.style.display = 'none';
+  }
+  if (uploadStatus) {
+    uploadStatus.textContent = '';
+    uploadStatus.className = 'upload-status';
+  }
+  updateUploadModeVisibility(false);
+}
+
+function openUploadModal() {
+  resetUploadModalState();
+  uploadModalOverlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  const selectedShow = uploadShowSelect && uploadShowSelect.selectedIndex >= 0 ? uploadShowSelect.options[uploadShowSelect.selectedIndex]?.text : null;
+  track("yedia_upload_started", {
+    show: selectedShow || null
+  });
+}
+
+function closeUploadModal() {
+  uploadModalOverlay.classList.remove('active');
+  document.body.style.overflow = '';
+  resetUploadModalState();
+}
+
+async function handleYediaSubmit() {
+  const showId = uploadShowSelect.value;
+  const file = uploadFileInput.files[0];
+  const comment = uploadCommentInput ? uploadCommentInput.value.trim() : '';
+
+  if (!showId) { showStatus('SELECT A SHOW', 'error'); return; }
+  if (!file) { showStatus('SELECT A PHOTO', 'error'); return; }
+
+  const selectedShow = showsData.find(s => s.id == showId);
+  if (!selectedShow) return;
+
+  const activeYear = window.activeYear || '2026';
+  const formData = new FormData();
+  formData.append('year', activeYear);
+  formData.append('mode', currentUploadMode);
+  formData.append('show_id', showId);
+  formData.append('show_name', selectedShow.name);
+  formData.append('image', file);
+  formData.append('comment', comment);
+
+  showStatus('UPLOADING...', 'loading');
+  uploadSubmitBtn.disabled = true;
+
+  try {
+    const response = await fetch('/api/upload', { method: 'POST', body: formData });
+    if (response.ok) {
+      showStatus('SUBMITTED — PENDING REVIEW', 'success');
+      track("yedia_upload_submitted", {
+        show: selectedShow.name
+      });
+      uploadShowSelect.value = '';
+      uploadFileInput.value = '';
+      if (uploadCommentInput) uploadCommentInput.value = '';
+      uploadFileLabel.textContent = 'TAP TO SELECT PHOTO / VIDEO';
+      uploadFileLabel.classList.remove('selected');
+      const _imgPrev = document.getElementById('upload-file-preview');
+      if (_imgPrev) { _imgPrev.src = ''; _imgPrev.style.display = 'none'; }
+      const _vidPrev = document.getElementById('upload-video-preview');
+      if (_vidPrev) { _vidPrev.pause(); _vidPrev.src = ''; _vidPrev.style.display = 'none'; }
+    } else {
+      const err = await response.json();
+      showStatus(err.error || 'FAILED. TRY AGAIN', 'error');
+    }
+  } catch (error) {
+    showStatus('FAILED TO CONNECT', 'error');
+  } finally {
+    uploadSubmitBtn.disabled = false;
+  }
+}
+
+function showStatus(msg, type) {
+  uploadStatus.textContent = msg;
+  uploadStatus.className = `upload-status ${type}`;
+}
+
+var yediaItemsToShowCount = 12;
+
+function renderYediaGrid(appendOnly = false) {
+  if (!yediaPhotoGrid) return;
+
+  if (!appendOnly) {
+    yediaPhotoGrid.innerHTML = '';
+  }
+
+  const startIndex = appendOnly ? yediaPhotoGrid.querySelectorAll('.product-card').length : 0;
+  const itemsToRender = yediaMediaItems.slice(startIndex, yediaItemsToShowCount);
+
+  if (itemsToRender.length === 0 && !appendOnly) {
+    yediaPhotoGrid.innerHTML = `<div class="gallery-empty-msg">NO MEDIA UPLOADED</div>`;
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  itemsToRender.forEach((photo, relativeIndex) => {
+    const absoluteIndex = startIndex + relativeIndex;
+    const card = document.createElement('button');
+    card.className = 'product-card';
+    const isVideo = photo.is_video || photo.media_type === 'video' || (photo.filename && /\.(mp4|mov|m4v)$/i.test(photo.filename));
+    const hasImgThumb = photo.thumb_filename && !/\.(mp4|mov|m4v)$/i.test(photo.thumb_filename);
+    const thumbUrl = getYediaMediaUrl(photo.thumb_filename || photo.filename);
+    const isLazy = absoluteIndex >= 4;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'image-wrap';
+    if (isVideo && !hasImgThumb) {
+      const videoEl = document.createElement('video');
+      videoEl.src = getYediaMediaUrl(photo.filename);
+      videoEl.preload = 'metadata';
+      videoEl.muted = true;
+      videoEl.playsInline = true;
+      videoEl.setAttribute('playsinline', '');
+      videoEl.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+
+      wrap.appendChild(videoEl);
+    } else {
+      const image = document.createElement('img');
+      image.src = thumbUrl;
+      image.alt = 'fan media';
+      image.loading = isLazy ? 'lazy' : 'eager';
+      image.decoding = 'async';
+      image.addEventListener('load', () => image.classList.add('loaded'), { once: true });
+      wrap.appendChild(image);
+    }
+
+    const copy = document.createElement('div');
+    copy.className = 'card-copy';
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.classList.toggle('is-beta-upload', Boolean(photo.betaUpload));
+    name.classList.toggle('is-gas-upload', photo.submissionSource === 'goodasssub');
+    name.textContent = String(photo.show_name || 'GALLERY').toUpperCase();
+    copy.appendChild(name);
+    card.append(wrap, copy);
+
+    card.addEventListener('click', () => openYediaDetail(photo));
+    fragment.appendChild(card);
+  });
+  yediaPhotoGrid.appendChild(fragment);
+}
+
+window.addEventListener('scroll', () => {
+  if (currentFilter !== 'upload') return;
+  if (yediaItemsToShowCount >= yediaMediaItems.length) return;
+
+  if ((window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 300) {
+    yediaItemsToShowCount += 12;
+    renderYediaGrid(true);
+  }
+});
+
+async function loadApprovedMedia() {
+  if (!yediaPhotoGrid) return;
+
+  try {
+    const activeYear = window.activeYear || '2026';
+    const response = await fetch(`/api/approved-media?year=${activeYear}`);
+    if (!response.ok) throw new Error('Fetch approved media failed');
+    const media = await response.json();
+
+    const filteredMedia = media.filter(item => {
+      if (currentYediaFilter === 'all') return true;
+      return String(item.show_id) === String(currentYediaFilter);
+    });
+
+    yediaMediaItems = filteredMedia;
+
+    yediaItemsToShowCount = 12;
+    renderYediaGrid(false);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function preloadYediaHero(photo) {
+  document.querySelector("link[data-yedia-preload]")?.remove();
+  const isVideo = photo.is_video || photo.media_type === 'video' || (photo.filename && /\.(mp4|mov|m4v)$/i.test(photo.filename));
+  if (isVideo) return; // Skip image preloading for video files
+
+  let url;
+  if (photo.display_filename_960 && photo.display_filename_1600) {
+    url = window.innerWidth <= 960 ? getYediaMediaUrl(photo.display_filename_960) : getYediaMediaUrl(photo.display_filename_1600);
+  } else {
+    url = getYediaMediaUrl(photo.filename);
+  }
+  const preload = document.createElement("link");
+  preload.rel = "preload";
+  preload.as = "image";
+  preload.href = url;
+  preload.fetchPriority = "high";
+  preload.dataset.yediaPreload = "true";
+  document.head.appendChild(preload);
+}
+
+function openYediaDetail(photo) {
+  currentDetailMode = 'yedia';
+  currentYediaIndex = yediaMediaItems.findIndex(item => item.id === photo.id);
+
+  // Always stop all playing media first before rendering new content
+  if (typeof stopAllMedia === 'function') stopAllMedia();
+
+  preloadYediaHero(photo);
+
+  track("media_opened", {
+    type: "yedia",
+    title: photo.show_name || "Yedia Photo",
+    city: null
+  });
+
+  filterBar.classList.add('nav-hidden');
+  merchFilterBar.classList.add('nav-hidden');
+  musicvideoFilterBar.classList.add('nav-hidden');
+  yediaFilterBar.classList.add('nav-hidden');
+
+  detailMedia.classList.remove('is-merch');
+  detailVideo.hidden = true;
+
+  detailGallery.hidden = false;
+
+  updateYediaDetailContent(photo);
+
+  grid.classList.add('hidden-grid');
+  overlay.classList.add('active');
+  document.body.classList.add('overlay-open');
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
+
+  const shortId = photo.id.substring(0, 8);
+  const yearVal = (typeof activeYear !== 'undefined') ? activeYear : window.activeYear;
+  const yearPrefix = (yearVal && yearVal !== '2026') ? `/${yearVal}` : '';
+  const newPath = `${yearPrefix}/yedia/${shortId}`;
+  if (window.location.pathname !== newPath) {
+    history.pushState(null, '', newPath);
+  }
+}
+
+function updateYediaDetailContent(photo) {
+  if (typeof stopAllMedia === 'function') stopAllMedia();
+  const isBetaUpload = Boolean(photo.betaUpload);
+  const isGasUpload = photo.submissionSource === 'goodasssub';
+  detailName.classList.toggle('is-beta-upload', isBetaUpload);
+  detailName.classList.toggle('is-gas-upload', isGasUpload);
+  if (yediaBetaNotice) yediaBetaNotice.hidden = !isBetaUpload;
+  if (yediaGasNotice) yediaGasNotice.hidden = !isGasUpload;
+  const isVideo = photo.is_video || photo.media_type === 'video' || (photo.filename && /\.(mp4|mov|m4v)$/i.test(photo.filename));
+
+  if (isVideo) {
+    // Video uploads share the archive player's intrinsic-dimension layout.
+    // Treating them as merch applied a square frame and a separate 520px cap.
+    detailMedia.classList.remove('is-merch');
+    detailMedia.classList.add('is-yedia-video');
+    detailMedia.classList.remove('is-video-frame', 'chapters-open');
+    detailMedia.classList.add('is-video-loading');
+    detailMedia.style.removeProperty('max-height');
+    detailMedia.style.width = '';
+    detailMedia.style.height = '0px';
+    detailMedia.style.aspectRatio = 'auto';
+
+    detailGallery.style.display = 'none';
+    detailGallery.innerHTML = '';
+
+    detailVideo.hidden = false;
+    detailVideo.style.display = '';
+    detailVideo.removeAttribute('style');
+    detailVideo.controls = true;
+    detailVideo.setAttribute('controls', '');
+
+    detailVideo.innerHTML = '';
+
+    // Let the video's metadata determine the native player's dimensions.
+    detailVideo.removeAttribute('poster');
+    detailVideo.poster = '';
+    detailVideo.src = getYediaMediaUrl(photo.filename);
+    detailVideo.load();
+    detailVideo.play().catch(() => {});
+
+    detailName.textContent = photo.show_name.toUpperCase();
+    detailSpec.textContent = photo.comment ? `"${photo.comment}"` : '';
+
+    const fullUrl = getYediaMediaUrl(photo.filename);
+    yediaOpenFull.href = fullUrl;
+    const activeYear = window.activeYear || '2026';
+    yediaDownload.href = `/api/download/yedia/${activeYear}/${encodeURIComponent(photo.id)}`;
+    yediaDownload.download = photo.filename;
+
+    yediaPhotoActions.style.display = 'flex';
+    if (siteBrainConfig && siteBrainConfig.disableCopyLink) {
+      detailCopylink.classList.remove('show');
+      detailCopylink.style.display = 'none';
+    } else {
+      detailCopylink.classList.add('show');
+      detailCopylink.style.display = '';
+    }
+    detailCredits.style.display = 'none';
+    detailDownload.style.display = 'none';
+    if (detailTimestamps) detailTimestamps.style.display = 'none';
+    detailDots.style.display = 'none';
+    detailGalleryPrev.style.display = 'none';
+    detailGalleryNext.style.display = 'none';
+    return;
+  }
+  // Photo path — restore gallery layout
+  detailMedia.classList.add('is-merch');
+  detailMedia.classList.remove('is-yedia-video');
+  detailGallery.style.display = '';
+  detailGallery.style.position = '';
+  detailGallery.style.height = '';
+  detailGallery.style.background = '';
+  detailGallery.style.cursor = '';
+
+  detailVideo.pause();
+  detailVideo.hidden = true;
+  detailVideo.removeAttribute('src');
+
+  const hasVariants = !!(photo.display_filename_960 && photo.display_filename_1600);
+  let imgSrc;
+
+  if (hasVariants) {
+    imgSrc = getYediaMediaUrl(photo.display_filename_1600);
+  } else {
+    imgSrc = getYediaMediaUrl(photo.filename);
+  }
+
+  const imgWidth = photo.width;
+  const imgHeight = photo.height;
+
+  if (imgWidth && imgHeight) {
+    const maxW = Math.min(window.innerWidth * 0.85, 720);
+    const maxH = window.innerHeight * 0.75;
+    const ratio = imgWidth / imgHeight;
+
+    let width = imgWidth;
+    let height = imgHeight;
+    if (width > maxW) {
+      width = maxW;
+      height = width / ratio;
+    }
+    if (height > maxH) {
+      height = maxH;
+      width = height * ratio;
+    }
+    detailMedia.style.width = `${width}px`;
+    detailMedia.style.height = `${height}px`;
+    detailMedia.style.aspectRatio = `${ratio}`;
+  } else {
+    detailMedia.style.width = '';
+    detailMedia.style.height = '';
+    detailMedia.style.aspectRatio = '';
+
+    const tempImg = new Image();
+    tempImg.src = imgSrc;
+    tempImg.onload = () => {
+      const img = detailGallery.querySelector('img');
+      if (img && img.naturalWidth && img.naturalHeight) {
+        const maxW = Math.min(window.innerWidth * 0.85, 720);
+        const maxH = window.innerHeight * 0.75;
+        const ratio = img.naturalWidth / img.naturalHeight;
+
+        let width = img.naturalWidth;
+        let height = img.naturalHeight;
+        if (width > maxW) {
+          width = maxW;
+          height = width / ratio;
+        }
+        if (height > maxH) {
+          height = maxH;
+          width = height * ratio;
+        }
+        detailMedia.style.width = `${width}px`;
+        detailMedia.style.height = `${height}px`;
+        detailMedia.style.aspectRatio = `${ratio}`;
+      }
+    };
+  }
+
+  detailGallery.textContent = '';
+  const track = document.createElement('div');
+  track.className = 'detail-gallery-track';
+  const slide = document.createElement('div');
+  slide.className = 'detail-slide';
+  const image = document.createElement('img');
+  image.src = imgSrc;
+  image.alt = 'fan media';
+  image.draggable = false;
+  image.loading = 'eager';
+  image.fetchPriority = 'high';
+  image.decoding = 'async';
+  if (hasVariants) {
+    image.srcset = `${getYediaMediaUrl(photo.display_filename_960)} 960w, ${getYediaMediaUrl(photo.display_filename_1600)} 1600w`;
+    image.sizes = '(max-width: 850px) 85vw, 720px';
+  }
+  if (imgWidth && imgHeight) {
+    image.width = Number(imgWidth);
+    image.height = Number(imgHeight);
+  }
+  slide.appendChild(image);
+  track.appendChild(slide);
+  detailGallery.appendChild(track);
+
+  detailName.textContent = photo.show_name.toUpperCase();
+  detailSpec.textContent = photo.comment ? `"${photo.comment}"` : '';
+
+  const fullUrl = getYediaMediaUrl(photo.filename);
+  yediaOpenFull.href = fullUrl;
+  const activeYear = window.activeYear || '2026';
+  yediaDownload.href = `/api/download/yedia/${activeYear}/${encodeURIComponent(photo.id)}`;
+  yediaDownload.download = photo.filename;
+
+  yediaPhotoActions.style.display = 'flex';
+  if (siteBrainConfig && siteBrainConfig.disableCopyLink) {
+    detailCopylink.classList.remove('show');
+    detailCopylink.style.display = 'none';
+  } else {
+    detailCopylink.classList.add('show');
+    detailCopylink.style.display = '';
+  }
+  detailCredits.style.display = 'none';
+  detailDownload.style.display = 'none';
+  if (detailTimestamps) detailTimestamps.style.display = 'none';
+  detailDots.style.display = 'none';
+  detailGalleryPrev.style.display = 'none';
+  detailGalleryNext.style.display = 'none';
+}

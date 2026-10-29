@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="description" content="Independent Ye 2026 tour archive featuring live shows, visualizers, music videos, tour merchandise, and fan-submitted photos." />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>YE TOUR 2026 ARCHIVE</title>
+  <link rel="canonical" href="https://yetour.xyz/" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=2" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="stylesheet" href="/style.css?v=73" />
+  <meta property="og:title" content="YE TOUR 2026 ARCHIVE" />
+  <meta property="og:description" content="Independent Ye 2026 tour archive featuring live shows, visualizers, music videos, tour merchandise, and fan-submitted photos." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://yetour.xyz/" />
+  <meta property="og:site_name" content="YE TOUR 2026 ARCHIVE" />
+  <meta property="og:image" content="https://media.yetour.xyz/live-shows/thumbnails/gelredome1.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="YE TOUR 2026 ARCHIVE" />
+  <meta name="twitter:description" content="Independent Ye 2026 tour archive featuring live shows, visualizers, music videos, tour merchandise, and fan-submitted photos." />
+  <meta name="twitter:image" content="https://media.yetour.xyz/live-shows/thumbnails/gelredome1.jpg" />
+  <script type="application/ld+json" nonce="SCuH3sUpRKqUWpOiZoXXxEiy">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "YE TOUR 2026 ARCHIVE",
+    "url": "https://yetour.xyz/",
+    "description": "Independent fan archive documenting Ye's 2026 tour, including live shows, music, visualizers, merchandise, and fan-submitted photos.",
+    "inLanguage": "en-GB"
+  }
+  </script>
+  <script nonce="SCuH3sUpRKqUWpOiZoXXxEiy">
+    !function (t, e) { var o, n, p, r; e.__SV || (window.posthog = e, e._i = [], e.init = function (i, s, a) { function g(t, e) { var o = e.split("."); 2 == o.length && (t = t[o[0]], e = o[1]), t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } } (p = t.createElement("script")).type = "text/javascript", p.async = !0, p.src = s.api_host.replace(".i.posthog.com", "-assets.i.posthog.com") + "/static/array.js", (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r); var u = e; for (void 0 !== a ? u = e[a] = [] : a = "posthog", u.people = u.people || [], u.toString = function (t) { var e = "posthog"; return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e }, u.people.toString = function () { return u.toString(1) + ".people (stub)" }, o = "capture identify alias people.set people.set_once reset group groups register unregister opt_out_capturing has_opted_out_capturing opt_in_capturing get_distinct_id onFeatureFlags getFeatureFlag reloadFeatureFlags".split(" "), n = 0; n < o.length; n++)g(u, o[n]); e._i.push([i, s, a]) }, e.__SV = 1) }(document, window.posthog || []);
+
+    posthog.init("phc_Bq54bbUxVR6c7D265otTCoKJecj3M6aHNGGzhYvzRzn6", {
+      api_host: "https://eu.i.posthog.com",
+      defaults: "2025-05-24",
+      capture_pageview: true,
+      capture_pageleave: true,
+      autocapture: false,
+      disable_session_recording: true,
+      persistence: "memory",
+      person_profiles: "identified_only"
+    });
+  </script>
+</head>
+
+<body>
+  <div class="year-selector-wrap" id="year-selector-wrap"
+    style="position: fixed; top: 18px; left: 24px; z-index: 999; font-family: inherit;">
+    <button id="year-selector-trigger"
+      style="background: none; border: none; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0; color: inherit;">
+      <span id="current-year-label">2O26</span>
+      <span style="font-size: 10px; transition: transform 0.2s ease;" id="year-arrow">▼</span>
+    </button>
+  </div>
+
+  <div id="year-overlay" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+    transition: opacity 0.3s ease;
+  ">
+    <div style="
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      text-align: center;
+    ">
+      <button class="year-option-btn" data-year="2021" style="
+        background: none;
+        border: none;
+        font-size: 32px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        color: #000;
+        transition: opacity 0.2s ease;
+      ">2O21</button>
+      <button class="year-option-btn" data-year="2023" style="
+        background: none;
+        border: none;
+        font-size: 32px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        color: #000;
+        transition: opacity 0.2s ease;
+      ">2O23</button>
+      <button class="year-option-btn" data-year="2025" style="
+        background: none;
+        border: none;
+        font-size: 32px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        color: #000;
+        transition: opacity 0.2s ease;
+      ">2O25</button>
+      <button class="year-option-btn" data-year="2024" style="
+        background: none;
+        border: none;
+        font-size: 32px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        color: #000;
+        transition: opacity 0.2s ease;
+      ">2O24</button>
+      <button class="year-option-btn" data-year="2026" style="
+        background: none;
+        border: none;
+        font-size: 32px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        color: #000;
+        transition: opacity 0.2s ease;
+      ">2O26</button>
+    </div>
+  </div>
+
+  <div class="filter-bar" id="filter-bar">
+    <div class="filter-bar-row">
+      <button class="filter-btn active" data-filter="live">Live Shows</button>
+      <button class="filter-btn" data-filter="merch">MERCH</button>
+      <button class="filter-btn" data-filter="musicvideo">MUSIC</button>
+      <button class="filter-btn" data-filter="upload">YEDIA</button>
+      <button class="filter-btn" data-filter="feedback">FEEDBACK</button>
+      <button class="filter-btn" data-filter="roadmap">ROADMAP</button>
+      <button class="filter-btn" data-filter="photobooth">PHOTOBOOTH</button>
+      <a class="filter-btn" href="https://insta.yetour.xyz/">INSTAGRAM</a>
+    </div>
+  </div>
+  <div class="merch-filter-bar" id="merch-filter-bar">
+    <button class="merch-filter-btn active" data-merch-filter="all">All</button>
+    <button class="merch-filter-btn" data-merch-filter="cdmx">cdmx</button>
+    <button class="merch-filter-btn" data-merch-filter="sofi">SoFi</button>
+    <button class="merch-filter-btn" data-merch-filter="istanbul">Istanbul</button>
+    <button class="merch-filter-btn" data-merch-filter="gelredome">Gelredome</button>
+    <button class="merch-filter-btn" data-merch-filter="dinamo">Dinamo Arena</button>
+    <button class="merch-filter-btn" data-merch-filter="tampa">Raymond James</button>
+    <button class="merch-filter-btn" data-merch-filter="alamodome">Alamodome</button>
+    <button class="merch-filter-btn" data-merch-filter="eaglestadium">Eagle Stadium</button>
+    <button class="merch-filter-btn" data-merch-filter="metropolitano">Metropolitano</button>
+    <button class="merch-filter-btn" data-merch-filter="algarve">Algarve</button>
+    <button class="merch-filter-btn" data-merch-filter="almaty">ALMATY CENTRAL</button>
+    <button class="merch-filter-btn" data-merch-filter="neworleans">SUPERDOME</button>
+    <button class="merch-filter-btn" data-merch-filter="soldierfield">SOLDIER FIELD</button>
+    <button class="merch-filter-btn" data-merch-filter="GBK">Gelora Bung Karno</button>
+  </div>
+  <div class="yedia-filter-bar" id="yedia-filter-bar">
+    <button class="yedia-filter-btn active" data-yedia-filter="all">All</button>
+  </div>
+  <div class="musicvideo-filter-bar" id="musicvideo-filter-bar">
+    <button class="musicvideo-filter-btn active" data-musicvideo-filter="all">All</button>
+    <button class="musicvideo-filter-btn" data-musicvideo-filter="video">Videos</button>
+    <button class="musicvideo-filter-btn" data-musicvideo-filter="visualizer">Visualizers</button>
+    <button class="musicvideo-filter-btn" data-musicvideo-filter="audio">Audios</button>
+  </div>
+  <main>
+    <p class="merch-disclaimer">We do not sell merchandise. Go to <a href="https://merch.yeezy.com" target="_blank" rel="noopener noreferrer">merch.yeezy.com</a>.</p>
+    <div class="product-grid" id="product-grid"></div>
+
+    <div class="upload-view" id="upload-view">
+      <div class="upload-gallery-wrap">
+        <div class="upload-view-header">
+          <div class="upload-gallery-title">USER SUBMITTED GALLERY</div>
+          <button class="yedia-upload-cta" id="yedia-upload-cta">+ SUBMIT MEDIA</button>
+        </div>
+        <div class="yedia-photo-grid" id="yedia-photo-grid"></div>
+      </div>
+    </div>
+    <div class="feedback-view" id="feedback-view">
+      <div class="feedback-card">
+        <div class="feedback-title">FEEDBACK</div>
+        <div class="feedback-fields">
+          <div class="feedback-field">
+            <label for="feedback-instagram-input">INSTAGRAM HANDLE <span class="optional">(OPTIONAL)</span></label>
+            <input type="text" id="feedback-instagram-input" placeholder="@YOURHANDLE" />
+          </div>
+          <div class="feedback-field">
+            <label for="feedback-text-input">YOUR FEEDBACK</label>
+            <textarea id="feedback-text-input" placeholder="WRITE YOUR FEEDBACK HERE..." maxlength="1000"></textarea>
+          </div>
+          <div class="feedback-diagnostics" aria-describedby="feedback-diagnostics-help">
+            <div class="feedback-diagnostics-actions">
+              <button id="feedback-download-diagnostics-btn" class="feedback-secondary-btn" type="button">DOWNLOAD DIAGNOSTICS</button>
+              <button id="feedback-attach-diagnostics-btn" class="feedback-secondary-btn" type="button">ATTACH LOG FILE</button>
+            </div>
+            <p id="feedback-diagnostics-help" class="feedback-help">Optional: includes this session's browser errors and basic device details. It does not include passwords or page contents.</p>
+            <div id="feedback-diagnostics-status" class="feedback-help" aria-live="polite"></div>
+          </div>
+          <button id="feedback-submit-btn" class="feedback-submit-btn">SUBMIT</button>
+          <div id="feedback-status" class="feedback-status"></div>
+        </div>
+      </div>
+    </div>
+    <section class="roadmap-view" id="roadmap-view" aria-labelledby="roadmap-title">
+      <div class="roadmap-content">
+        <h1 id="roadmap-title">ROADMAP</h1>
+        <p>More tabs and eras are set to release in the coming days. Please wait for the official announcements on @yetour.xyz's instagram.</p>
+        <dl class="roadmap-dates">
+          <div><dt>Yedia re-release</dt><dd>Out Now</dd></div>
+          <div><dt>2025 re-release</dt><dd>DELAYED</dd></div>
+          <div><dt>2023 re-release</dt><dd>OUT NOW</dd></div>
+          <div><dt>2021 re-release</dt><dd>DELAYED</dd></div>
+          <div><dt>2024 release</dt><dd>Out Now</dd></div>
+          <div><dt><a href="https://insta.yetour.xyz/">YE INSTAGRAM ARCHIVE</a></dt><dd><a href="https://insta.yetour.xyz/">OUT NOW</a></dd></div>
+        </dl>
+        <div class="roadmap-notifications" aria-live="polite">
+          <button id="roadmap-push-button" class="roadmap-push-button" type="button">SUBSCRIBE TO NOTIFICATIONS</button>
+          <p id="roadmap-push-status" class="roadmap-push-status">Get YeTour updates directly on your device.</p>
+          <button id="roadmap-test-device-button" class="roadmap-test-device-button" type="button" hidden>REGISTER THIS DEVICE AS A TEST DEVICE</button>
+        </div>
+        <p class="roadmap-note">These dates may change, at the mercy of our ability to access archived data, while following laws.</p>
+      </div>
+    </section>
+    <section class="photobooth-view" id="photobooth-view" aria-labelledby="photobooth-title">
+      <div class="photobooth-content">
+        <header class="photobooth-header">
+          <h1 id="photobooth-title">PHOTOBOOTH</h1>
+          <p>Pick a show, then add three photos. Drag each image to frame it before downloading your card.</p>
+        </header>
+
+        <label class="photobooth-label" for="photobooth-venue">SHOW</label>
+        <select id="photobooth-venue" class="photobooth-select" aria-label="Choose a show">
+          <option value="cdmx">MEXICO CITY</option>
+          <option value="sofistadium">SOFI STADIUM</option>
+          <option value="ataturk">ATATÜRK OLYMPIC STADIUM</option>
+          <option value="gelredome">GELREDOME</option>
+          <option value="dinamo">DINAMO ARENA</option>
+          <option value="raymondjames">RAYMOND JAMES STADIUM</option>
+          <option value="alamodome">ALAMODOME</option>
+          <option value="tirana">EAGLE STADIUM</option>
+          <option value="madrid">METROPOLITANO (MADRID)</option>
+          <option value="algarve">ESTÁDIO ALGARVE</option>
+          <option value="almaty">ALMATY CENTRAL STADIUM</option>
+          <option value="superdome">CAESARS SUPERDOME</option>
+          <option value="soldierfield">SOLDIER FIELD</option>
+        </select>
+
+        <label class="photobooth-label" for="photobooth-format-square">FORMAT</label>
+        <div class="photobooth-format-selector" role="radiogroup" aria-label="Photo card format">
+          <button id="photobooth-format-tall" type="button" class="photobooth-format-btn is-active" data-format="tall" role="radio" aria-checked="true">TALL</button>
+          <button id="photobooth-format-square" type="button" class="photobooth-format-btn" data-format="square" role="radio" aria-checked="false">1:1</button>
+        </div>
+
+        <div class="photobooth-mode-selector" role="radiogroup" aria-label="Photo card style">
+          <button type="button" class="photobooth-mode-btn is-active" data-mode="color" role="radio" aria-checked="true">COLOR</button>
+          <button type="button" class="photobooth-mode-btn" data-mode="bnw" role="radio" aria-checked="false">B&W</button>
+        </div>
+
+        <div id="photobooth-preview" class="photobooth-preview" aria-label="Your photo booth card">
+          <img id="photobooth-template" class="photobooth-template" alt="Selected YeTour photo booth template" crossorigin="anonymous" />
+          <div class="photobooth-slot" data-slot="0" role="button" tabindex="0" aria-label="Add photo one">
+            <button class="photobooth-slot-remove" type="button" aria-label="Remove photo 1" title="Remove photo">✕</button>
+            <span>ADD PHOTO</span>
+          </div>
+          <div class="photobooth-slot" data-slot="1" role="button" tabindex="0" aria-label="Add photo two">
+            <button class="photobooth-slot-remove" type="button" aria-label="Remove photo 2" title="Remove photo">✕</button>
+            <span>ADD PHOTO</span>
+          </div>
+          <div class="photobooth-slot" data-slot="2" role="button" tabindex="0" aria-label="Add photo three">
+            <button class="photobooth-slot-remove" type="button" aria-label="Remove photo 3" title="Remove photo">✕</button>
+            <span>ADD PHOTO</span>
+          </div>
+        </div>
+        <input id="photobooth-file-input" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+        <p id="photobooth-status" class="photobooth-status" aria-live="polite">CLICK A FRAME TO ADD A PHOTO.</p>
+        <button id="photobooth-download" class="photobooth-download" type="button" disabled>DOWNLOAD CARD</button>
+      </div>
+    </section>
+    <div class="detail-overlay" id="detail-overlay">
+      <div class="detail-media" id="detail-media">
+        <video id="detail-video" playsinline crossorigin="anonymous" preload="metadata"></video>
+        <div class="detail-gallery" id="detail-gallery" aria-label="Merch image gallery"></div>
+
+        <div class="detail-audio-player" id="detail-audio-player" style="display: none;">
+          <img id="detail-audio-cover" class="detail-audio-cover" alt="Album Cover" />
+          <audio id="detail-audio-element" preload="none"></audio>
+        </div>
+        <button class="detail-gallery-arrow detail-gallery-prev" id="detail-gallery-prev"
+          aria-label="Previous image">‹</button>
+        <button class="detail-gallery-arrow detail-gallery-next" id="detail-gallery-next"
+          aria-label="Next image">›</button>
+      </div>
+      <div class="detail-dots" id="detail-dots" aria-label="Merch image positions"></div>
+      <div class="detail-name" id="detail-name"></div>
+      <div class="detail-spec" id="detail-spec"></div>
+      <div class="yedia-beta-notice" id="yedia-beta-notice" hidden>(EARLY BETA UPLOAD)</div>
+      <div class="yedia-gas-notice" id="yedia-gas-notice" hidden>(GOODASSSUB SUBMISSION)</div>
+
+      <div class="audio-controls" id="audio-controls" style="display: none;">
+        <button class="audio-play-btn" id="audio-play-btn">PLAY</button>
+        <div class="audio-progress-container" id="audio-progress-container">
+          <div class="audio-progress-bar" id="audio-progress-bar"></div>
+        </div>
+        <div class="audio-time" id="audio-time">0:00 / 0:00</div>
+      </div>
+      <a id="detail-credits" class="detail-credits" target="_blank" rel="noopener">Credits</a>
+      <button id="detail-copylink" class="detail-copylink">COPY LINK</button>
+      <button id="detail-download" class="detail-download">DOWNLOAD</button>
+      <button id="detail-timestamps" class="detail-timestamps">TIMESTAMPS</button>
+
+      <div class="yedia-photo-actions" id="yedia-photo-actions">
+        <a id="yedia-open-full" class="yedia-action-link" target="_blank" rel="noopener">OPEN FULL SIZE</a>
+        <a id="yedia-download" class="yedia-action-link" download>DOWNLOAD</a>
+      </div>
+      <button class="detail-close" id="detail-close" aria-label="Close">+</button>
+
+      <div class="timestamps-overlay" id="timestamps-overlay">
+        <button class="timestamps-close" id="timestamps-close" aria-label="Close Setlist">+</button>
+        <div class="timestamps-content">
+          <div class="timestamps-title">SETLIST</div>
+          <div class="timestamps-list" id="timestamps-list"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="upload-modal-overlay" id="upload-modal-overlay">
+    <div class="upload-modal-card" id="upload-modal-card">
+      <button class="upload-modal-close" id="upload-modal-close">+</button>
+      <div class="upload-title">SUBMIT MEDIA</div>
+      <div class="upload-fields">
+        <div class="upload-field">
+          <label>DETECTION MODE</label>
+          <div class="upload-mode-toggle" id="upload-mode-toggle">
+            <button type="button" class="upload-mode-btn active" data-mode="auto">AUTO (METADATA)</button>
+            <button type="button" class="upload-mode-btn" data-mode="manual">MANUAL</button>
+          </div>
+        </div>
+        <div class="upload-field" id="upload-show-field" style="display: none;">
+          <label for="upload-show-select">SHOW</label>
+          <select id="upload-show-select">
+            <option value="" disabled selected>CHOOSE A SHOW</option>
+          </select>
+        </div>
+        <div class="upload-field">
+          <label>PHOTO / VIDEO <span class="optional">(MAX 900MB)</span></label>
+          <div class="upload-file-box">
+            <img id="upload-file-preview" class="upload-file-preview" alt="preview" style="display: none;" />
+            <video id="upload-video-preview" class="upload-file-preview" style="display: none;" muted loop
+              playsinline></video>
+            <label for="upload-file-input" id="upload-file-label">TAP TO SELECT PHOTO / VIDEO</label>
+            <input type="file" id="upload-file-input"
+              accept="image/*,video/mp4,video/quicktime,video/x-m4v,.mp4,.mov,.m4v" />
+          </div>
+        </div>
+        <div class="upload-field">
+          <label for="upload-comment-input">COMMENT</label>
+          <input type="text" id="upload-comment-input" maxlength="100" placeholder="optional..." />
+        </div>
+        <button id="upload-submit-btn" class="upload-submit-btn">SUBMIT</button>
+        <div id="upload-status" class="upload-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="release-note">follow @yetour.xyz on insta for updates</div>
+    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+      <button id="privacy-policy-btn" class="privacy-btn" style="margin: 0;">Privacy Policy</button>
+      <button id="terms-btn" class="privacy-btn" style="margin: 0;">Terms of Service</button>
+    </div>
+  </footer>
+
+
+  <div class="privacy-modal-overlay" id="privacy-modal-overlay">
+    <div class="privacy-modal-card">
+      <button class="privacy-modal-close" id="privacy-modal-close">+</button>
+      <div class="privacy-title">PRIVACY POLICY</div>
+      <div class="privacy-content">
+        <p><strong>Last Updated: September 6, 2026</strong></p>
+
+        <h3>INTRODUCTION</h3>
+        <p>yetour.xyz and the "YEDIA" platform ("We," "us," or "our") respect your privacy and are committed to
+          protecting it through our compliance with this policy. yetour.xyz acts as the data controller responsible for
+          the strictly limited data we process.</p>
+
+        <p><strong>About "YEDIA":</strong> "YEDIA" is a fan upload and archive service for photos and videos from the
+          Ye 2026 tour.</p>
+
+        <p><strong>Disclaimer of Affiliation:</strong> yetour.xyz and "YEDIA" operate as entirely independent,
+          community-driven entities. We are not affiliated, associated, authorized, endorsed by, or in any way
+          officially connected with Yeezy, LLC, Kanye West, or any of their subsidiaries or affiliates.</p>
+
+        <p>This policy describes the highly restricted types of information we may collect from you when you visit our
+          digital services, including the website yetour.xyz and the "YEDIA" platform (collectively, the "Service"), how
+          we use and protect that information, and your rights regarding your data under the UK General Data Protection
+          Regulation (UK GDPR) and the Data Protection Act 2018.</p>
+
+        <p>By accessing or using the Service, you agree to this privacy policy ("Privacy Policy"). If you do not agree,
+          please discontinue use of the Service.</p>
+
+        <h3>COLLECTING PERSONAL INFORMATION & COMMITMENT TO ANONYMITY</h3>
+        <p>We are built on a foundation of digital privacy and actively promote complete user anonymity. When you visit,
+          access, or use the Service to view or upload Ye 2026 tour media, we do not require you to register an account
+          or provide standard identifying details (such as your name, email address, or phone number).</p>
+
+        <p>We process only the limited information needed to operate the archive, review submissions, respond to
+          feedback, and keep the Service safe.</p>
+
+        <p><strong>1. Optional User-Provided Data (Feedback Section)</strong></p>
+        <ul>
+          <li><strong>Data Collected:</strong> Your Instagram handle.</li>
+          <li><strong>Purpose:</strong> This is entirely optional and only collected if you choose to manually enter it
+            when submitting feedback about the platform. It is used solely to contextualize your feedback or allow us to
+            reach out regarding your suggestions.</li>
+          <li><strong>Source:</strong> Voluntarily provided by you.</li>
+        </ul>
+
+        <p><strong>2. YEDIA Uploads and Moderation</strong></p>
+        <ul>
+          <li><strong>Data Collected:</strong> Media and any optional information you submit with it.</li>
+          <li><strong>Purpose:</strong> To review, organize, and publish approved fan submissions.</li>
+          <li><strong>Source:</strong> Voluntarily provided when you submit media.</li>
+        </ul>
+
+        <p><strong>3. Technical Information</strong></p>
+        <ul>
+          <li><strong>Data Collected:</strong> Limited technical information generated when you use the Service.</li>
+          <li><strong>Purpose:</strong> To operate, secure, and protect the Service from abuse.</li>
+        </ul>
+
+        <p>We do not require user accounts, names, email addresses, or payment details to use the public archive.</p>
+
+        <h3>SHARING PERSONAL INFORMATION</h3>
+        <p><strong>We do not, and will never, sell your data to third parties or data brokers.</strong> We do not
+          utilize your data for marketing, cross-context behavioral advertising, or profiling.</p>
+        <p>We may use carefully selected service providers to operate the Service and may disclose information where
+          required by law. Approved submissions are public and may be viewed or downloaded by visitors.</p>
+        <p>We use Cloudflare and R2 to host, secure, and deliver the Service and public media, PostHog's EU service for
+          the limited analytics described below, and browser or operating-system push services only when you opt in.</p>
+
+        <h3>UPLOAD SECURITY</h3>
+        <p>Submissions are reviewed before public display. We take reasonable steps to protect submitted media and to
+          minimize unnecessary metadata in new public submissions. Do not submit media containing information you do not
+          want made public.</p>
+
+        <h3>ANALYTICS</h3>
+        <p>We use PostHog's EU service for limited page-use analytics. It is configured with memory-only browser
+          persistence, page-view and page-leave measurement, no session recording, no autocapture, and no advertising
+          or cross-context behavioural tracking.</p>
+
+        <h3>OPTIONAL DIAGNOSTICS, PHOTO BOOTH &amp; WEB PUSH</h3>
+        <p>If you choose to attach diagnostics to feedback, they may include your page path, browser and device
+          information, language, viewport, online status, and console warnings or errors from that session. Diagnostics
+          are optional and are deleted when the associated feedback is removed. Photo Booth source images stay in your
+          browser; on some iOS devices, a final card may be sent to the server only to return it as a download and is
+          not intentionally stored or published. If you enable notifications, we store the push subscription endpoint,
+          encryption keys, status, and an optional test-device label until you unsubscribe or it becomes invalid.</p>
+
+        <h3>RETENTION</h3>
+        <p>We employ an aggressively minimized data retention schedule. We retain the data we collect only for the
+          absolute minimum time necessary.</p>
+        <ul>
+          <li><strong>Technical and Feedback Data:</strong> Retained only for as long as reasonably necessary to operate,
+            secure, and improve the Service.</li>
+          <li><strong>Submissions:</strong> Approved submissions remain public until removed through moderation or a
+            valid removal request.</li>
+          <li><strong>Push Subscriptions:</strong> Retained while active and removed or disabled when you unsubscribe or
+            delivery reports an invalid subscription.</li>
+        </ul>
+
+        <h3>LAWFUL BASIS & YOUR RIGHTS (UK GDPR 2018)</h3>
+        <p>Because we operate out of the United Kingdom, our data practices are governed by the UK General Data
+          Protection Regulation (UK GDPR) and the Data Protection Act 2018.</p>
+        <p>We process information under our legitimate interests in operating a safe community archive and, where you
+          choose to submit optional information, with your consent.</p>
+        <p>Under the Data Protection Act 2018, you have rights regarding your personal data, including the right to
+          access, correct, or request the deletion of your information. You may contact us to request removal of content
+          or optional information you submitted.</p>
+        <p>You maintain the right to lodge a complaint with the Information Commissioner's Office (ICO) if you believe
+          our processing of your data violates applicable law.</p>
+
+        <h3>CHANGES TO OUR PRIVACY POLICY</h3>
+        <p>We are committed to keeping you informed about any changes to our Privacy Policy. Any updates we make to the
+          policy will be posted on this page, and the "Last Updated" date at the top of this page will be revised. Your
+          continued use of the Service after we provide notice of changes constitutes acceptance of those changes.</p>
+
+        <h3>CONTACT INFORMATION</h3>
+        <p>To ask questions or comment about this Privacy Policy and our privacy practices regarding "YEDIA" or
+          yetour.xyz, please contact us via the administrative channels provided on the website, or email
+          <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0667626b6f68467f6372697374287e7f7c">[email&#160;protected]</a>.</p>
+
+      </div>
+    </div>
+  </div>
+
+
+  <div class="privacy-modal-overlay" id="terms-modal-overlay">
+    <div class="privacy-modal-card">
+      <button class="privacy-modal-close" id="terms-modal-close">+</button>
+      <div class="privacy-title">TERMS OF SERVICE</div>
+      <div class="privacy-content">
+        <p><strong>Last Updated: September 6, 2026</strong></p>
+
+        <h3>INTRODUCTION</h3>
+        <p>This website, located at yetour.xyz, and the "YEDIA" platform (collectively, the "Service") are operated by
+          yetour.xyz ("We," "us," or "our"). These Terms of Service ("Terms") govern your access to and use of our
+          platform.</p>
+        <p><strong>DISCLAIMER OF AFFILIATION:</strong> yetour.xyz and "YEDIA" are entirely independent,
+          community-operated entities. We are a fan-made project. We are NOT affiliated, associated, authorized,
+          endorsed by, or in any way officially connected with Ye (Kanye West), Yeezy, LLC, or any of their subsidiaries
+          or affiliates.</p>
+        <p>PLEASE READ THESE TERMS CAREFULLY. By accessing or using the Service, you acknowledge that you have read,
+          understand, and agree to be bound by these Terms and our Privacy Policy. If you do not agree, do not use the
+          Service.</p>
+
+        <h3>DESCRIPTION OF THE SERVICE</h3>
+        <p>"YEDIA" is a free fan media archive for the Ye 2026 tour. We reserve the right to modify, suspend, or discontinue any aspect of the Service at
+          any time and without notice.</p>
+
+        <h3>COPYRIGHT AND INTELLECTUAL PROPERTY</h3>
+        <p><strong>We do not claim ownership of the media uploaded to our platform.</strong></p>
+        <ul>
+          <li>Ye, Yeezy, and their respective rights holders retain rights in their branding, trademarks, tour designs,
+            music, and likenesses. User-submitted photos and videos remain subject to the rights held by their creators
+            or other applicable rights holders.</li>
+          <li>We do not claim any rights to these intellectual properties, nor do we claim to represent the copyright
+          holders.</li>
+          <li>The platform is provided as a fan-to-fan archival tool. If you are a
+            copyright holder and believe your work has been infringed, please contact us for immediate removal.</li>
+        </ul>
+
+        <h3>USER SUBMISSIONS</h3>
+        <p>You retain any rights you hold in content you submit. You represent that you have the necessary rights to
+          submit it and grant yetour.xyz a non-exclusive, worldwide, royalty-free licence to review, host, reproduce,
+          display, and publish approved submissions as part of the Service until they are removed. Contact
+          <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6c0d080105022c15091803191e42141516">[email&#160;protected]</a> for a removal request.</p>
+
+        <h3>PROHIBITED CONTENT AND STRICT ENFORCEMENT</h3>
+        <p>To maintain a safe and legal environment, there are strict rules regarding what can be uploaded to "YEDIA".
+          You agree NOT to use the Service to upload, share, or transmit any content that is:</p>
+        <ul>
+          <li>Illegal under UK law or international law.</li>
+          <li>Graphic, violent, or classified as "gore."</li>
+          <li>Malicious (such as malware, viruses, or phishing links).</li>
+          <li>Abusive, harassing, or intended to exploit others.</li>
+        </ul>
+        <p><strong>ENFORCEMENT POLICY:</strong> We may remove prohibited content, restrict access, and cooperate with
+          lawful requests where required.</p>
+
+        <h3>DISCLAIMERS</h3>
+        <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE," TO THE MAXIMUM EXTENT PERMITTED BY LAW. WE DISCLAIM ALL
+          WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE,
+          UPTIME, AND SECURE OPERATION.</p>
+        <p>We do not guarantee that the Service will be uninterrupted or error-free. We are not responsible for lost,
+          corrupted, or deleted uploads.</p>
+
+        <h3>LIMITATION OF LIABILITY</h3>
+        <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, YETOUR.XYZ SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
+          CONSEQUENTIAL, SPECIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF DATA, ARISING OUT OF OR RELATING TO YOUR USE OF
+          THE SERVICE.</p>
+
+        <h3>GOVERNING LAW</h3>
+        <p>These Terms are governed by and construed in accordance with the laws of England and Wales, without regard to
+          its conflict of law principles. Any disputes arising out of these Terms shall be subject to the exclusive
+          jurisdiction of the courts of England and Wales.</p>
+
+        <h3>TERMINATION</h3>
+        <p>We may terminate or suspend your access to the Service immediately, without prior notice or liability, for
+          any reason whatsoever, including without limitation if you breach the Terms. All provisions of the Terms which
+          by their nature should survive termination shall survive.</p>
+
+        <h3>CONTACT INFORMATION</h3>
+        <p>To ask questions or comment about this Service, our Terms, or to report a violation, please contact us via
+          the administrative channels provided on the yetour.xyz website, or email <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7716131a1e19370e1203180205590f0e0d">[email&#160;protected]</a>.</p>
+      </div>
+    </div>
+  </div>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script nonce="SCuH3sUpRKqUWpOiZoXXxEiy">window.activeYear = '2026';</script>
+  <script src="/js/state.js?v=59" defer nonce="SCuH3sUpRKqUWpOiZoXXxEiy"></script>
+  <script src="/js/feedback.js?v=48" defer nonce="SCuH3sUpRKqUWpOiZoXXxEiy"></script>
+  <script src="/js/yedia.js?v=61" defer nonce="SCuH3sUpRKqUWpOiZoXXxEiy"></script>
+  <script src="/js/navigation.js?v=71" defer nonce="SCuH3sUpRKqUWpOiZoXXxEiy"></script>
+  <script src="/js/photobooth.js?v=12" defer nonce="SCuH3sUpRKqUWpOiZoXXxEiy"></script>
+  <script src="/js/bootstrap.js?v=58" defer nonce="SCuH3sUpRKqUWpOiZoXXxEiy"></script>
+  <script src="/js/era-selector.js?v=2" defer nonce="SCuH3sUpRKqUWpOiZoXXxEiy"></script>
+  <script src="/js/analytics.js?v=1" defer nonce="SCuH3sUpRKqUWpOiZoXXxEiy"></script>
+  <script src="/js/roadmap-notifications.js?v=4" defer nonce="SCuH3sUpRKqUWpOiZoXXxEiy"></script>
+  <script nonce="SCuH3sUpRKqUWpOiZoXXxEiy">
+    (function () {
+      const trigger = document.getElementById('year-selector-trigger');
+      const yearOverlay = document.getElementById('year-overlay');
+      const arrow = document.getElementById('year-arrow');
+      let isOpen = false;
+
+      function closeYearMenu() {
+        isOpen = false;
+        yearOverlay.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+      }
+
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isOpen = !isOpen;
+        yearOverlay.style.display = isOpen ? 'flex' : 'none';
+        arrow.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+      });
+
+      yearOverlay.addEventListener('click', (e) => {
+        if (e.target === yearOverlay) closeYearMenu();
+      });
+
+      document.querySelectorAll('.year-option-btn').forEach(btn => {
+        if (btn.dataset.year === window.activeYear) {
+          btn.style.opacity = '0.4';
+        }
+        btn.addEventListener('click', () => {
+          const year = btn.dataset.year;
+          if (year === window.activeYear) {
+            closeYearMenu();
+            return;
+          }
+          if (year === '2021') {
+            window.location.href = '/2021';
+          } else if (year === '2023') {
+            window.location.href = '/2023';
+          } else if (year === '2025') {
+            window.location.href = '/2025';
+          } else if (year === '2024') {
+            window.location.href = '/2024';
+          } else {
+            window.location.href = '/';
+          }
+        });
+      });
+    })();
+  </script>
+  <script src="/js/pwa.js?v=3" defer nonce="SCuH3sUpRKqUWpOiZoXXxEiy"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" nonce="SCuH3sUpRKqUWpOiZoXXxEiy" data-cf-beacon='{"version":"2024.11.0","token":"947559a2234c4d0d975c325b28c99c76","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+
+</html>

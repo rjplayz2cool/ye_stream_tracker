@@ -1,0 +1,66 @@
+(() => {
+  const button = document.getElementById('roadmap-push-button');
+  const status = document.getElementById('roadmap-push-status');
+  const testDeviceButton = document.getElementById('roadmap-test-device-button');
+  if (!button || !status) return;
+  if (testDeviceButton) testDeviceButton.addEventListener('click', () => { window.location.href = '/admin/media-review?registerTestDevice=1'; });
+  const storageKey = 'yetour_push_subscription';
+  const supported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  const remembered = () => { try { return JSON.parse(localStorage.getItem(storageKey) || 'null'); } catch (_) { return null; } };
+  const forget = async () => { const subscription = remembered(); if (subscription) { try { await fetch('/api/push/subscription', {method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription})}); } catch (_) {} } localStorage.removeItem(storageKey); };
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const installed = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const setState = (state, message) => {
+    button.dataset.state = state;
+    if (testDeviceButton) testDeviceButton.hidden = state !== 'enabled';
+    button.disabled = state === 'unsupported' || state === 'install' || state === 'denied' || state === 'working';
+    button.textContent = state === 'enabled' ? 'DISABLE NOTIFICATIONS' : state === 'working' ? 'PLEASE WAIT...' : 'SUBSCRIBE TO NOTIFICATIONS';
+    status.textContent = message;
+  };
+  const base64ToUint8 = value => {
+    const padded = (value + '='.repeat((4 - value.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+    return Uint8Array.from(atob(padded), char => char.charCodeAt(0));
+  };
+  async function registration() { return navigator.serviceWorker.ready; }
+  async function refresh() {
+    if (!supported()) return setState('unsupported', 'Notifications are not supported by this browser.');
+    if (isIOS && !installed()) return setState('install', 'Add YeTour to your Home Screen to enable notifications.');
+    if (Notification.permission === 'denied') { await forget(); return setState('denied', 'Notifications are disabled in your browser or device settings.'); }
+    const subscription = await (await registration()).pushManager.getSubscription();
+    if (subscription) {
+      const savedSubscription = subscription.toJSON();
+      const res = await fetch('/api/push/subscription', {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:savedSubscription})});
+      if (res.ok) {
+        localStorage.setItem(storageKey, JSON.stringify(savedSubscription));
+        return setState('enabled', 'Notifications enabled.');
+      }
+      return setState('ready', 'Notifications subscription could not be refreshed.');
+    }
+    await forget();
+    setState('ready', 'Get YeTour updates directly on your device.');
+  }
+  button.addEventListener('click', async () => {
+    try {
+      const reg = await registration();
+      const current = await reg.pushManager.getSubscription();
+      if (current) {
+        setState('working', 'Disabling notifications...');
+        await forget();
+        await current.unsubscribe();
+        return refresh();
+      }
+      if (isIOS && !installed()) return refresh();
+      setState('working', 'Waiting for permission...');
+      if (await Notification.requestPermission() !== 'granted') return refresh();
+      const response = await fetch('/api/push/public-key');
+      if (!response.ok) throw new Error('Push is unavailable');
+      const {publicKey} = await response.json();
+      const subscription = await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64ToUint8(publicKey)});
+      const saved = await fetch('/api/push/subscription', {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:subscription.toJSON()})});
+      if (!saved.ok) throw new Error('Could not save subscription');
+      localStorage.setItem(storageKey, JSON.stringify(subscription.toJSON()));
+      refresh();
+    } catch (error) { setState('ready', error.message || 'Could not enable notifications. Please try again.'); }
+  });
+  refresh().catch(() => setState('ready', 'Notifications are available when your browser supports them.'));
+})();

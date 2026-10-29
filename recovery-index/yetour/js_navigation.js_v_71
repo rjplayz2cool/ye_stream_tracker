@@ -1,0 +1,1317 @@
+function stopAllMedia() {
+  if (typeof detailVideo !== 'undefined' && detailVideo) {
+    try {
+      detailVideo.pause();
+      detailVideo.currentTime = 0;
+      detailVideo.autoplay = false;
+      detailVideo.removeAttribute('autoplay');
+      detailVideo.removeAttribute('src');
+      detailVideo.removeAttribute('poster');
+      detailVideo.innerHTML = '';
+      detailVideo.load();
+      detailVideo.hidden = true;
+      detailVideo.style.display = 'none';
+    } catch (e) {}
+  }
+
+  const audioEl = document.getElementById('detail-audio-element');
+  const audioPlayer = document.getElementById('detail-audio-player');
+  const audioControls = document.getElementById('audio-controls');
+  if (audioEl) {
+    try {
+      audioEl.pause();
+      audioEl.currentTime = 0;
+      audioEl.removeAttribute('src');
+      audioEl.innerHTML = '';
+      audioEl.load();
+    } catch (e) {}
+  }
+  if (audioPlayer) audioPlayer.style.display = 'none';
+  if (audioControls) audioControls.style.display = 'none';
+
+  document.querySelectorAll('video, audio').forEach(el => {
+    try {
+      el.pause();
+      el.currentTime = 0;
+    } catch (e) {}
+  });
+}
+
+function timeToSeconds(timeStr) {
+  const parts = timeStr.split(':').map(Number);
+  if (parts.length === 3) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  } else if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  }
+  return 0;
+}
+
+function updateOverlayButtons(p) {
+  if (p && p.credits) {
+    detailCredits.href = p.credits;
+    detailCredits.classList.add('show');
+  } else {
+    detailCredits.removeAttribute('href');
+    detailCredits.classList.remove('show');
+  }
+
+  if (p && (p.category === 'visualizer' || p.category === 'musicvideo')) {
+    const yearVal = (typeof activeYear !== 'undefined') ? activeYear : (window.activeYear || '2026');
+    detailDownload.dataset.href = `/api/download/catalog/${yearVal}/${encodeURIComponent(p.id)}`;
+    detailDownload.classList.add('show');
+    if (detailTimestamps) {
+      detailTimestamps.classList.remove('show');
+      detailTimestamps.style.display = '';
+    }
+  } else if (p && p.category === 'live' && p.accessible) {
+    detailDownload.classList.remove('show');
+    detailDownload.removeAttribute('data-href');
+    if (detailTimestamps) {
+      const hasTimestamps = Array.isArray(p.timestamps) && p.timestamps.length > 0;
+      detailTimestamps.classList.toggle('show', hasTimestamps);
+      detailTimestamps.style.display = hasTimestamps ? 'inline-block' : 'none';
+    }
+  } else {
+    detailDownload.classList.remove('show');
+    detailDownload.removeAttribute('data-href');
+    if (detailTimestamps) {
+      detailTimestamps.classList.remove('show');
+      detailTimestamps.style.display = 'none';
+    }
+  }
+
+  if (p && !(siteBrainConfig && siteBrainConfig.disableCopyLink)) {
+    detailCopylink.classList.add('show');
+    detailCopylink.style.display = '';
+  } else {
+    detailCopylink.classList.remove('show');
+    detailCopylink.style.display = 'none';
+  }
+}
+
+function updateDetailInfo(p) {
+  const isShow = p && p.category === 'live';
+  const isMerch = p && p.category === 'merch';
+  const showDate = isShow ? (p.date || '') : '';
+  const merchSpec = isMerch
+    ? `${p.folderLabel ? p.folderLabel + ' · ' : ''}${p.spec || (p.images ? p.images.length + ' IMAGE' + (p.images.length === 1 ? '' : 'S') : '')}`
+    : '';
+  const showLocationParts = [showDate, p ? p.stadium : null, p ? p.city : null].filter(Boolean);
+  const showSpec = showLocationParts.length > 0 ? showLocationParts.join(' · ') : (p ? (p.spec || '') : '');
+  const specLine = isShow ? showSpec : (isMerch ? merchSpec : (p ? (p.spec || '') : ''));
+  const priceTag = p.price || '';
+  const yearVal = (typeof activeYear !== 'undefined') ? activeYear : window.activeYear;
+  const isSply = (yearVal === '2023') || (siteBrainConfig && siteBrainConfig.splyLayout);
+  detailName.classList.toggle('is-live-show', Boolean(isShow && isSply));
+
+  const colorKeys = (isMerch && p && p.variants) ? Object.keys(p.variants).filter(c => c !== 'DEFAULT') : [];
+  const hasColors = colorKeys.length > 1;
+  const activeColor = (p && p.activeColor) || (colorKeys.includes('BLACK') ? 'BLACK' : colorKeys[0]);
+
+  let colorButtonsHtml = '';
+  if (hasColors) {
+    colorButtonsHtml = `
+      <div class="sply-color-selector">
+        ${colorKeys.map(c => `
+          <button type="button" class="sply-color-btn ${c === activeColor ? 'active' : ''}" data-color="${c}">${c}</button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  if (isSply) {
+    detailName.innerHTML = `
+      <span class="sply-brand">SPLY</span>
+      <span class="sply-title">${p.name}${priceTag ? ' ' + priceTag : ''}</span>
+      ${colorButtonsHtml}
+      <span class="sply-delivery">DELIVERED BY YETOUR.XYZ</span>
+      <span class="sply-spec">${specLine}</span>
+      <span class="sply-divider"></span>
+    `;
+    detailSpec.textContent = '';
+
+    if (hasColors) {
+      detailName.querySelectorAll('.sply-color-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const selectedColor = btn.dataset.color;
+          if (p) p.activeColor = selectedColor;
+          if (p && p.variants && p.variants[selectedColor]) {
+            currentMerchImages = p.variants[selectedColor];
+            p.images = currentMerchImages;
+            p.image = currentMerchImages[0];
+            const img = document.getElementById('detail-merch-img');
+            if (img) img.src = currentMerchImages[0];
+            detailName.querySelectorAll('.sply-color-btn').forEach(b => {
+              b.classList.toggle('active', b.dataset.color === selectedColor);
+            });
+          }
+        });
+      });
+    }
+
+  } else {
+    detailName.textContent = p.name;
+    detailSpec.textContent = specLine;
+  }
+}
+
+function updateMediaSessionMetadata(p) {
+  if (!('mediaSession' in navigator) || !p) return;
+  try {
+    const yearVal = (typeof activeYear !== 'undefined') ? activeYear : (window.activeYear || '2026');
+    const titleText = p.name || p.stadium || 'YE TOUR ARCHIVE';
+    const artistText = p.artist || p.stadium || 'YE';
+    const albumText = `YE TOUR ${yearVal} ARCHIVE`;
+    const imageSrc = p.image || p.poster || '';
+
+    const artworkList = [];
+    if (imageSrc) {
+      artworkList.push({
+        src: imageSrc,
+        sizes: '512x512',
+        type: imageSrc.endsWith('.webp') ? 'image/webp' : (imageSrc.endsWith('.png') ? 'image/png' : 'image/jpeg')
+      });
+    }
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: titleText,
+      artist: artistText,
+      album: albumText,
+      artwork: artworkList
+    });
+
+    navigator.mediaSession.setActionHandler('play', () => {
+      if (currentDetailMode === 'audio') {
+        const ae = document.getElementById('detail-audio-element');
+        const playBtn = document.getElementById('audio-play-btn');
+        if (ae) {
+          ae.play().then(() => {
+            if (playBtn) playBtn.textContent = 'PAUSE';
+          }).catch(err => console.error('Audio play error:', err));
+        }
+      } else if (currentDetailMode === 'video') {
+        detailVideo.play().catch(err => console.error('Video play error:', err));
+      }
+    });
+
+    navigator.mediaSession.setActionHandler('pause', () => {
+      if (currentDetailMode === 'audio') {
+        const ae = document.getElementById('detail-audio-element');
+        const playBtn = document.getElementById('audio-play-btn');
+        if (ae) {
+          ae.pause();
+          if (playBtn) playBtn.textContent = 'PLAY';
+        }
+      } else if (currentDetailMode === 'video') {
+        detailVideo.pause();
+      }
+    });
+
+    navigator.mediaSession.setActionHandler('previoustrack', () => stepDetailProduct(-1));
+    navigator.mediaSession.setActionHandler('nexttrack', () => stepDetailProduct(1));
+  } catch (err) {
+    console.error('MediaSession setup failed:', err);
+  }
+}
+
+function renderVideoDetail(p) {
+  stopAllMedia();
+  currentDetailMode = 'video';
+  detailMedia.classList.remove('is-merch');
+  detailMedia.classList.remove('is-audio');
+  detailMedia.classList.remove('is-yedia-video');
+  detailMedia.classList.remove('is-video-frame', 'chapters-open');
+  detailMedia.style.removeProperty('max-height');
+  detailMedia.style.width = '';
+  detailMedia.style.height = '';
+  detailMedia.style.aspectRatio = '';
+  detailMedia.style.removeProperty('top');
+  detailMedia.classList.add('is-video-loading');
+  detailMedia.style.height = '0px';
+  detailMedia.style.aspectRatio = 'auto';
+
+  detailGallery.hidden = true;
+  detailGallery.style.display = 'none';
+  detailGallery.innerHTML = '';
+
+  detailVideo.innerHTML = '';
+  detailVideo.removeAttribute('src');
+  detailVideo.setAttribute('playsinline', '');
+  detailVideo.setAttribute('webkit-playsinline', '');
+  detailVideo.hidden = false;
+  detailVideo.style.display = '';
+  detailVideo.removeAttribute('style');
+  detailVideo.controls = true;
+  detailVideo.setAttribute('controls', '');
+  // Card artwork is not a reliable representation of the media dimensions.
+  // Keep the native player blank until its own metadata defines the frame.
+  detailVideo.removeAttribute('poster');
+  detailVideo.poster = '';
+
+  const expectedSource = p.video ? new URL(p.video, window.location.href).href : '';
+
+  const fitGeneralVideo = () => {
+    if (expectedSource && detailVideo.currentSrc !== expectedSource) return;
+    if (detailVideo.videoWidth && detailVideo.videoHeight) {
+      fitDetailMediaToVideo(detailVideo.videoWidth, detailVideo.videoHeight);
+    }
+  };
+
+  detailVideo.onloadedmetadata = fitGeneralVideo;
+  detailVideo.onerror = () => {
+    detailMedia.style.height = '';
+    detailMedia.classList.remove('is-video-loading');
+  };
+  if (p.video) {
+    detailVideo.src = p.video;
+    detailVideo.load();
+  }
+  updateDetailInfo(p);
+  updateOverlayButtons(p);
+  updateMediaSessionMetadata(p);
+  detailVideo.style.transform = 'translateY(0)';
+  detailVideo.style.opacity = '1';
+}
+
+let currentMerchImages = [];
+let isDraggingGallery = false;
+let galleryStartX = 0;
+let galleryDragOffset = 0;
+
+function renderMerchDetail(p) {
+  stopAllMedia();
+  currentDetailMode = 'merch';
+  detailMedia.classList.remove('is-video-loading', 'is-video-frame', 'chapters-open');
+  detailMedia.style.removeProperty('max-height');
+  detailMedia.classList.add('is-merch');
+  if (p && p.name && p.name.toUpperCase().includes('POD')) {
+    detailMedia.classList.add('is-pods');
+  } else {
+    detailMedia.classList.remove('is-pods');
+  }
+  detailMedia.classList.remove('is-audio');
+  detailMedia.classList.remove('is-yedia-video');
+  detailMedia.style.aspectRatio = '';
+  detailMedia.style.width = '';
+  detailMedia.style.height = '';
+  detailMedia.style.removeProperty('top');
+
+  detailVideo.hidden = true;
+  detailVideo.style.display = 'none';
+
+  detailGallery.hidden = false;
+  detailGallery.style.display = '';
+  detailGallery.style.position = '';
+  detailGallery.style.height = '';
+  detailGallery.style.background = '';
+  detailGallery.style.cursor = '';
+  const colorKeys = (p && p.variants) ? Object.keys(p.variants).filter(c => c !== 'DEFAULT') : [];
+  const hasColors = colorKeys.length > 1;
+  const activeColor = (p && p.activeColor) || (colorKeys.includes('BLACK') ? 'BLACK' : colorKeys[0]);
+  if (p) p.activeColor = activeColor;
+  if (p && p.variants && p.variants[activeColor]) {
+    currentMerchImages = p.variants[activeColor];
+    p.images = currentMerchImages;
+    p.image = currentMerchImages[0];
+  } else {
+    currentMerchImages = p.images || [];
+  }
+
+  currentMerchSlideCount = (currentMerchImages && currentMerchImages.length) || 1;
+  currentMerchSlideIndex = 0;
+
+  const yearVal = (typeof activeYear !== 'undefined') ? activeYear : window.activeYear;
+  const is2023 = (yearVal === '2023');
+
+  if (is2023) {
+    detailGallery.innerHTML = `<div class="detail-single-wrap" id="detail-single-wrap">
+      <img id="detail-merch-img" src="${currentMerchImages[0] || p.image || ''}" alt="${p.name}" loading="eager" decoding="async" draggable="false" />
+    </div>`;
+
+    const detailImgEl = document.getElementById('detail-merch-img');
+    if (detailImgEl) {
+      detailImgEl.style.cursor = 'pointer';
+      detailImgEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (currentDetailMode === 'merch' && currentMerchSlideCount > 1) {
+          const nextSlide = (currentMerchSlideIndex + 1) % currentMerchSlideCount;
+          showMerchSlide(nextSlide);
+        }
+      });
+    }
+  } else {
+    const slidesHtml = (currentMerchImages || []).map((img, idx) => `
+      <div class="detail-slide">
+        <img src="${img}" alt="${p.name} image ${idx + 1}" loading="eager" decoding="async" draggable="false" />
+      </div>
+    `).join('');
+    detailGallery.innerHTML = `<div class="detail-gallery-track" id="detail-gallery-track">${slidesHtml}</div>`;
+  }
+
+  renderMerchDots();
+  syncMerchArrows();
+  updateDetailInfo(p);
+  updateOverlayButtons(p);
+}
+
+function renderMerchDots() {
+  detailDots.innerHTML = '';
+  for (let index = 0; index < currentMerchSlideCount; index += 1) {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'detail-dot';
+    dot.setAttribute('aria-label', `Show image ${index + 1}`);
+    dot.addEventListener('click', () => showMerchSlide(index));
+    detailDots.appendChild(dot);
+  }
+  updateMerchDots();
+}
+
+function updateMerchDots() {
+  const dots = detailDots.querySelectorAll('.detail-dot');
+  dots.forEach((dot, index) => {
+    dot.classList.toggle('active', index === currentMerchSlideIndex);
+  });
+}
+
+function syncMerchArrows() {
+  if (detailGalleryPrev) detailGalleryPrev.style.display = 'none';
+  if (detailGalleryNext) detailGalleryNext.style.display = 'none';
+}
+
+function showMerchSlide(index) {
+  if (currentDetailMode !== 'merch' || currentMerchSlideCount === 0) return;
+  const clampedIndex = Math.max(0, Math.min(index, currentMerchSlideCount - 1));
+  currentMerchSlideIndex = clampedIndex;
+
+  const track = document.getElementById('detail-gallery-track');
+  if (track) {
+    track.style.transition = 'transform 0.35s cubic-bezier(.16,1,.3,1)';
+    track.style.transform = `translateX(-${clampedIndex * 100}%)`;
+  }
+  const img = document.getElementById('detail-merch-img');
+  if (img && currentMerchImages && currentMerchImages[clampedIndex]) {
+    img.src = currentMerchImages[clampedIndex];
+  }
+  updateMerchDots();
+  syncMerchArrows();
+}
+
+function stepMerchSlide(step) {
+  showMerchSlide(currentMerchSlideIndex + step);
+}
+
+function renderShopDetail(p) {
+  currentDetailMode = 'merch';
+  detailMedia.classList.add('is-merch');
+  detailMedia.classList.remove('is-audio');
+  detailMedia.style.aspectRatio = '';
+  detailVideo.pause();
+  detailVideo.removeAttribute('src');
+  detailVideo.hidden = true;
+  detailVideo.style.display = 'none';
+  detailGallery.hidden = false;
+  detailGallery.style.display = '';
+  currentMerchSlideCount = p.images.length;
+  currentMerchSlideIndex = 0;
+  currentMerchImages = p.images;
+
+  const yearVal = (typeof activeYear !== 'undefined') ? activeYear : window.activeYear;
+  const is2023 = (yearVal === '2023');
+
+  if (is2023) {
+    detailGallery.textContent = '';
+    const singleWrap = document.createElement('div');
+    singleWrap.className = 'detail-single-wrap';
+    singleWrap.id = 'detail-single-wrap';
+    const image = document.createElement('img');
+    image.id = 'detail-merch-img';
+    image.src = p.images[0] || '';
+    image.alt = String(p.name || 'Shop item');
+    image.loading = 'eager';
+    image.decoding = 'async';
+    image.draggable = false;
+    singleWrap.appendChild(image);
+    detailGallery.appendChild(singleWrap);
+    const detailImgEl = document.getElementById('detail-merch-img');
+    if (detailImgEl) {
+      detailImgEl.style.cursor = 'pointer';
+      detailImgEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (currentDetailMode === 'merch' && currentMerchSlideCount > 1) {
+          const nextSlide = (currentMerchSlideIndex + 1) % currentMerchSlideCount;
+          showMerchSlide(nextSlide);
+        }
+      });
+    }
+  } else {
+    detailGallery.textContent = '';
+    const track = document.createElement('div');
+    track.className = 'detail-gallery-track';
+    track.id = 'detail-gallery-track';
+    (p.images || []).forEach((src, index) => {
+      const slide = document.createElement('div');
+      slide.className = 'detail-slide';
+      const image = document.createElement('img');
+      image.src = src;
+      image.alt = `${String(p.name || 'Shop item')} image ${index + 1}`;
+      image.loading = 'eager';
+      image.decoding = 'async';
+      image.draggable = false;
+      slide.appendChild(image);
+      track.appendChild(slide);
+    });
+    detailGallery.appendChild(track);
+  }
+
+  renderMerchDots();
+  syncMerchArrows();
+  detailName.textContent = p.name;
+  detailSpec.textContent = [
+    p.description,
+    [p.price, p.color !== 'DEFAULT' ? p.color : ''].filter(Boolean).join(' / ')
+  ].filter(Boolean).join('\n');
+  updateOverlayButtons(p);
+}
+
+function openDetail(p) {
+  currentDetailIndex = catalogProducts.findIndex(product => product.id === p.id);
+
+  // Always stop all playing media first before rendering new content
+  stopAllMedia();
+  detailName.classList.remove('is-beta-upload');
+  const yediaBetaNotice = document.getElementById('yedia-beta-notice');
+  if (yediaBetaNotice) yediaBetaNotice.hidden = true;
+
+  track("media_opened", {
+    type: p.category || p.type || "unknown",
+    title: p.name || p.stadium,
+    city: p.city || null
+  });
+
+  filterBar.classList.add('nav-hidden');
+  merchFilterBar.classList.add('nav-hidden');
+  yediaFilterBar.classList.add('nav-hidden');
+  musicvideoFilterBar.classList.add('nav-hidden');
+
+  detailMedia.style.width = '';
+  detailMedia.style.height = '';
+  detailMedia.style.aspectRatio = '';
+
+  if (p.category === 'merch') {
+    renderMerchDetail(p);
+  } else if (p.category === 'shop') {
+    renderShopDetail(p);
+  } else if (p.type === 'audio') {
+    renderAudioDetail(p);
+  } else {
+    renderVideoDetail(p);
+  }
+
+  grid.classList.add('hidden-grid');
+  overlay.classList.add('active');
+  document.body.classList.add('overlay-open');
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
+
+  if (p) {
+    let routeCategory = p.category;
+    if (p.category === 'live') routeCategory = 'shows';
+    else if (p.category === 'musicvideo' || p.category === 'visualizer') routeCategory = 'music';
+
+    let slug = getProductSlug(p);
+    if (p.category === 'visualizer') {
+      const hasCollision = catalogProducts.some(other => other.category === 'musicvideo' && getProductSlug(other) === slug);
+      if (hasCollision) {
+        slug = `visualizer-${slug}`;
+      }
+    }
+    const yearVal = (typeof activeYear !== 'undefined') ? activeYear : window.activeYear;
+    const yearPrefix = (yearVal && yearVal !== '2026') ? `/${yearVal}` : '';
+    let newPath;
+    if (p.category === 'merch' && p.folder) {
+      newPath = `${yearPrefix}/merch/${p.folder}/${slug}`;
+    } else if (p.category === 'shop') {
+      newPath = `${yearPrefix}/shop/${encodeURIComponent(slug)}/${encodeURIComponent(p.colorSlug || 'default')}`;
+    } else {
+      newPath = `${yearPrefix}/${routeCategory}/${slug}`;
+    }
+    if (window.location.pathname !== newPath) {
+      history.pushState(null, '', newPath);
+    }
+  }
+}
+
+function closeDetail() {
+  stopAllMedia();
+
+  const path = window.location.pathname;
+  const yearVal = (typeof activeYear !== 'undefined') ? activeYear : window.activeYear;
+  const basePath = (yearVal && yearVal !== '2026') ? `/${yearVal}` : '/';
+  if (path.match(/^\/(\d{4}\/)?(shows|merch|music|visualizer|yedia|shop)\//) || path.match(/^\/(shows|merch|music|visualizer|yedia|shop)\//)) {
+    history.replaceState(null, '', basePath);
+  }
+  overlay.classList.remove('active');
+  grid.classList.remove('hidden-grid');
+  filterBar.classList.remove('nav-hidden');
+  merchFilterBar.classList.remove('nav-hidden');
+  yediaFilterBar.classList.remove('nav-hidden');
+  musicvideoFilterBar.classList.remove('nav-hidden');
+  detailMedia.classList.remove('is-merch');
+  detailMedia.classList.remove('is-audio');
+  detailMedia.classList.remove('is-yedia-video');
+  detailMedia.classList.remove('is-video-loading', 'is-video-frame', 'chapters-open');
+  detailMedia.style.removeProperty('max-height');
+  detailMedia.style.aspectRatio = '';
+  detailMedia.style.width = '';
+  detailMedia.style.height = '';
+  detailMedia.style.removeProperty('top');
+  detailGallery.hidden = false;
+  detailGallery.style.display = '';
+  detailGallery.innerHTML = '';
+  detailDots.innerHTML = '';
+  timestampsOverlay.classList.remove('active');
+  closeBtn.style.opacity = '';
+  closeBtn.style.pointerEvents = '';
+  updateOverlayButtons(null);
+
+  detailCredits.style.display = '';
+  detailDownload.style.display = '';
+  if (detailTimestamps) detailTimestamps.style.display = '';
+  detailDots.style.display = '';
+  detailGalleryPrev.style.display = '';
+  detailGalleryNext.style.display = '';
+  yediaPhotoActions.style.display = '';
+
+  document.body.classList.remove('overlay-open');
+  document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
+
+  if (currentDetailIndex !== -1 && catalogProducts[currentDetailIndex]) {
+    const p = catalogProducts[currentDetailIndex];
+    if (p.activeColor) {
+      delete p.activeColor;
+    }
+  }
+
+}
+
+document.addEventListener('keydown', event => {
+  if (!overlay.classList.contains('active')) return;
+
+  if (timestampsOverlay.classList.contains('active')) {
+    if (event.key === 'Escape') {
+      timestampsOverlay.classList.remove('active');
+      closeBtn.style.opacity = '';
+      closeBtn.style.pointerEvents = '';
+      event.stopPropagation();
+    }
+    return;
+  }
+
+  if (event.key === 'Escape') {
+    closeDetail();
+  } else if (currentDetailMode === 'merch') {
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      stepMerchSlide(1);
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      stepMerchSlide(-1);
+    }
+  }
+});
+
+overlay.addEventListener('touchmove', event => {
+  if (overlay.classList.contains('active')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+let isDragging = false;
+let dragStartX = 0;
+let prevTranslate = 0;
+
+function dragStart(clientX) {
+  return;
+}
+
+function dragMove(clientX) {
+  return;
+}
+
+function dragEnd(clientX) {
+  return;
+}
+
+detailGallery.addEventListener('dragstart', e => {
+  e.preventDefault();
+  return false;
+});
+
+
+detailGalleryPrev.addEventListener('click', () => stepMerchSlide(-1));
+detailGalleryNext.addEventListener('click', () => stepMerchSlide(1));
+closeBtn.addEventListener('click', closeDetail);
+
+function clearVideoPoster(videoEl) {
+  if (!videoEl) return;
+  videoEl.removeAttribute('poster');
+  videoEl.poster = '';
+  const prevDisplay = videoEl.style.display;
+  videoEl.style.display = 'none';
+  videoEl.offsetHeight; // force GPU compositor reflow to clear poster image
+  videoEl.style.display = prevDisplay || '';
+}
+
+function openSetlistOverlay() {
+  const p = catalogProducts[currentDetailIndex];
+  if (!p) return;
+
+  const titleEl = timestampsOverlay.querySelector('.timestamps-title');
+  if (titleEl) titleEl.textContent = 'SETLIST';
+
+  closeBtn.style.opacity = '0';
+  closeBtn.style.pointerEvents = 'none';
+  timestampsOverlay.classList.add('active');
+  timestampsOverlay.scrollTop = 0;
+  if (timestampsList) timestampsList.scrollTop = 0;
+  timestampsList.innerHTML = '';
+
+  if (p.timestamps && p.timestamps.length > 0) {
+    p.timestamps.forEach((item) => {
+      const btn = document.createElement('button');
+      btn.className = 'timestamp-item';
+
+      btn.innerHTML = `
+        <span class="timestamp-song">${item.song}</span>
+        <span class="timestamp-time">${item.time}</span>
+      `;
+      btn.addEventListener('click', () => {
+        timestampsOverlay.classList.remove('active');
+        timestampsOverlay.scrollTop = 0;
+        if (timestampsList) timestampsList.scrollTop = 0;
+        closeBtn.style.opacity = '';
+        closeBtn.style.pointerEvents = '';
+
+        const targetSeconds = timeToSeconds(item.time);
+        const applySeekAndPlay = () => {
+          clearVideoPoster(detailVideo);
+          detailVideo.currentTime = targetSeconds;
+          const playPromise = detailVideo.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(err => console.error('Play failed:', err));
+          }
+          setTimeout(() => clearVideoPoster(detailVideo), 50);
+        };
+
+        if (detailVideo.readyState < 1) {
+          const onLoaded = () => {
+            detailVideo.removeEventListener('loadedmetadata', onLoaded);
+            applySeekAndPlay();
+          };
+          detailVideo.addEventListener('loadedmetadata', onLoaded);
+          detailVideo.load();
+        } else {
+          applySeekAndPlay();
+        }
+      });
+      timestampsList.appendChild(btn);
+    });
+  } else {
+    const emptyDiv = document.createElement('div');
+    emptyDiv.className = 'timestamp-empty';
+    emptyDiv.textContent = 'NO TIMESTAMPS ADDED YET';
+    timestampsList.appendChild(emptyDiv);
+  }
+}
+
+if (detailTimestamps) detailTimestamps.addEventListener('click', openSetlistOverlay);
+
+timestampsClose.addEventListener('click', () => {
+  timestampsOverlay.classList.remove('active');
+  timestampsOverlay.scrollTop = 0;
+  if (timestampsList) timestampsList.scrollTop = 0;
+  closeBtn.style.opacity = '';
+  closeBtn.style.pointerEvents = '';
+});
+
+timestampsOverlay.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+timestampsOverlay.addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
+timestampsOverlay.addEventListener('touchend', e => e.stopPropagation());
+
+detailVideo.addEventListener('playing', () => {
+  if (detailVideo.currentTime > 0) clearVideoPoster(detailVideo);
+});
+detailVideo.addEventListener('seeking', () => {
+  if (detailVideo.currentTime > 0) clearVideoPoster(detailVideo);
+});
+
+function fitDetailMediaToVideo(vw, vh) {
+  if (!vw || !vh) return;
+  const visualViewport = window.visualViewport;
+  const viewportWidth = visualViewport ? visualViewport.width : window.innerWidth;
+  const viewportHeight = visualViewport ? visualViewport.height : window.innerHeight;
+  const compactViewport = viewportWidth <= 760;
+  const maxW = Math.max(160, Math.min(viewportWidth - (compactViewport ? 24 : 64), 960));
+  // Reserve space for the title, metadata, and detail actions.
+  const actionReserve = compactViewport ? 210 : 160;
+  let maxH = Math.min(
+    viewportHeight * (compactViewport ? 0.52 : 0.60),
+    Math.max(160, viewportHeight - actionReserve)
+  );
+  const ratio = vw / vh;
+  const is2023Archive = /^\/2023(?:\/|$)/.test(window.location.pathname);
+  const infoClearance = compactViewport ? 16 : 24;
+  const minimumTop = compactViewport ? 48 : 64;
+  const detailNameTop = detailName && detailName.offsetParent ? detailName.offsetTop : 0;
+  if (is2023Archive && detailNameTop > minimumTop + infoClearance) {
+    maxH = Math.min(maxH, detailNameTop - minimumTop - infoClearance);
+  }
+  let w = vw, h = vh;
+  if (w > maxW) { w = maxW; h = w / ratio; }
+  if (h > maxH) { h = maxH; w = h * ratio; }
+  detailMedia.style.setProperty('width', `${w}px`, 'important');
+  detailMedia.style.setProperty('height', `${h}px`, 'important');
+  detailMedia.style.setProperty('aspect-ratio', `${ratio}`, 'important');
+  detailMedia.style.setProperty('max-height', 'none', 'important');
+  detailMedia.style.removeProperty('top');
+  detailMedia.classList.add('is-video-frame');
+  detailMedia.classList.remove('is-video-loading');
+
+  if (is2023Archive && detailNameTop) {
+    const frameBottom = detailMedia.offsetTop + h;
+    const desiredBottom = detailNameTop - infoClearance;
+    const shift = Math.max(0, frameBottom - desiredBottom);
+    if (shift) detailMedia.style.setProperty('top', `${-shift}px`, 'important');
+  }
+}
+
+detailVideo.addEventListener('loadedmetadata', () => {
+  const mode = currentDetailMode;
+  if ((mode === 'video' || mode === 'yedia') && detailVideo.videoWidth && detailVideo.videoHeight) {
+    fitDetailMediaToVideo(detailVideo.videoWidth, detailVideo.videoHeight);
+  }
+});
+
+// Some browsers report final dimensions during the first decoded frame rather
+// than the initial metadata event, particularly for mobile MOV uploads.
+detailVideo.addEventListener('loadeddata', () => {
+  const mode = currentDetailMode;
+  if ((mode === 'video' || mode === 'yedia') && detailVideo.videoWidth && detailVideo.videoHeight) {
+    fitDetailMediaToVideo(detailVideo.videoWidth, detailVideo.videoHeight);
+  }
+});
+
+document.addEventListener('videochapterschange', () => {
+  if (currentDetailMode === 'video' && detailVideo.videoWidth && detailVideo.videoHeight) {
+    fitDetailMediaToVideo(detailVideo.videoWidth, detailVideo.videoHeight);
+  }
+});
+
+let detailResizeFrame = null;
+function scheduleDetailMediaFit() {
+  if (detailResizeFrame) window.cancelAnimationFrame(detailResizeFrame);
+  detailResizeFrame = window.requestAnimationFrame(() => {
+    detailResizeFrame = null;
+    const mode = currentDetailMode;
+    if ((mode === 'video' || mode === 'yedia') && detailVideo.videoWidth && detailVideo.videoHeight) {
+      fitDetailMediaToVideo(detailVideo.videoWidth, detailVideo.videoHeight);
+    }
+  });
+}
+
+window.addEventListener('resize', scheduleDetailMediaFit);
+window.visualViewport?.addEventListener('resize', scheduleDetailMediaFit);
+window.addEventListener('orientationchange', scheduleDetailMediaFit);
+/* Legacy listener kept for callers that dispatch a regular resize event. */
+window.addEventListener('resize', () => {
+  const mode = currentDetailMode;
+  if ((mode === 'video' || mode === 'yedia') && detailVideo.videoWidth && detailVideo.videoHeight) {
+    fitDetailMediaToVideo(detailVideo.videoWidth, detailVideo.videoHeight);
+  }
+});
+
+detailDownload.addEventListener('click', async () => {
+  const url = detailDownload.dataset.href;
+  if (!url) return;
+
+  const p = catalogProducts[currentDetailIndex];
+  if (p) {
+    track("media_download_clicked", {
+      type: p.category || p.type || "unknown",
+      title: p.name || p.stadium
+    });
+  }
+
+  const originalText = detailDownload.textContent;
+  detailDownload.textContent = 'DOWNLOADING...';
+  detailDownload.style.pointerEvents = 'none';
+
+  const cleanUrl = url.split('?')[0];
+  const filename = decodeURIComponent(cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1)) || 'media';
+
+  const tempLink = document.createElement('a');
+  tempLink.href = url;
+  tempLink.download = filename;
+  tempLink.rel = 'noopener';
+  document.body.appendChild(tempLink);
+  tempLink.click();
+  document.body.removeChild(tempLink);
+
+  window.setTimeout(() => {
+    detailDownload.textContent = originalText;
+    detailDownload.style.pointerEvents = 'auto';
+  }, 1000);
+});
+
+function renderAudioDetail(p) {
+  currentDetailMode = 'audio';
+  detailMedia.classList.remove('is-merch', 'is-video-frame', 'chapters-open');
+  detailMedia.style.removeProperty('max-height');
+  detailMedia.classList.add('is-audio');
+  detailVideo.hidden = true;
+  detailVideo.pause();
+  detailVideo.removeAttribute('src');
+  detailVideo.load();
+  detailGallery.hidden = true;
+  detailGallery.innerHTML = '';
+
+  const audioPlayer = document.getElementById('detail-audio-player');
+  const audioCover = document.getElementById('detail-audio-cover');
+  const audioElement = document.getElementById('detail-audio-element');
+  const playBtn = document.getElementById('audio-play-btn');
+  const progressBar = document.getElementById('audio-progress-bar');
+  const audioTime = document.getElementById('audio-time');
+  const audioControls = document.getElementById('audio-controls');
+
+  if (audioPlayer) {
+    audioPlayer.style.display = 'flex';
+  }
+  if (audioControls) {
+    audioControls.style.display = 'flex';
+  }
+  if (audioCover) {
+    audioCover.src = p.image;
+  }
+  if (audioElement) {
+    audioElement.src = p.audio;
+    audioElement.load();
+  }
+
+  if (playBtn) playBtn.textContent = 'PLAY';
+  if (progressBar) progressBar.style.width = '0%';
+  if (audioTime) audioTime.textContent = '0:00 / 0:00';
+
+  detailName.textContent = p.name;
+  detailSpec.textContent = p.spec;
+  updateOverlayButtons(p);
+  updateMediaSessionMetadata(p);
+}
+
+const audioElement = document.getElementById('detail-audio-element');
+const playBtn = document.getElementById('audio-play-btn');
+const progressContainer = document.getElementById('audio-progress-container');
+const progressBar = document.getElementById('audio-progress-bar');
+const audioTime = document.getElementById('audio-time');
+
+if (playBtn && audioElement) {
+  playBtn.addEventListener('click', () => {
+    if (audioElement.paused) {
+      audioElement.play();
+      playBtn.textContent = 'PAUSE';
+    } else {
+      audioElement.pause();
+      playBtn.textContent = 'PLAY';
+    }
+  });
+
+  audioElement.addEventListener('timeupdate', () => {
+    if (!audioElement.duration) return;
+    const pct = (audioElement.currentTime / audioElement.duration) * 100;
+    progressBar.style.width = `${pct}%`;
+
+    const formatTime = (time) => {
+      const mins = Math.floor(time / 60);
+      const secs = Math.floor(time % 60).toString().padStart(2, '0');
+      return `${mins}:${secs}`;
+    };
+
+    audioTime.textContent = `${formatTime(audioElement.currentTime)} / ${formatTime(audioElement.duration)}`;
+  });
+
+  progressContainer.addEventListener('click', (e) => {
+    if (!audioElement.duration) return;
+    const rect = progressContainer.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+    const pct = clickX / width;
+    audioElement.currentTime = pct * audioElement.duration;
+  });
+
+  audioElement.addEventListener('ended', () => {
+    playBtn.textContent = 'PLAY';
+    progressBar.style.width = '0%';
+  });
+}
+
+function fallbackCopyText(text) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  let successful = false;
+  try {
+    successful = document.execCommand('copy') === true;
+  } catch (err) {
+    console.error('Fallback copy failed', err);
+  }
+  document.body.removeChild(textArea);
+  return successful;
+}
+
+detailCopylink.addEventListener('click', async () => {
+  const yearVal = (typeof activeYear !== 'undefined') ? activeYear : window.activeYear;
+  const yearPrefix = (yearVal && yearVal !== '2026') ? `/${yearVal}` : '';
+  let newPath;
+  if (currentDetailMode === 'yedia') {
+    const photo = yediaMediaItems[currentYediaIndex];
+    if (!photo) return;
+    newPath = `${yearPrefix}/yedia/${photo.id.substring(0, 8)}`;
+  } else {
+    const p = catalogProducts[currentDetailIndex];
+    if (!p) return;
+
+    let routeCategory = p.category;
+    if (p.category === 'live') routeCategory = 'shows';
+    else if (p.category === 'musicvideo' || p.category === 'visualizer') routeCategory = 'music';
+
+    let slug = getProductSlug(p);
+    if (p.category === 'visualizer') {
+      const hasCollision = catalogProducts.some(other => other.category === 'musicvideo' && getProductSlug(other) === slug);
+      if (hasCollision) {
+        slug = `visualizer-${slug}`;
+      }
+    }
+    if (p.category === 'merch' && p.folder) {
+      newPath = `${yearPrefix}/merch/${p.folder}/${slug}`;
+    } else if (p.category === 'shop') {
+      newPath = `${yearPrefix}/shop/${encodeURIComponent(slug)}/${encodeURIComponent(p.colorSlug || 'default')}`;
+    } else {
+      newPath = `${yearPrefix}/${routeCategory}/${slug}`;
+    }
+  }
+  const url = `${window.location.origin}${newPath}`;
+
+  let copied = false;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(url);
+      copied = true;
+    } catch (err) {
+      console.error('navigator.clipboard failed, trying fallback', err);
+    }
+  }
+  if (!copied) {
+    try {
+      copied = fallbackCopyText(url);
+    } catch (err) {
+      console.error('Fallback copy failed', err);
+    }
+  }
+  if (copied) {
+    const originalText = detailCopylink.textContent;
+    detailCopylink.textContent = 'COPIED!';
+    detailCopylink.style.pointerEvents = 'none';
+    setTimeout(() => {
+      detailCopylink.textContent = originalText;
+      detailCopylink.style.pointerEvents = 'auto';
+    }, 2000);
+  }
+});
+
+function parseCurrentRoute() {
+  const path = window.location.pathname;
+  let parts = path.split('/').filter(Boolean);
+  if (parts.length > 0 && parts[0].match(/^\d{4}$/)) {
+    parts.shift();
+  }
+  if (parts.length >= 2) {
+    const routeCategory = parts[0];
+
+    let category = '';
+    if (routeCategory === 'shows') category = 'live';
+    else if (routeCategory === 'music') category = 'musicvideo';
+    else if (routeCategory === 'merch' || routeCategory === 'visualizer' || routeCategory === 'shop') category = routeCategory;
+    else return null;
+
+    if (category === 'merch' && parts.length === 3) {
+      const folder = parts[1];
+      const slug = parts[2];
+      return catalogProducts.find(p => p.category === 'merch' && p.folder === folder && getProductSlug(p) === slug);
+    } else if (category === 'shop') {
+      const slug = parts[1].toLowerCase();
+      const colorSlug = parts[2] ? parts[2].toLowerCase() : null;
+      return catalogProducts.find(p => p.category === 'shop' && String(p.slug || getProductSlug(p)).toLowerCase() === slug && (!colorSlug || String(p.colorSlug || '').toLowerCase() === colorSlug));
+    } else if (routeCategory === 'music') {
+      const slug = parts[1].toLowerCase();
+      if (slug.startsWith('visualizer-')) {
+        const visSlug = slug.replace(/^visualizer-/, '');
+        const visProduct = catalogProducts.find(p => p.category === 'visualizer' && (
+          getProductSlug(p) === visSlug ||
+          (p.id && String(p.id).toLowerCase() === visSlug)
+        ));
+        if (visProduct) return visProduct;
+      }
+      return catalogProducts.find(p => p.category === 'musicvideo' && (
+        getProductSlug(p) === slug ||
+        (p.id && String(p.id).toLowerCase() === slug)
+      )) || catalogProducts.find(p => p.category === 'visualizer' && (
+        getProductSlug(p) === slug ||
+        (p.id && String(p.id).toLowerCase() === slug)
+      ));
+    } else {
+      const slug = parts[1].toLowerCase();
+      return catalogProducts.find(p => p.category === category && (
+        getProductSlug(p) === slug ||
+        (p.id && String(p.id).toLowerCase() === slug)
+      ));
+    }
+  }
+  return null;
+}
+
+async function checkInitialRoute() {
+  const path = window.location.pathname;
+  let parts = path.split('/').filter(Boolean);
+  if (parts.length > 0 && parts[0].match(/^\d{4}$/)) {
+    parts.shift();
+  }
+
+  if (parts.length >= 2 && parts[0] === 'yedia') {
+    const shortId = parts[1];
+    currentFilter = 'upload';
+    filterBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+    });
+    merchFilterBar.classList.remove('show');
+    musicvideoFilterBar.classList.remove('show');
+    yediaFilterBar.classList.add('show');
+
+    await loadApprovedMedia();
+
+    const photo = yediaMediaItems.find(p => p.id.substring(0, 8) === shortId || p.id === shortId);
+    if (photo) {
+      openYediaDetail(photo);
+    }
+    return;
+  }
+
+  const product = parseCurrentRoute();
+  if (product) {
+    if (product.category === 'live') currentFilter = 'live';
+    else if (product.category === 'musicvideo') {
+      currentFilter = 'musicvideo';
+      currentMusicvideoFilter = product.type === 'audio' ? 'audio' : 'video';
+      musicvideoFilterBtns.forEach(b => b.classList.toggle('active', b.dataset.musicvideoFilter === currentMusicvideoFilter));
+    }
+    else if (product.category === 'visualizer') {
+      currentFilter = 'musicvideo';
+      currentMusicvideoFilter = 'visualizer';
+      musicvideoFilterBtns.forEach(b => b.classList.toggle('active', b.dataset.musicvideoFilter === 'visualizer'));
+    }
+    else if (product.category === 'merch') {
+      currentFilter = 'merch';
+      currentMerchFilter = product.folder || 'all';
+      merchFilterBtns.forEach(b => b.classList.toggle('active', b.dataset.merchFilter === currentMerchFilter));
+    }
+    else if (product.category === 'shop') {
+      currentFilter = 'shop';
+    }
+
+    filterBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+    });
+    merchFilterBar.classList.toggle('show', currentFilter === 'merch');
+    yediaFilterBar.classList.toggle('show', currentFilter === 'upload');
+    musicvideoFilterBar.classList.toggle('show', currentFilter === 'musicvideo');
+    applyFilter(currentFilter, false);
+
+    openDetail(product);
+  } else if (parts.length === 1 && (parts[0] === 'visualizer' || parts[0] === 'music')) {
+    currentFilter = 'musicvideo';
+    currentMusicvideoFilter = parts[0] === 'visualizer' ? 'visualizer' : 'all';
+    filterBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+    });
+    musicvideoFilterBtns.forEach(b => b.classList.toggle('active', b.dataset.musicvideoFilter === currentMusicvideoFilter));
+    merchFilterBar.classList.remove('show');
+    yediaFilterBar.classList.remove('show');
+    musicvideoFilterBar.classList.add('show');
+    applyFilter(currentFilter, false);
+  }
+}
+
+function setupPopstateListener() {
+  window.addEventListener('popstate', async () => {
+    const path = window.location.pathname;
+    let parts = path.split('/').filter(Boolean);
+    if (parts.length > 0 && parts[0].match(/^\d{4}$/)) {
+      parts.shift();
+    }
+
+    if (parts.length >= 2 && parts[0] === 'yedia') {
+      const shortId = parts[1];
+      currentFilter = 'upload';
+      filterBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+      });
+      merchFilterBar.classList.remove('show');
+      musicvideoFilterBar.classList.remove('show');
+      yediaFilterBar.classList.add('show');
+
+      await loadApprovedMedia();
+
+      const photo = yediaMediaItems.find(p => p.id.substring(0, 8) === shortId || p.id === shortId);
+      if (photo) {
+        openYediaDetail(photo);
+      } else {
+        closeDetail();
+      }
+      return;
+    }
+
+    const product = parseCurrentRoute();
+    if (product) {
+      if (product.category === 'live') currentFilter = 'live';
+      else if (product.category === 'musicvideo') {
+        currentFilter = 'musicvideo';
+        currentMusicvideoFilter = product.type === 'audio' ? 'audio' : 'video';
+        musicvideoFilterBtns.forEach(b => b.classList.toggle('active', b.dataset.musicvideoFilter === currentMusicvideoFilter));
+      }
+      else if (product.category === 'visualizer') {
+        currentFilter = 'musicvideo';
+        currentMusicvideoFilter = 'visualizer';
+        musicvideoFilterBtns.forEach(b => b.classList.toggle('active', b.dataset.musicvideoFilter === 'visualizer'));
+      }
+      else if (product.category === 'merch') {
+        currentFilter = 'merch';
+        currentMerchFilter = product.folder || 'all';
+        merchFilterBtns.forEach(b => b.classList.toggle('active', b.dataset.merchFilter === currentMerchFilter));
+      }
+      else if (product.category === 'shop') {
+        currentFilter = 'shop';
+      }
+
+      filterBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+      });
+      merchFilterBar.classList.toggle('show', currentFilter === 'merch');
+      yediaFilterBar.classList.toggle('show', currentFilter === 'upload');
+      musicvideoFilterBar.classList.toggle('show', currentFilter === 'musicvideo');
+      applyFilter(currentFilter, false);
+
+      openDetail(product);
+    } else {
+      if (parts.length === 1 && (parts[0] === 'visualizer' || parts[0] === 'music')) {
+        currentFilter = 'musicvideo';
+        currentMusicvideoFilter = parts[0] === 'visualizer' ? 'visualizer' : 'all';
+        filterBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+        });
+        musicvideoFilterBtns.forEach(b => b.classList.toggle('active', b.dataset.musicvideoFilter === currentMusicvideoFilter));
+        merchFilterBar.classList.remove('show');
+        yediaFilterBar.classList.remove('show');
+        musicvideoFilterBar.classList.add('show');
+        applyFilter(currentFilter, false);
+      }
+      closeDetail();
+    }
+  });
+}
+
+function initGalleryDrag() {
+  if (!detailGallery) return;
+
+  const onStart = (clientX) => {
+    const yearVal = (typeof activeYear !== 'undefined') ? activeYear : window.activeYear;
+    if (yearVal === '2023') return;
+    if (currentDetailMode !== 'merch' || currentMerchSlideCount <= 1) return;
+
+    isDraggingGallery = true;
+    galleryStartX = clientX;
+    galleryDragOffset = 0;
+
+    const track = document.getElementById('detail-gallery-track');
+    if (track) {
+      track.style.transition = 'none';
+    }
+  };
+
+  const onMove = (clientX) => {
+    if (!isDraggingGallery) return;
+    galleryDragOffset = clientX - galleryStartX;
+
+    const track = document.getElementById('detail-gallery-track');
+    if (track && detailGallery) {
+      const containerWidth = detailGallery.clientWidth || 1;
+      const basePercent = -currentMerchSlideIndex * 100;
+      const dragPercent = (galleryDragOffset / containerWidth) * 100;
+      track.style.transform = `translateX(${basePercent + dragPercent}%)`;
+    }
+  };
+
+  const onEnd = () => {
+    if (!isDraggingGallery) return;
+    isDraggingGallery = false;
+
+    const threshold = 35;
+    if (galleryDragOffset < -threshold && currentMerchSlideIndex < currentMerchSlideCount - 1) {
+      showMerchSlide(currentMerchSlideIndex + 1);
+    } else if (galleryDragOffset > threshold && currentMerchSlideIndex > 0) {
+      showMerchSlide(currentMerchSlideIndex - 1);
+    } else {
+      showMerchSlide(currentMerchSlideIndex);
+    }
+  };
+
+  detailGallery.addEventListener('mousedown', e => {
+    onStart(e.clientX);
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (isDraggingGallery) {
+      onMove(e.clientX);
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isDraggingGallery) {
+      onEnd();
+    }
+  });
+
+  detailGallery.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+      onStart(e.touches[0].clientX);
+    }
+  }, { passive: true });
+
+  detailGallery.addEventListener('touchmove', e => {
+    if (isDraggingGallery && e.touches.length === 1) {
+      onMove(e.touches[0].clientX);
+    }
+  }, { passive: true });
+
+  detailGallery.addEventListener('touchend', () => {
+    if (isDraggingGallery) {
+      onEnd();
+    }
+  });
+}
+
+initGalleryDrag();

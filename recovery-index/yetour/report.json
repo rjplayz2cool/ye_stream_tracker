@@ -1,0 +1,45 @@
+{
+ "fetched": [
+  [
+   "https://yetour.xyz/js/analytics.js?v=1",
+   119
+  ],
+  [
+   "https://yetour.xyz/js/bootstrap.js?v=58",
+   18495
+  ],
+  [
+   "https://yetour.xyz/js/era-selector.js?v=2",
+   2507
+  ],
+  [
+   "https://yetour.xyz/js/feedback.js?v=48",
+   4191
+  ],
+  [
+   "https://yetour.xyz/js/navigation.js?v=71",
+   46640
+  ],
+  [
+   "https://yetour.xyz/js/photobooth.js?v=12",
+   20679
+  ],
+  [
+   "https://yetour.xyz/js/pwa.js?v=3",
+   227
+  ],
+  [
+   "https://yetour.xyz/js/roadmap-notifications.js?v=4",
+   4468
+  ],
+  [
+   "https://yetour.xyz/js/state.js?v=59",
+   6361
+  ],
+  [
+   "https://yetour.xyz/js/yedia.js?v=61",
+   24046
+  ]
+ ],
+ "errors": []
+}
