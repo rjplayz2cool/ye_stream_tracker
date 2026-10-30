@@ -30,11 +30,18 @@ const css=`
 .tYSel[data-open=true] .tYBtn i{rotate:225deg;translate:0 2px}
 .tYMenu{position:absolute;right:0;top:calc(100% + 10px);z-index:60;min-width:100%;margin:0;padding:6px;list-style:none;background:#150a0cf0;border:1px solid #ffffff2e;border-radius:16px;box-shadow:0 18px 40px #000a,0 0 0 1px #0006;backdrop-filter:blur(14px);transform-origin:top right;animation:tYIn .18s cubic-bezier(.2,.9,.3,1.1)}
 .tYMenu[hidden]{display:none}
+
 @keyframes tYIn{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:none}}
 .tYMenu li{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:10px 14px;border-radius:11px;color:#ffffffd9;font:700 15px/1 system-ui,sans-serif;letter-spacing:.06em;cursor:pointer;outline:0;transition:background .12s,color .12s}
 .tYMenu li:hover,.tYMenu li:focus-visible{background:#ffffff1f;color:#fff}
 .tYMenu li[aria-selected=true]{background:#fff;color:#000}
 .tYMenu li[aria-selected=true]::after{content:"";width:5px;height:10px;border-right:2.5px solid #000;border-bottom:2.5px solid #000;rotate:45deg;translate:0 -1px}
+.tYBtn{border:1px solid #ffffff2e;border-radius:14px;background:linear-gradient(180deg,#ffffff12,#ffffff00),#14141ad9;font:800 15px/1 system-ui,sans-serif;letter-spacing:.05em;padding:11px 16px 11px 18px;box-shadow:0 6px 18px #0004,inset 0 1px 0 #ffffff14}.tYBtn:hover{background:linear-gradient(180deg,#ffffff1a,#ffffff00),#1c1c24e6;border-color:#ffffff66}
+.tYSel[data-open=true] .tYBtn{border-color:#fff;box-shadow:0 0 0 4px #ffffff22,0 6px 18px #0004}
+.tYMenu{border-radius:18px;padding:8px;background:#101015f5;border:1px solid #ffffff26;box-shadow:0 24px 60px #000c,0 0 0 1px #0007;backdrop-filter:blur(20px)}
+.tYMenu li{border-radius:11px;padding:11px 14px;font-size:14px}.tYMenu li:hover,.tYMenu li:focus-visible{background:#ffffff14}
+.tYMenu li[aria-selected=true]{background:#ffffff22;color:#fff}.tYMenu li[aria-selected=true]::after{border-color:#fff}
+
 .tChips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
 .tChips button{border:1px solid #ffffff26;background:#ffffff0d;color:#fffc;border-radius:999px;padding:7px 14px;font:600 12px/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .tChips button.on{background:#fff;color:#000;border-color:#fff}

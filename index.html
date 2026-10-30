@@ -540,6 +540,29 @@ body.calDayOpen{overflow:hidden}
 #calendarGrid .calendarDay .calendarEvent:nth-child(n+4){display:none!important}
 #calendarGrid .calendarDay .calCnt{display:inline-block;position:absolute;right:3px;top:3px;font-style:normal;font-size:10px;font-weight:900;min-width:16px;height:16px;line-height:16px;text-align:center;border-radius:99px;background:rgb(var(--accent2rgb));color:#000}
 }
+/* modern dropdowns */
+select,.rlBar2 select,.rlPane select,.snakeCatSel{color-scheme:dark;appearance:none;-webkit-appearance:none;background-color:#14141a;background-image:linear-gradient(180deg,#ffffff0d,#ffffff00),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1.5 1.8l5.5 5.4 5.5-5.4' fill='none' stroke='%23ffffffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:0 0,right 14px center;background-size:100% 100%,13px 9px;color:#fff;border:1px solid #ffffff24;border-radius:14px;padding:11px 40px 11px 16px;font:inherit;font-weight:700;font-size:14px;line-height:1.2;cursor:pointer;box-shadow:0 6px 18px #0004,inset 0 1px 0 #ffffff12;transition:border-color .18s,box-shadow .18s,background-color .18s,transform .18s}
+select:hover{background-color:#1a1a22;border-color:rgba(var(--accent2rgb),.6)}
+select:focus-visible{outline:0;border-color:rgb(var(--accent2rgb));box-shadow:0 0 0 4px rgba(var(--accent2rgb),.22),0 6px 18px #0004}
+select:active{transform:scale(.99)}
+select option{background:#14141a;color:#fff;padding:10px 14px;font-weight:600}
+select option:checked{background:rgba(var(--accent2rgb),.35) linear-gradient(0deg,rgba(var(--accent2rgb),.35),rgba(var(--accent2rgb),.35));color:#fff}
+select:disabled{opacity:.5;cursor:not-allowed}
+.sortBtn{border-radius:14px;border:1px solid #ffffff24;background:linear-gradient(180deg,#ffffff0d,#ffffff00),#14141a;box-shadow:0 6px 18px #0004,inset 0 1px 0 #ffffff12;transition:border-color .18s,box-shadow .18s,background-color .18s}
+.sortBtn:hover{background:linear-gradient(180deg,#ffffff12,#ffffff00),#1a1a22;border-color:rgba(var(--accent2rgb),.6)}
+.sortBtn[aria-expanded=true]{border-color:rgb(var(--accent2rgb));box-shadow:0 0 0 4px rgba(var(--accent2rgb),.2),0 6px 18px #0004}
+.sortBtn>span:last-child{display:inline-block;font-size:0;width:9px;height:9px;border-right:2px solid #fffc;border-bottom:2px solid #fffc;rotate:45deg;translate:0 -3px;transition:rotate .25s cubic-bezier(.34,1.45,.5,1),translate .25s}
+.sortBtn[aria-expanded=true]>span:last-child{rotate:225deg;translate:0 2px}
+.sortPanel,.miniPanel{border-radius:18px;padding:8px;border:1px solid #ffffff26;background:#101015f5;box-shadow:0 24px 60px #000c,0 0 0 1px #0007;backdrop-filter:blur(20px);gap:2px;transform-origin:top right}
+.sortPanel.open,.miniPanel.open{animation:ddIn .18s cubic-bezier(.2,.9,.3,1.1)}
+#yeTrackerEraPanel{transform-origin:top left}
+.sortPanel button,.modeChoice{border-radius:11px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:14px;transition:background .12s,color .12s}
+.sortPanel button:hover,.modeChoice:hover{background:#ffffff14;color:#fff}
+.sortPanel button.active,.sortPanel button[aria-selected=true],.modeChoice.active{background:rgba(var(--accent2rgb),.22);color:#fff}
+.sortPanel button.active::after,.sortPanel button[aria-selected=true]::after{content:"";flex:0 0 auto;width:5px;height:10px;border-right:2.5px solid rgb(var(--accent2rgb));border-bottom:2.5px solid rgb(var(--accent2rgb));rotate:45deg;translate:0 -1px}
+.sortPanel::-webkit-scrollbar{width:8px}.sortPanel::-webkit-scrollbar-thumb{background:#ffffff2b;border-radius:99px}
+@keyframes ddIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.sortPanel.open,.miniPanel.open{animation:none}}
 </style></head>
 <body>
 <div class="scrim" id="scrim"></div>
