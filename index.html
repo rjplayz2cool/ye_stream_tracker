@@ -661,7 +661,7 @@ select:disabled{opacity:.5;cursor:not-allowed}
 </head>
 <body>
 <div class="scrim" id="scrim"></div>
-<nav class="island" id="island" data-open="false" style="--n:7" aria-label="Pages">
+<nav class="island" id="island" data-open="false" style="--n:8" aria-label="Pages">
   <button class="ihead" id="ihead" type="button" aria-expanded="false" aria-controls="imenu"><span class="dot"></span><span id="ilabel">Streams</span><span class="chev"></span></button>
   <ul class="imenu" id="imenu">
     <li><button type="button" data-go="streams" aria-current="page"><i>♪</i>Streams<small>Tracker</small></button></li>
@@ -671,6 +671,7 @@ select:disabled{opacity:.5;cursor:not-allowed}
     <li><button type="button" data-go="games"><i>◆</i>Games<small>New</small></button></li>
     <li><button type="button" data-go="tracker"><i>♫</i>Ye Tracker<small>Archive</small></button></li>
     <li><button type="button" data-go="ai"><i>✧</i>Ye AI<small>New</small></button></li>
+    <li><button type="button" data-go="clothing"><i>▲</i>Clothing<small>New</small></button></li>
   </ul>
 </nav>
 <header><div class="mark">YE<i>/</i>STREAMS</div><div class="hdrR"><div class="live"><span class="dot"></span><span id="upd">Live estimate</span></div><button id="acctBtn" class="acctBtn" type="button" aria-haspopup="true" aria-expanded="false"><span>Account</span></button><div id="acctMenu" class="acctMenu" hidden></div></div></header>
@@ -740,6 +741,7 @@ select:disabled{opacity:.5;cursor:not-allowed}
  <div id="tLists"></div>
 </main></div>
 
+<div class="page" id="pg-clothing" hidden><main id="clScreen" class="wrap clScreen" aria-label="Clothing"></main></div>
 <div class="page" id="pg-ai" hidden><main id="aiScreen" class="aiScreen" aria-label="Ye AI">
 <div class="aiTop"><div class="eyebrow">ASK ANYTHING</div><h1 class="title">YE AI</h1></div>
 <div class="aiGate" id="aiGate" hidden><div class="aiOrb" aria-hidden="true"></div><h2>Sign in to chat</h2><p>Ye AI is free for everyone with an account. Sign in to ask about leaks, eras, production and more. Your chats are saved to your account.</p><button type="button" id="aiSignIn">Sign in</button></div>
@@ -2017,7 +2019,7 @@ if(!window.KWORB_DB){const n=$('note');n.hidden=false;n.textContent='Preview mod
 const isl=$('island'),scrim=$('scrim');
 const wordsHTML=t=>{let k=0;return t.split(' ').map(w=>`<span class="w">${[...w].map(c=>`<span style="--i:${k++}">${esc(c)}</span>`).join('')}</span>`).join(' ')};
 window.wordsHTML=wordsHTML;
-const PAGES={streams:'Streams',sf:'Singles & Features',all:'All Songs',roll:'Daily Roll',games:'Games',calendar:'Calendar',tours:'Tours',tracker:'Ye Tracker',ai:'Ye AI',profile:'Profile'},ORDER=['streams','sf','all','roll','calendar','tours','games','tracker','ai'];let page='streams',busy=false;
+const PAGES={streams:'Streams',sf:'Singles & Features',all:'All Songs',roll:'Daily Roll',games:'Games',calendar:'Calendar',tours:'Tours',tracker:'Ye Tracker',ai:'Ye AI',clothing:'Clothing',profile:'Profile'},ORDER=['streams','sf','all','roll','calendar','tours','games','tracker','ai','clothing'];let page='streams',busy=false;
 // Singles = songs that are not on any album tracklist. Features = songs flagged as features in the Kworb data.
 let sfTab='singles',sfSort='streams',sfQ='',sfShown=40,sfCur=[],SF=null,sfAnim=0,sfHero={streams:0,daily:0,t:0};
 function sfSets(){const songs=(DB.songs||[]).filter(x=>x.kind==='song'&&x.streams!=null),on=new Set();
@@ -3634,7 +3636,7 @@ function wire(){
 let hlPinned=false,timer=0;
 window.PH=window.PH||{};
 PH.tours={show(){$('toursScreen').classList.add('activeScreen');if(!built){built=true;wire()}paint();clearInterval(timer);timer=setInterval(()=>{paintNext();paintLists();paintPins();setHL(hl)},60000)},hide(){$('toursScreen').classList.remove('activeScreen');clearInterval(timer)}};
-})();</script><script>addEventListener("message",e=>{const d=e.data;if(d&&d.type==="ye-crossword-height"){const f=document.getElementById("yeCrosswordFrame");if(f&&e.source===f.contentWindow)f.style.height=Math.max(560,Math.min(2400,d.h))+"px"}});</script><script src="tours-archive-ui.js?v=1793479747" defer></script><script src="tours-yz.js?v=1793478135" defer></script><script>(()=>{
+})();</script><script>addEventListener("message",e=>{const d=e.data;if(d&&d.type==="ye-crossword-height"){const f=document.getElementById("yeCrosswordFrame");if(f&&e.source===f.contentWindow)f.style.height=Math.max(560,Math.min(2400,d.h))+"px"}});</script><script src="tours-archive-ui.js?v=1793482482" defer></script><script src="tours-yz.js?v=1793478135" defer></script><script src="clothing.js?v=1793482482" defer></script><script>(()=>{
 const CLS='ddW';let open=null;
 const lbl=s=>{const o=s.options[s.selectedIndex];return o?o.textContent:''};
 function close(){if(!open)return;open.menu.remove();open.btn.setAttribute('aria-expanded','false');open.wrap.classList.remove('open');open=null}

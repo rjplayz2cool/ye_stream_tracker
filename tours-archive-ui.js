@@ -135,7 +135,7 @@ eL.className='tEdge left';eR.className='tEdge';eL.type=eR.type='button';
 eL.innerHTML='<b aria-hidden="true">›</b>';eR.innerHTML='<b aria-hidden="true">›</b>';
 eL.onclick=()=>show(cur-1);eR.onclick=()=>show(cur+1);pg.append(eL,eR);
 
-let archMode=false,archQ='',archG='All',archN=96,cur=0,A=null,year=null,recFilter='all',merchFilter='all',loading=null;
+let cur=0,A=null,year=null,recFilter='all',merchFilter='all',loading=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function show(i){if(i<0||i>=SC.length||i===cur)return;const dir=i<cur;cur=i;
  SC.forEach((s,j)=>{s.el.classList.toggle('on',j===i);s.el.classList.toggle('fromL',dir);s.btn.setAttribute('aria-current',j===i?'true':'false')});
@@ -152,11 +152,11 @@ new MutationObserver(()=>{[eL,eR].forEach(b=>b.style.display=pg.hidden?'none':''
 function yearSel(){const ys=Object.keys(A).sort().reverse();return `<div class="tYSel" data-open="false"><button type="button" class="tYBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="Year"><span>${year}</span><i></i></button><ul class="tYMenu" role="listbox" aria-label="Year" hidden>${ys.map(y=>`<li role="option" tabindex="-1" data-y="${y}" aria-selected="${y===year}">${y}</li>`).join('')}</ul></div>`}
 function bindYear(el){const box=el.querySelector('.tYSel'),btn=box.querySelector('.tYBtn'),menu=box.querySelector('.tYMenu'),items=[...menu.querySelectorAll('li')];
  const setOpen=o=>{box.dataset.open=o;btn.setAttribute('aria-expanded',o);menu.hidden=!o;if(o){(menu.querySelector('[aria-selected=true]')||items[0]).focus()}};
- const pick=li=>{year=li.dataset.y;recFilter='all';merchFilter='all';render()};
+ const pick=li=>{year=li.dataset.y;recFilter='all';merchFilter='all';(el._re||render)()};
  btn.onclick=e=>{e.stopPropagation();setOpen(menu.hidden)};
  items.forEach((li,i)=>{li.onclick=e=>{e.stopPropagation();pick(li)};li.onkeydown=e=>{if(e.key==='ArrowDown'){e.preventDefault();items[Math.min(i+1,items.length-1)].focus()}else if(e.key==='ArrowUp'){e.preventDefault();items[Math.max(i-1,0)].focus()}else if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(li)}else if(e.key==='Escape'||e.key==='Tab'){e.stopPropagation();setOpen(false);btn.focus()}}});
  const away=e=>{if(!box.isConnected){document.removeEventListener('click',away);return}if(!box.contains(e.target))setOpen(false)};document.addEventListener('click',away)}
-function render(){if(!A)return;if(cur===1)renderRec();if(cur===2)archMode?renderArch():renderMerch()}
+function render(){if(!A)return;if(cur===1)renderRec();if(cur===2)renderMerch()}
 
 /* ---- Recordings ---- */
 const CAT={live:'Live',visualizer:'Visualizer'};
@@ -296,40 +296,37 @@ function openViewer(m,srcs){
  let x0=null;yv.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});
  yv.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>50)step(dx<0?1:-1)},{passive:true});
  yv.querySelector('.yvB').focus({preventScroll:true})}
-function renderMerch(){const Y=A[year];if(!Y){merScr.innerHTML='';return}
+function renderMerch(el=merScr){el._re=()=>renderMerch(el);const Y=A[year];if(!Y){el.innerHTML='';return}
  const vs=[...new Set(Y.merch.map(m=>m.v))];if(merchFilter!=='all'&&!vs.includes(merchFilter))merchFilter='all';
  const groups=vs.filter(v=>merchFilter==='all'||v===merchFilter);
- merScr.innerHTML=`<div class="tHead"><div><h2>Tour Merch</h2><p>${Y.merch.length} items · ${year}</p></div>${yearSel()}</div>
- <div class="yaSw"><button type="button" class="yaBtn" data-arch>Yeezy Archive</button></div>
+ el.innerHTML=`<div class="tHead"><div><h2>Tour Merch</h2><p>${Y.merch.length} items · ${year}</p></div>${yearSel()}</div>
  ${vs.length>1?`<div class="tChips">${['all',...vs].map(v=>`<button type="button" data-v="${esc(v)}" class="${v===merchFilter?'on':''}">${v==='all'?'All':esc(vlabel(v))}</button>`).join('')}</div>`:''}
  ${groups.length?groups.map(v=>`<section class="mSec"><h3>${esc(vlabel(v))}</h3><div class="mGrid">${Y.merch.filter(m=>m.v===v).map(m=>{const fu=mUrls(year,m.v,m.f),bu=m.b?mUrls(year,m.v,m.b):null;return `<button type="button" class="mc" aria-label="${esc(m.n)}"><div class="mcI"><img class="fr${m.b?' h':''}" alt="${esc(m.n)}" data-u="${esc(JSON.stringify(fu))}">${m.b?`<img class="bk h" alt="" data-u="${esc(JSON.stringify(bu))}"><span class="mcF">FLIP</span>`:''}</div><div class="mcN">${esc(m.n)}</div></button>`}).join('')}</div></section>`).join(''):'<div class="tEmpty">No merch listed for this year.</div>'}`;
- bindYear(merScr);watchImgs(merScr);merScr.querySelector('[data-arch]').onclick=()=>{archMode=true;archQ='';archG='All';archN=96;scrollTo({top:0});renderArch()};
- merScr.querySelectorAll('.tChips button').forEach(b=>b.onclick=()=>{merchFilter=b.dataset.v;renderMerch()});
- merScr.querySelectorAll('.mc').forEach((c,ix)=>{const m=Y.merch.filter(q=>groups.includes(q.v)).sort((a,b)=>groups.indexOf(a.v)-groups.indexOf(b.v))[ix];c.onclick=()=>{if(c.querySelector('.mcI.x')||!m)return;const imgs=[...c.querySelectorAll('img')];const srcs=imgs.map(i=>i.hidden?'':(i.currentSrc||i.src||(()=>{try{return JSON.parse(i.dataset.u)[0]}catch{return ''}})())).filter(Boolean);openViewer(m,srcs)}})}
+ bindYear(el);watchImgs(el);
+ el.querySelectorAll('.tChips button').forEach(b=>b.onclick=()=>{merchFilter=b.dataset.v;renderMerch()});
+ el.querySelectorAll('.mc').forEach((c,ix)=>{const m=Y.merch.filter(q=>groups.includes(q.v)).sort((a,b)=>groups.indexOf(a.v)-groups.indexOf(b.v))[ix];c.onclick=()=>{if(c.querySelector('.mcI.x')||!m)return;const imgs=[...c.querySelectorAll('img')];const srcs=imgs.map(i=>i.hidden?'':(i.currentSrc||i.src||(()=>{try{return JSON.parse(i.dataset.u)[0]}catch{return ''}})())).filter(Boolean);openViewer(m,srcs)}})}
 
 /* ---- Yeezy Archive (all products, via yeezyarchive.net; Unreleased + PornHub items left out) ---- */
 let YA=null,YAp=null;
-function loadYA(){return YA?Promise.resolve(YA):YAp||(YAp=fetch('data/yeezy-archive.json?v=2').then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>YA=d).catch(e=>{YAp=null;throw e}))}
-const yaImg=u=>u?(u[0]==='/'?'https://yeezyarchive.net'+u:u):'';
+function loadYA(){return YA?Promise.resolve(YA):YAp||(YAp=fetch('data/yeezy-archive.json?v=3').then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>YA=d).catch(e=>{YAp=null;throw e}))}
+const yaImg=u=>u?(u[0]==='~'?'https://cdn.shopify.com/s/files/1/0231/9148/6542/files/'+u.slice(1):u[0]==='/'?'https://yeezyarchive.net'+u:u):'';
 const yaFold=t=>String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-function renderArch(){
- merScr.innerHTML='<div class="tHead"><div><h2>Yeezy Archive</h2><p>Loading…</p></div></div>';
- return loadYA().then(d=>{if(!archMode)return;
-  const groups=['All',...new Set(d.secs.map(s=>s[1]))];if(!groups.includes(archG))archG='All';
-  const q=yaFold(archQ).split(/\s+/).filter(Boolean);
-  const list=d.items.filter(it=>(archG==='All'||(archG==='Footwear'?it[5]===1:d.secs[it[3]][1]===archG))&&q.every(w=>yaFold(it[0]+' '+d.secs[it[3]][0]).includes(w)));
-  const shown=list.slice(0,archN);
-  merScr.innerHTML=`<div class="tHead"><div><h2>Yeezy Archive</h2><p>${list.length.toLocaleString()} products${archG==='All'?'':' · '+esc(archG)}</p></div></div>
-  <div class="yaSw"><button type="button" class="yaBtn" data-back>← Tour Merch</button></div>
-  <div class="tChips">${groups.map(g=>`<button type="button" data-g="${esc(g)}" class="${g===archG?'on':''}">${esc(g)}</button>`).join('')}</div>
-  <input class="yaQ" type="search" placeholder="Search products" aria-label="Search products" value="${esc(archQ)}">
-  ${shown.length?`<div class="mGrid">${shown.map(it=>{const im=yaImg(it[2]),sec=d.secs[it[3]][0];return `<button type="button" class="yaT mc" ${im?'':'disabled'} data-k="${d.items.indexOf(it)}" aria-label="${esc(it[0])}"><div class="mcI${im?'':' x'}">${im?`<img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(im)}">`:'NO IMAGE'}</div><div class="mcN">${esc(it[0])}<small>${esc(sec)}${it[4]?' · '+esc(it[4]):''}</small></div></button>`}).join('')}</div>${list.length>shown.length?`<button type="button" class="yaMore" data-more>Show more (${(list.length-shown.length).toLocaleString()} left)</button>`:''}`:'<div class="tEmpty">No products match.</div>'}
+function renderArch(el){const S=el._ya||(el._ya={q:'',g:'All',n:96});
+ if(!el._yaOk)el.innerHTML='<div class="tHead"><div><h2>Yeezy Archive</h2><p>Loading…</p></div></div>';
+ return loadYA().then(d=>{el._yaOk=1;
+  const groups=['All',...new Set(d.secs.map(s=>s[1]))];if(!groups.includes(S.g))S.g='All';
+  const q=yaFold(S.q).split(/\s+/).filter(Boolean);
+  const list=d.items.filter(it=>(S.g==='All'||(S.g==='Footwear'?it[5]===1:d.secs[it[3]][1]===S.g))&&q.every(w=>yaFold(it[0]+' '+d.secs[it[3]][0]).includes(w)));
+  const shown=list.slice(0,S.n);
+  el.innerHTML=`<div class="tHead"><div><h2>Yeezy Archive</h2><p>${list.length.toLocaleString()} products${S.g==='All'?'':' · '+esc(S.g)}</p></div></div>
+  <div class="tChips">${groups.map(g=>`<button type="button" data-g="${esc(g)}" class="${g===S.g?'on':''}">${esc(g)}</button>`).join('')}</div>
+  <input class="yaQ" type="search" placeholder="Search products" aria-label="Search products" value="${esc(S.q)}">
+  ${shown.length?`<div class="mGrid">${shown.map(it=>{const im=yaImg(it[2]);return `<button type="button" class="yaT mc" ${im?'':'disabled'} data-k="${d.items.indexOf(it)}" aria-label="${esc(it[0])}"><div class="mcI${im?'':' x'}">${im?`<img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(im)}">`:'NO IMAGE'}</div><div class="mcN">${esc(it[0])}${/^\$/.test(it[4])?`<small>${esc(it[4])}</small>`:''}</div></button>`}).join('')}</div>${list.length>shown.length?`<button type="button" class="yaMore" data-more>Show more (${(list.length-shown.length).toLocaleString()} left)</button>`:''}`:'<div class="tEmpty">No products match.</div>'}
   <p class="yaCr">Product list from <a href="https://yeezyarchive.net/" target="_blank" rel="noopener noreferrer">yeezyarchive.net</a>. Unreleased items are not included.</p>`;
-  merScr.querySelector('[data-back]').onclick=()=>{archMode=false;scrollTo({top:0});renderMerch()};
-  merScr.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{archG=b.dataset.g;archN=96;renderArch()});
-  const qi=merScr.querySelector('.yaQ');qi.oninput=()=>{archQ=qi.value;archN=96;clearTimeout(qi._t);qi._t=setTimeout(()=>{renderArch().then(()=>{const n=merScr.querySelector('.yaQ');if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}})},220)};
-  const mo=merScr.querySelector('[data-more]');if(mo)mo.onclick=()=>{const y=scrollY;archN+=96;renderArch();setTimeout(()=>scrollTo({top:y}),0)};
-  merScr.querySelectorAll('.yaT:not([disabled])').forEach(b=>b.onclick=()=>{const it=d.items[+b.dataset.k];openViewer({n:it[0],p:d.secs[it[3]][0]+(it[4]?' · '+it[4]:'')},[yaImg(it[2])])})
- }).catch(()=>{merScr.innerHTML='<div class="tEmpty">Could not load the Yeezy Archive. Refresh and try again.</div>'})}
-window.__tourUI={ready:()=>ensure().then(()=>A),openRec(id){const Y=A&&A['2026'];const sh=Y&&Y.shows.find(x=>String(x.id)===String(id));if(!sh)return;year='2026';openModal(sh)},merch(){return (A&&A['2026']&&A['2026'].merch)||[]},mUrls,watchImgs,openViewer,vlabel,esc};
+  el.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{S.g=b.dataset.g;S.n=96;renderArch(el)});
+  const qi=el.querySelector('.yaQ');qi.oninput=()=>{S.q=qi.value;S.n=96;clearTimeout(qi._t);qi._t=setTimeout(()=>{renderArch(el).then(()=>{const n=el.querySelector('.yaQ');if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}})},220)};
+  const mo=el.querySelector('[data-more]');if(mo)mo.onclick=()=>{const y=scrollY;S.n+=96;renderArch(el).then(()=>scrollTo({top:y}))};
+  el.querySelectorAll('.yaT:not([disabled])').forEach(b=>b.onclick=()=>{const it=d.items[+b.dataset.k];const imgs=(it[6]&&it[6].length?it[6]:[it[2]]).map(yaImg).filter(Boolean);openViewer({n:it[0],p:/^\$/.test(it[4])?it[4]:''},imgs)})
+ }).catch(()=>{el.innerHTML='<div class="tEmpty">Could not load the Yeezy Archive. Refresh and try again.</div>'})}
+window.__tourUI={loadYA,yaImg,renderMerch:el=>ensure().then(()=>renderMerch(el)),renderArch,ready:()=>ensure().then(()=>A),openRec(id){const Y=A&&A['2026'];const sh=Y&&Y.shows.find(x=>String(x.id)===String(id));if(!sh)return;year='2026';openModal(sh)},merch(){return (A&&A['2026']&&A['2026'].merch)||[]},mUrls,watchImgs,openViewer,vlabel,esc};
 })();
