@@ -102,13 +102,15 @@ async function send(text){
   const ctx=hits.map(fmtDoc).join('\n');
   try{
     const {data:{session}}=await sb.auth.getSession();
-    const r=await fetch(CFG.url+'/functions/v1/ye-ai',{method:'POST',headers:{'Content-Type':'application/json',apikey:CFG.anonKey,Authorization:'Bearer '+session.access_token},body:JSON.stringify({messages:hist.slice(-9).map(m=>({role:m.role,content:m.content})),context:ctx})});
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),50000);
+    const r=await fetch(CFG.url+'/functions/v1/ye-ai',{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',apikey:CFG.anonKey,Authorization:'Bearer '+session.access_token},body:JSON.stringify({messages:hist.slice(-9).map(m=>({role:m.role,content:m.content})),context:ctx})});
+    clearTimeout(to);
     const j=await r.json().catch(()=>({}));
     if(r.ok&&j.reply){hist.push({role:'assistant',content:j.reply,src:hits.slice(0,8).map(d=>d.name)});}
     else if(j.error==='limit')hist.push({role:'assistant',content:`You've hit today's limit of ${j.limit||40} questions. It resets tomorrow (UTC). The Ye Tracker tab is always open in the meantime.`});
     else if(j.error==='signin'){gate()}
     else fallback(q,j.error==='no_key'?'Ye AI isn\'t switched on yet.':j.error==='busy'?'Ye AI is busy right now.':'Ye AI couldn\'t answer just now.');
-  }catch(e){fallback(q,'Couldn\'t reach Ye AI.')}
+  }catch(e){fallback(q,e&&e.name==='AbortError'?'Ye AI took too long to answer.':'Couldn\'t reach Ye AI.')}
   sending=false;paint();
   try{localStorage.setItem('yeai:v1',JSON.stringify(hist.slice(-20).map(m=>({role:m.role,content:m.content,src:m.src}))))}catch(e){}
 }
