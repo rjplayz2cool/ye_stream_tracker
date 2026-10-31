@@ -12,6 +12,14 @@ const st=document.createElement('style');st.textContent=`
 .yzBtn:hover{background:#ffffff1f}.yzBtn[hidden]{display:none}
 .yz{position:fixed;inset:0;z-index:50;background:#fff;color:#000;overflow:auto;font:400 14px/1.5 'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;text-transform:uppercase;letter-spacing:.04em;-webkit-overflow-scrolling:touch}
 .yz[hidden]{display:none}
+.yz.in{animation:yzIn .7s cubic-bezier(.2,.8,.2,1) both}
+.yz.in .yzIn>*{animation:yzUp .7s cubic-bezier(.2,.8,.2,1) both}
+.yz.in .yzIn>*:nth-child(2){animation-delay:.1s}.yz.in .yzIn>*:nth-child(3){animation-delay:.18s}.yz.in .yzIn>*:nth-child(4){animation-delay:.26s}.yz.in .yzIn>*:nth-child(5){animation-delay:.34s}
+.yz.out{animation:yzOut .35s ease both;pointer-events:none}
+@keyframes yzIn{from{clip-path:circle(0% at 50% 30%);opacity:.4}to{clip-path:circle(150% at 50% 30%);opacity:1}}
+@keyframes yzUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes yzOut{to{opacity:0}}
+@media(prefers-reduced-motion:reduce){.yz.in,.yz.in .yzIn>*,.yz.out{animation:none}}
 body.yzOn header .mark,body.yzOn header .live,body.yzOn header #upd{color:#000!important;text-shadow:none!important}
 .yzIn{max-width:480px;margin:0 auto;padding:68px 0 40px}
 .yzHero{display:block;width:min(460px,100% - 20px);margin:0 auto;height:auto;aspect-ratio:460/305;object-fit:cover}
@@ -60,7 +68,7 @@ function store(){const U=window.__tourUI;if(!U)return;
   box.querySelectorAll('.yzP').forEach(b=>b.onclick=()=>{const m=M[+b.dataset.m];if(!m)return;const srcs=[U.mUrls('2026',m.v,m.f)[0]];if(m.b)srcs.push(U.mUrls('2026',m.v,m.b)[0]);const im=b.querySelector('img'),first=im.currentSrc||im.src;if(first&&!/^$/.test(first))srcs[0]=first;U.openViewer(m,srcs)})})}
 function sync(){const ok=sel2026();btn.hidden=!ok||pg.hidden||on;const show=on&&ok&&!pg.hidden;
  document.body.classList.toggle('yzOn',show);
- if(show&&ov.hidden){ov.hidden=false;paint()}else if(!show&&!ov.hidden)ov.hidden=true}
+ if(show&&(ov.hidden||ov.classList.contains('out'))){clearTimeout(ov._t);ov.classList.remove('out');ov.hidden=false;paint();ov.classList.remove('in');void ov.offsetWidth;ov.classList.add('in')}else if(!show&&!ov.hidden&&!ov.classList.contains('out')){if(pg.hidden||!sel2026()){ov.hidden=true;ov.classList.remove('in')}else{ov.classList.remove('in');ov.classList.add('out');ov._t=setTimeout(()=>{ov.hidden=true;ov.classList.remove('out')},350)}}}
 btn.onclick=()=>{on=true;put(true);tab='tour';sync()};
 ov.addEventListener('click',e=>{if(e.target.closest('[data-sw]')){on=false;put(false);sync();scrollTo({top:0});return}
  const t=e.target.closest('[data-t]');if(t){tab=t.dataset.t;paint();return}
