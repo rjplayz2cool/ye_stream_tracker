@@ -216,7 +216,9 @@ async function send(text){
     const r=await fetch(CFG.url+'/functions/v1/ye-ai',{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',apikey:CFG.anonKey,Authorization:'Bearer '+session.access_token},body:JSON.stringify({messages:msgs.slice(-9).map(m=>({role:m.role,content:m.content})),context:ctx})});
     clearTimeout(to);
     const j=await r.json().catch(()=>({}));
+    if(r.ok&&typeof j.remaining==='number'){const f=document.querySelector('.aiFine');if(f){f.dataset.left=j.remaining;f.firstElementChild.textContent=(j.remaining<=15?j.remaining+' questions left today. ':'')+'Ye AI can make mistakes. Check the Ye Tracker tab for anything important. Tweets via '}}
     if(r.ok&&j.reply)reply={role:'assistant',content:j.reply,files:files.length?files:undefined,src:hits.slice(0,6).map(d=>d.name.slice(0,90)).concat(tws.slice(0,4).map(d=>'Tweet ('+d.era+'): '+d.name.replace(/\s+/g,' ').slice(0,70)))};
+    else if(j.error==='slow')reply={role:'assistant',content:'Easy there. Give it a few seconds between questions and send that again.'};
     else if(j.error==='limit')reply={role:'assistant',content:`You've hit today's limit of ${j.limit||40} questions. It resets tomorrow (UTC). The Ye Tracker tab is always open in the meantime.`};
     else{reply=fallback(q,j.error==='no_key'?'Ye AI isn\'t switched on yet.':j.error==='busy'?'Ye AI is busy right now.':'Ye AI couldn\'t answer just now.');if(files.length)reply.files=files}
   }catch(e){reply=fallback(q,e&&e.name==='AbortError'?'Ye AI took too long to answer.':'Couldn\'t reach Ye AI.');if(files.length)reply.files=files}
