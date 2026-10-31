@@ -638,6 +638,12 @@ select:disabled{opacity:.5;cursor:not-allowed}
 .aiGate{margin:30px auto;max-width:460px;text-align:center;padding:30px 24px;border-radius:22px;border:1px solid #ffffff1c;background:#ffffff0a}
 .aiGate h2{margin:14px 0 6px;font-size:24px;font-weight:900}.aiGate p{color:#ffffffa8;line-height:1.5;margin:0 0 16px}
 .aiGate button{all:unset;cursor:pointer;padding:12px 22px;border-radius:99px;background:#c4161c;font:800 14px 'Hanken Grotesk',sans-serif}
+@media(min-width:861px){
+ #aiScreen{max-width:none;margin:0 0 0 292px;padding:100px 28px 18px}
+ .aiTop,.aiMain{width:100%;max-width:900px;margin-left:auto;margin-right:auto}
+ .aiApp{display:block}
+ .aiSide{position:fixed;z-index:40;left:0;top:76px;bottom:12px;width:272px;border-radius:0 20px 20px 0;border-left:0;background:#0d0b0bcc;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+}
 @media(max-width:860px){
  #aiScreen{padding:92px 14px 8px}
  .aiApp{grid-template-columns:1fr}
@@ -3661,5 +3667,5 @@ addEventListener('DOMContentLoaded',()=>scan(document));if(document.readyState!=
 document.addEventListener('pointerdown',e=>{if(open&&!e.target.closest('.ddMenu,.ddBtn'))close()},true);
 addEventListener('resize',close);addEventListener('scroll',e=>{if(open&&!(e.target.closest&&e.target.closest('.ddMenu')))close()},true);
 })()</script>
-<script>if('serviceWorker'in navigator&&location.protocol!=='file:')addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script><script src="ye-ai.js?v=1793476333"></script>
+<script>if('serviceWorker'in navigator&&location.protocol!=='file:')addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script><script src="ye-ai.js?v=1793476758"></script>
 </body></html>
