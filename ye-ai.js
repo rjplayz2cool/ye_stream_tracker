@@ -31,22 +31,25 @@ async function load(){
         }
       }
     }catch(e){}
+    try{const r=await fetch('data/ye-tweets.json');if(r.ok){for(const [d,t,l,id] of await r.json()){out.push({k:'x',cat:'Tweet',era:d,name:t,notes:'',extra:'',ln:t.toLowerCase(),le:d,lo:'',id,likes:l})}}}catch(e){}
     try{for(const ev of(window.CALENDAR_ANNUAL_EVENTS||[])){const t=`${ev.title} (${ev.releaseYear||''}, ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][ev.month-1]} ${ev.day})`;out.push({k:'c',cat:'Calendar',era:'',name:t,notes:'',extra:'',ln:t.toLowerCase(),le:'',lo:''})}}catch(e){}
     try{for(const s of(window.TOUR_SHOWS||[])){const t=`${s.date} ${s.venue||''} ${s.city||''}`.trim();out.push({k:'s',cat:'Tour show',era:s.tour||'',name:t,notes:'',extra:'',ln:t.toLowerCase(),le:(s.tour||'').toLowerCase(),lo:''})}}catch(e){}
     docs=out;return out;
   })();
   return loading;
 }
-function search(q,n){
+function search(q,n,tw){
   const toks=[...new Set(q.toLowerCase().replace(/[^a-z0-9$&' ]/g,' ').split(/\s+/).filter(t=>t.length>1&&!STOP.has(t)))];
   const phrase=q.toLowerCase().replace(/[^a-z0-9$&' ]/g,' ').replace(/\s+/g,' ').trim();
   if(!toks.length||!docs)return[];
   const sc=[];
   for(const d of docs){
+    if((d.k==='x')!==!!tw)continue;
     let s=0;
     for(const t of toks){if(d.ln.includes(t))s+=6;if(d.le.includes(t))s+=3;if(d.lo.includes(t))s+=2}
     if(!s)continue;
     if(phrase.length>3&&d.ln.includes(phrase))s+=14;
+    if(d.k==='x'){if(s<6)continue;s+=Math.log10((d.likes||0)+1)*.35}
     if(d.cat==='Released'||d.cat==='Best Of'||d.cat==='Unreleased')s+=1.5;else if(/^(Art|Tracklists|Album Copies|Groupbuys|Stems)$/.test(d.cat))s-=1.5;
     if(s<=0)continue;
     sc.push([s,d]);
@@ -54,7 +57,7 @@ function search(q,n){
   sc.sort((a,b)=>b[0]-a[0]);
   return sc.slice(0,n).map(x=>x[1]);
 }
-const fmtDoc=d=>d.k==='t'?`[${d.cat}] ${d.era} | ${d.name}${d.notes?' | '+d.notes.slice(0,320):''}${d.extra?' | '+d.extra:''}`:`[${d.cat}] ${d.name}${d.era?' | '+d.era:''}`;
+const fmtDoc=d=>d.k==='x'?`[Tweet by Ye, ${d.era}${d.likes?', '+(d.likes>=1e3?Math.round(d.likes/1e3)+'K':d.likes)+' likes':''}] ${d.name.replace(/\s+/g,' ').slice(0,420)}`:d.k==='t'?`[${d.cat}] ${d.era} | ${d.name}${d.notes?' | '+d.notes.slice(0,320):''}${d.extra?' | '+d.extra:''}`:`[${d.cat}] ${d.name}${d.era?' | '+d.era:''}`;
 
 /* markdown-lite, escaped first */
 function md(t){
@@ -69,12 +72,12 @@ function md(t){
   if(list)out.push('</'+list+'>');
   return out.join('');
 }
-const SUGG=['What are the biggest unreleased Ye projects fans still want?','Who produced Runaway and how was it made?','Tell me about the Yandhi era','Which songs feature Kid Cudi?','What\'s the story behind Donda?','Explain the difference between a snippet and a full leak'];
-const welcome=()=>`<div class="aiHero"><div class="aiOrb" aria-hidden="true"></div><h2>Ask anything about Ye.</h2><p>Leaks, snippets, eras, producers, features, tours and more. Answers lean on the Ye Tracker archive of ${docs?docs.filter(d=>d.k==='t').length.toLocaleString():'22,000+'} entries.</p><div class="aiSugg">${SUGG.map(s=>`<button type="button" class="aiChipBtn" data-q="${esc(s)}">${esc(s)}</button>`).join('')}</div></div>`;
+const SUGG=['What are the biggest unreleased Ye projects fans still want?','Who produced Runaway and how was it made?','Tell me about the Yandhi era','Which songs feature Kid Cudi?','What has Ye tweeted about his albums?','What\'s the story behind Donda?','Explain the difference between a snippet and a full leak'];
+const welcome=()=>`<div class="aiHero"><div class="aiOrb" aria-hidden="true"></div><h2>Ask anything about Ye.</h2><p>Leaks, snippets, eras, producers, features, tours and more. Answers lean on the Ye Tracker archive of ${docs?docs.filter(d=>d.k==='t').length.toLocaleString():'22,000+'} entries and Ye's tweets from the YZY TWTS archive.</p><div class="aiSugg">${SUGG.map(s=>`<button type="button" class="aiChipBtn" data-q="${esc(s)}">${esc(s)}</button>`).join('')}</div></div>`;
 function paint(){
   const box=$('aiLog');
   if(!hist.length){box.innerHTML=welcome();return}
-  box.innerHTML=hist.map(m=>m.role==='user'?`<div class="aiMsg u"><div class="aiB">${esc(m.content)}</div></div>`:`<div class="aiMsg a"><div class="aiAv">AI</div><div class="aiB">${m.html||md(m.content)}${m.src&&m.src.length?`<details class="aiSrc"><summary>${m.src.length} tracker entries used</summary><ul>${m.src.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></details>`:''}</div></div>`).join('')+(sending?'<div class="aiMsg a"><div class="aiAv">AI</div><div class="aiB aiTyping"><i></i><i></i><i></i></div></div>':'');
+  box.innerHTML=hist.map(m=>m.role==='user'?`<div class="aiMsg u"><div class="aiB">${esc(m.content)}</div></div>`:`<div class="aiMsg a"><div class="aiAv">AI</div><div class="aiB">${m.html||md(m.content)}${m.src&&m.src.length?`<details class="aiSrc"><summary>${m.src.length} sources used</summary><ul>${m.src.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></details>`:''}</div></div>`).join('')+(sending?'<div class="aiMsg a"><div class="aiAv">AI</div><div class="aiB aiTyping"><i></i><i></i><i></i></div></div>':'');
   box.scrollTop=box.scrollHeight;
   const sc=$('aiScroll');if(sc)sc.scrollTop=sc.scrollHeight;
 }
@@ -98,15 +101,15 @@ async function send(text){
   await load();
   const prev=[...hist].reverse().find((m,i)=>m.role==='user'&&i>0);
   const q=text.split(/\s+/).length<5&&prev?prev.content+' '+text:text;
-  const hits=search(q,30);
-  const ctx=hits.map(fmtDoc).join('\n');
+  const hits=search(q,24),tws=search(q,8,true);
+  const ctx=hits.map(fmtDoc).join('\n')+(tws.length?'\n'+tws.map(fmtDoc).join('\n'):'');
   try{
     const {data:{session}}=await sb.auth.getSession();
     const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),50000);
     const r=await fetch(CFG.url+'/functions/v1/ye-ai',{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',apikey:CFG.anonKey,Authorization:'Bearer '+session.access_token},body:JSON.stringify({messages:hist.slice(-9).map(m=>({role:m.role,content:m.content})),context:ctx})});
     clearTimeout(to);
     const j=await r.json().catch(()=>({}));
-    if(r.ok&&j.reply){hist.push({role:'assistant',content:j.reply,src:hits.slice(0,8).map(d=>d.name)});}
+    if(r.ok&&j.reply){hist.push({role:'assistant',content:j.reply,src:hits.slice(0,6).map(d=>d.name.slice(0,90)).concat(tws.slice(0,4).map(d=>'Tweet ('+d.era+'): '+d.name.replace(/\s+/g,' ').slice(0,70)))});}
     else if(j.error==='limit')hist.push({role:'assistant',content:`You've hit today's limit of ${j.limit||40} questions. It resets tomorrow (UTC). The Ye Tracker tab is always open in the meantime.`});
     else if(j.error==='signin'){gate()}
     else fallback(q,j.error==='no_key'?'Ye AI isn\'t switched on yet.':j.error==='busy'?'Ye AI is busy right now.':'Ye AI couldn\'t answer just now.');
