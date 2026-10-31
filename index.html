@@ -3636,7 +3636,7 @@ function wire(){
 let hlPinned=false,timer=0;
 window.PH=window.PH||{};
 PH.tours={show(){$('toursScreen').classList.add('activeScreen');if(!built){built=true;wire()}paint();clearInterval(timer);timer=setInterval(()=>{paintNext();paintLists();paintPins();setHL(hl)},60000)},hide(){$('toursScreen').classList.remove('activeScreen');clearInterval(timer)}};
-})();</script><script>addEventListener("message",e=>{const d=e.data;if(d&&d.type==="ye-crossword-height"){const f=document.getElementById("yeCrosswordFrame");if(f&&e.source===f.contentWindow)f.style.height=Math.max(560,Math.min(2400,d.h))+"px"}});</script><script src="tours-archive-ui.js?v=1793482482" defer></script><script src="tours-yz.js?v=1793478135" defer></script><script src="clothing.js?v=1793482482" defer></script><script>(()=>{
+})();</script><script>addEventListener("message",e=>{const d=e.data;if(d&&d.type==="ye-crossword-height"){const f=document.getElementById("yeCrosswordFrame");if(f&&e.source===f.contentWindow)f.style.height=Math.max(560,Math.min(2400,d.h))+"px"}});</script><script src="tours-archive-ui.js?v=1793482482" defer></script><script src="tours-yz.js?v=1793478135" defer></script><script src="clothing.js?v=1793482704" defer></script><script>(()=>{
 const CLS='ddW';let open=null;
 const lbl=s=>{const o=s.options[s.selectedIndex];return o?o.textContent:''};
 function close(){if(!open)return;open.menu.remove();open.btn.setAttribute('aria-expanded','false');open.wrap.classList.remove('open');open=null}
