@@ -74,7 +74,7 @@ root.innerHTML=`<div class="eyebrow">STYLE</div><h1 class="title">CLOTHING</h1><
 const P=k=>root.querySelector('[data-p="'+k+'"]'),done={};
 let yzG='All',storeP=null;
 const SW='https://cdn.swell.store/yzy-prod/';
-const loadStore=()=>window.YEEZY_STORE?Promise.resolve(window.YEEZY_STORE):storeP||(storeP=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='data/yeezy-store.js?v=1';sc.onload=()=>res(window.YEEZY_STORE);sc.onerror=()=>{storeP=null;rej()};document.head.appendChild(sc)}));
+const loadStore=()=>window.YEEZY_STORE?Promise.resolve(window.YEEZY_STORE):storeP||(storeP=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='data/yeezy-store.js?v=2';sc.onload=()=>res(window.YEEZY_STORE);sc.onerror=()=>{storeP=null;rej()};document.head.appendChild(sc)}));
 function renderYz(){const el=P('yz'),U=window.__tourUI;
  el.innerHTML='<div class="tHead"><div><h2>Yeezy.com</h2><p>Loading…</p></div></div>';
  loadStore().then(L=>{
@@ -82,9 +82,9 @@ function renderYz(){const el=P('yz'),U=window.__tourUI;
   el.innerHTML=`<div class="tHead"><div><h2>Yeezy.com</h2><p>${fl.length} products on the store now</p></div></div>
   <div class="tChips">${['All','Men','Women'].map(g=>`<button type="button" data-g="${g}" class="${g===yzG?'on':''}">${g}</button>`).join('')}</div>
   <p class="clNote">Current lineup from <a href="https://yeezy.com/" target="_blank" rel="noopener noreferrer">yeezy.com</a>, as of 31 Oct 2026. Buy at yeezy.com.</p>
-  <div class="mGrid">${fl.map(x=>`<button type="button" class="yaT mc" data-k="${L.indexOf(x)}" aria-label="${esc(x[0]+' '+x[1])}"><div class="mcI"><img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(SW+x[6][0])}"></div><div class="mcN">${esc(x[0])} · ${esc(x[1])}<small>$${x[3]}${x[4]?' · Sold out':''}</small></div></button>`).join('')}</div>`;
+  <div class="mGrid">${fl.map(x=>`<button type="button" class="yaT mc" data-k="${L.indexOf(x)}" aria-label="${esc(x[0]+' '+x[1])}"><div class="mcI"><img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(SW+x[6][0])}"></div><div class="mcN">${esc(x[0])} · ${esc(x[1])}<small>${x[4]===2?'COMING SOON':'$'+x[3]+(x[4]?' · Sold out':'')}</small></div></button>`).join('')}</div>`;
   el.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{yzG=b.dataset.g;renderYz()});
-  el.querySelectorAll('.yaT').forEach(b=>b.onclick=()=>{const x=L[+b.dataset.k];U.openViewer({n:x[0],p:'$'+x[3]},x[6].map(u=>SW+u))})
+  el.querySelectorAll('.yaT').forEach(b=>b.onclick=()=>{const x=L[+b.dataset.k];U.openViewer({n:x[0],p:x[4]===2?'COMING SOON':'$'+x[3]},x[6].map(u=>SW+u))})
  }).catch(()=>{el.innerHTML='<div class="tEmpty">Could not load. Refresh and try again.</div>'})}
 function setTab(t){tab=t;root.querySelectorAll('.tNav button').forEach(b=>b.setAttribute('aria-current',b.dataset.t===t?'true':'false'));root.querySelectorAll('.clPane').forEach(p=>p.hidden=p.dataset.p!==t);
  const U=window.__tourUI;if(!U||done[t])return;done[t]=1;if(t==='arch')U.renderArch(P('arch'));else if(t==='tour')U.ready().then(()=>U.renderMerch(P('tour')));else renderYz()}
