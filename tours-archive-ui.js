@@ -298,4 +298,5 @@ function renderMerch(){const Y=A[year];if(!Y){merScr.innerHTML='';return}
  bindYear(merScr);watchImgs(merScr);
  merScr.querySelectorAll('.tChips button').forEach(b=>b.onclick=()=>{merchFilter=b.dataset.v;renderMerch()});
  merScr.querySelectorAll('.mc').forEach((c,ix)=>{const m=Y.merch.filter(q=>groups.includes(q.v)).sort((a,b)=>groups.indexOf(a.v)-groups.indexOf(b.v))[ix];c.onclick=()=>{if(c.querySelector('.mcI.x')||!m)return;const imgs=[...c.querySelectorAll('img')];const srcs=imgs.map(i=>i.hidden?'':(i.currentSrc||i.src||(()=>{try{return JSON.parse(i.dataset.u)[0]}catch{return ''}})())).filter(Boolean);openViewer(m,srcs)}})}
+window.__tourUI={ready:()=>ensure().then(()=>A),openRec(id){const Y=A&&A['2026'];const sh=Y&&Y.shows.find(x=>String(x.id)===String(id));if(!sh)return;year='2026';openModal(sh)},merch(){return (A&&A['2026']&&A['2026'].merch)||[]},mUrls,watchImgs,openViewer,vlabel,esc};
 })();
