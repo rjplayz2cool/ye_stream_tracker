@@ -308,7 +308,7 @@ function renderMerch(el=merScr){el._re=()=>renderMerch(el);const Y=A[year];if(!Y
 
 /* ---- Yeezy Archive (all products, via yeezyarchive.net; Unreleased + PornHub items left out) ---- */
 let YA=null,YAp=null;
-function loadYA(){return YA?Promise.resolve(YA):YAp||(YAp=fetch('data/yeezy-archive.json?v=3').then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>YA=d).catch(e=>{YAp=null;throw e}))}
+function loadYA(){return YA?Promise.resolve(YA):YAp||(YAp=fetch('data/yeezy-archive.json?v=4').then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>YA=d).catch(e=>{YAp=null;throw e}))}
 const yaImg=u=>u?(u[0]==='~'?'https://cdn.shopify.com/s/files/1/0231/9148/6542/files/'+u.slice(1):u[0]==='/'?'https://yeezyarchive.net'+u:u):'';
 const yaFold=t=>String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 function renderArch(el){const S=el._ya||(el._ya={q:'',g:'All',n:96});
