@@ -29,7 +29,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:18p
 .hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(16px,4vw,56px);align-items:center;padding:clamp(8px,3vw,40px) clamp(16px,4vw,48px) 24px;min-height:62vh}
 .era{font:900 clamp(56px,10.5vw,176px)/.86 'Big Shoulders Display';text-transform:uppercase;letter-spacing:-.01em}
 .era.long{font-size:clamp(46px,7.6vw,128px)}
-.era .w{display:inline-block;white-space:nowrap;margin-right:.24em}
+.era .w{display:inline-block;white-space:nowrap}
 .era span{display:inline-block;animation:rise .7s var(--ease) both;animation-delay:calc(var(--i)*22ms)}
 @keyframes rise{from{transform:translateY(60%) rotate(4deg);opacity:0}}
 .total{margin-top:22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
@@ -1043,7 +1043,7 @@ return {DB,META,songsForAlbum,albumKey,localCover,displayTitle,artists,albumMatc
 const C=window.Catalog,$=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const full=n=>Math.round(n).toLocaleString();
-const fmt=n=>n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(0)+'K':String(Math.round(n));
+const fmt=n=>{const t=v=>String(+v);return n>=1e9?t((n/1e9).toFixed(2))+'B':n>=1e6?t((n/1e6).toFixed(1))+'M':n>=1e3?t((n/1e3).toFixed(0))+'K':String(Math.round(n))};
 const idOf=x=>String(x&&x.spotify||'').split('/').pop();
 const meta=x=>(window.CARD_METADATA||{})[idOf(x)]||null;
 
@@ -1838,7 +1838,7 @@ function setHero(i,first){
     if(p<1)anim=requestAnimationFrame(f);else anim=0})(s0)}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const fmt=n=>n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(0)+'K':String(Math.round(n));
+const fmt=n=>{const t=v=>String(+v);return n>=1e9?t((n/1e9).toFixed(2))+'B':n>=1e6?t((n/1e6).toFixed(1))+'M':n>=1e3?t((n/1e3).toFixed(0))+'K':String(Math.round(n))};
 const full=n=>Math.round(n).toLocaleString();
 function nextM(n){const k=10**Math.floor(Math.log10(Math.max(n,1)));for(const m of [1,2.5,5,10]){if(m*k>n)return m*k}return 10*k}
 const live=s=>s.streams+(s.daily||0)*(performance.now()-t0)/864e5;
@@ -1900,7 +1900,7 @@ function paint(L,a,shown,byTrack,moreFn,emptyText,fb){
     const dly=s._displayDaily?esc(s._displayDaily)+' today':s.daily?`<span class="up">+${full(s.daily)}</span> today`:'Daily rate unavailable';
     const ticks=s.spotify&&!s._approx;
     return `<article class="row" data-sid="${esc(s.spotify)}" tabindex="0" role="button" aria-label="Details for ${esc(title)}"><div class="rk">${rk}</div>${art}
-    <div><div class="nm">${esc(title)}</div><div class="sub">${dly} · next stop ${fmt(n)}${when?' on '+when:''}</div><div class="prog"><i data-w="${pct}"></i></div></div>
+    <div><div class="nm">${esc(title)}</div><div class="sub">${dly} · next stop ${fmt(n)}${when?' on '+when:d!=null?' · 14+ years away':''}</div><div class="prog"><i data-w="${pct}"></i></div></div>
     <div class="st"><b${ticks?` data-s="${esc(s.spotify)}"`:''}>${s._displayStreams?esc(s._displayStreams):full(s.streams)}</b><span>${fmt(n-s.streams)} to go</span></div></article>`}).join('')
     +(a.length>shown?`<button class="chip more" type="button">Show more (${a.length-shown} left)</button>`:'');
   requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('.prog i').forEach(i=>i.style.width=i.dataset.w+'%')));
@@ -3466,7 +3466,7 @@ function paintNext(){
   box.innerHTML=`<div class="tNextCard"><div><small>Next show</small><h2>${esc(up.flag)} ${esc(up.city)}</h2><p>${esc(up.venue||'')}${up.venue?' · ':''}${esc(up.label)}</p></div><div class="tCount"><b>${d===0?'Today':d}</b><span>${d===0?'Doors tonight':d===1?'day to go':'days to go'}</span></div></div>`}
 function paintStats(){const c=cur();$('tStats').innerHTML=[['Shows',c.length],['Cities',new Set(c.map(s=>s.city)).size],['Countries',new Set(c.map(s=>s.iso)).size]].map(([l,v])=>`<div class="tStat"><b>${v}</b><span>${l}</span></div>`).join('')}
 function card(s){const dt=new Date(dayN(s.date)),up=isUp(s);
-  return `<button type="button" class="tShow${up?' up':''}${s.x?' cx':''}" data-id="${s.id}"><div class="tDate"><small>${MON[dt.getUTCMonth()]}</small><b>${dt.getUTCDate()}</b></div><div class="tInfo"><b>${esc(s.flag)} ${esc(s.city)}</b><span>${esc(s.venue||'Venue TBA')}${s.ev?' · '+esc(s.ev):''}</span><span>${esc(s.label)}</span></div><span class="tChip">${chip(s)}</span></button>`}
+  return `<button type="button" class="tShow${up?' up':''}${s.x?' cx':''}" data-id="${s.id}"><div class="tDate"><small>${MON[dt.getUTCMonth()]}</small><b>${dt.getUTCDate()}</b></div><div class="tInfo"><b>${esc(s.flag)} ${esc(s.city)}</b><span>${esc(s.venue||'Venue TBA')}${s.ev&&s.ev!==s.venue?' · '+esc(s.ev):''}</span><span>${esc(s.label)}</span></div><span class="tChip">${chip(s)}</span></button>`}
 function paintLists(){
   const c=cur(),up=c.filter(isUp).sort((a,b)=>dayN(a.date)-dayN(b.date)),past=c.filter(s=>!isUp(s)).sort((a,b)=>dayN(b.date)-dayN(a.date));
   const sec=(t,n,l)=>n.length?`<div class="tSecH"><h3>${t}</h3><span>${n.length} show${n.length>1?'s':''}</span></div><div class="tGrid">${n.map(card).join('')}</div>`:'';
