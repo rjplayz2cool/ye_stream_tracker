@@ -1397,7 +1397,7 @@ function shell(){
   $('aO').onclick=async()=>{await sb.auth.signOut();$('rlAuth').classList.remove('open')};
   $('aS').onclick=async()=>{if(!LIVE){$('aM').textContent='Demo mode has no accounts.';return}
     const email=$('aE').value.trim(),password=$('aP').value;$('aM').textContent='Working…';
-    const r=up?await sb.auth.signUp({email,password,options:{data:{username:$('aN').value.trim()},emailRedirectTo:'https://rjplayz2cool.github.io/ye_stream_tracker/'}}):await sb.auth.signInWithPassword({email,password});
+    const r=up?await sb.auth.signUp({email,password,options:{data:{username:$('aN').value.trim()},emailRedirectTo:location.origin+location.pathname}}):await sb.auth.signInWithPassword({email,password});
     $('aM').textContent=r.error?r.error.message:(up?'Account created. Check your email if confirmation is enabled.':'Signed in.');
     if(!r.error&&!up)$('rlAuth').classList.remove('open')};
   seed();
