@@ -74,7 +74,7 @@ root.innerHTML=`<div class="eyebrow">STYLE</div><h1 class="title">CLOTHING</h1><
 const P=k=>root.querySelector('[data-p="'+k+'"]'),done={};
 let yzG='All',storeP=null;
 const SW='https://cdn.swell.store/yzy-prod/';
-const loadStore=()=>window.YEEZY_STORE?Promise.resolve(window.YEEZY_STORE):storeP||(storeP=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='data/yeezy-store.js?v=2';sc.onload=()=>res(window.YEEZY_STORE);sc.onerror=()=>{storeP=null;rej()};document.head.appendChild(sc)}));
+const loadStore=()=>window.YEEZY_STORE?Promise.resolve(window.YEEZY_STORE):storeP||(storeP=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='data/yeezy-store.js?v=3';sc.onload=()=>res(window.YEEZY_STORE);sc.onerror=()=>{storeP=null;rej()};document.head.appendChild(sc)}));
 function renderYz(){const el=P('yz'),U=window.__tourUI;
  el.innerHTML='<div class="tHead"><div><h2>Yeezy.com</h2><p>Loading…</p></div></div>';
  loadStore().then(L=>{
