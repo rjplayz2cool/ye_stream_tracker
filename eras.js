@@ -5,6 +5,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 const KIND={release:['RELEASE','#b6ff39'],music:['MUSIC','#b6ff39'],live:['LIVE','#ff5a5a'],leak:['LEAK','#a78bfa'],family:['FAMILY','#ffb86b'],news:['NEWS','#6bd0ff'],fashion:['FASHION','#ff7ad9'],business:['BUSINESS','#ffd84d'],life:['LIFE','#d4d4d4']};
 const kindOf=t=>/\b(Leak|Leaked|Snippet|Snippets|Demo|OG File|Files?)\b/i.test(t)?'leak':/\b(Tour|Live|Performs?|Performance|Headlines?|Festival|Concert|Listening|Sunday Service|Show|Opens?)\b/i.test(t)?'live':/\b(Release|Releases|Released|Drops?|Album|Single|Peaks|Certified|Debuts?)\b/i.test(t)?'release':/\b(Yeezy|Adidas|Gap|Collection|Season|Sneaker|Balenciaga)\b/i.test(t)?'fashion':'news';
+const EMO={1977:'👶',1980:'🌆',1987:'🥢',1996:'🎛️',1998:'🎒',2017:'🤫'};
 const KID={North:'North West',Saint:'Saint West',Chicago:'Chicago West',Psalm:'Psalm West'};
 const ft=s=>s.toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3);
 const similar=(a,b)=>{const A=new Set(ft(a)),B=ft(b);if(!A.size||!B.length)return false;const n=B.filter(w=>A.has(w)).length;return n/Math.min(A.size,B.length)>=.6};
@@ -43,18 +44,36 @@ body.erOn{overflow:hidden}body.erOn header{position:relative;z-index:59;pointer-
  background-image:radial-gradient(1200px 700px at 20% 10%,rgba(182,255,57,.07),transparent 60%),radial-gradient(900px 600px at 90% 90%,rgba(139,92,246,.10),transparent 60%),linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
  background-size:auto,auto,64px 64px,64px 64px;background-position:0 0,0 0,var(--bgx,0px) 0,var(--bgx,0px) 0}
 .erScreen::before{content:'';position:absolute;left:0;right:0;top:0;height:92px;z-index:4;pointer-events:none;background:linear-gradient(#060607 35%,rgba(6,6,7,0))}.erScreen.grab{cursor:grabbing}.erScreen.yr{cursor:grab}
-.erWorld{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
-.erWorld svg{position:absolute;inset:0;pointer-events:none;overflow:visible}
-.erWorld path{fill:none;stroke:rgba(182,255,57,.38);stroke-width:2;stroke-dasharray:3 9;stroke-linecap:round}
-.erTile{position:absolute;display:block;width:var(--tw);height:var(--th);padding:0;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:#101012;color:#fff;overflow:hidden;cursor:pointer;text-align:left;font:inherit;transition:transform .25s var(--ease),border-color .25s,box-shadow .25s}
-.erTile:hover,.erTile:focus-visible{transform:translateY(-6px) scale(1.04);border-color:var(--accent2);box-shadow:0 18px 40px rgba(0,0,0,.6),0 0 0 1px var(--accent2);z-index:3;outline:0}
-.erTC{position:absolute;left:0;top:0;width:100%;height:var(--tw);background:linear-gradient(140deg,hsl(var(--hu) 55% 22%),hsl(calc(var(--hu) + 40) 60% 10%))}
-.erTC img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05) brightness(.8);transition:filter .3s,transform .5s var(--ease)}
+.erWorld{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;color:#3b2a14;
+ background:radial-gradient(ellipse 600px 380px at 14% 18%,rgba(140,86,28,.20),transparent 70%),radial-gradient(ellipse 520px 420px at 86% 78%,rgba(120,70,20,.22),transparent 70%),radial-gradient(ellipse 380px 260px at 60% 40%,rgba(255,244,214,.55),transparent 70%),radial-gradient(ellipse at 50% 50%,#edd9a2 0%,#e1c98d 62%,#c9a566 100%),#e1c98d;
+ box-shadow:inset 0 0 140px rgba(94,52,12,.5)}
+.erWorld::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.55;mix-blend-mode:multiply;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .36 0 0 0 0 .22 0 0 0 0 .08 0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.erWorld svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.erWorld path{fill:none;stroke:#9b2d20;stroke-width:3.2;stroke-dasharray:2 11;stroke-linecap:round;opacity:.85}
+.erDeco{position:absolute;inset:0;pointer-events:none;font-family:'Pirata One','IM Fell English SC',Georgia,serif}
+.erDc{position:absolute;translate:-50% -50%;text-align:center;white-space:nowrap}
+.erTitle b{display:block;font-size:clamp(30px,4.2vw,58px);letter-spacing:.06em;font-weight:400;color:#3b2a14;text-shadow:1px 1px 0 rgba(255,240,200,.7)}
+.erTitle i{display:block;font:italic 15px/1.2 'IM Fell English',Georgia,serif;color:#6b4b22;margin-top:2px}
+.erFlag{font-size:15px;letter-spacing:.1em;color:#9b2d20;rotate:-4deg}
+.erGap{font-size:16px;letter-spacing:.08em;color:#6b4b22;rotate:var(--r,0deg);opacity:.9}
+.erGap small{font-size:11px;font-family:'IM Fell English',Georgia,serif;font-style:italic;letter-spacing:0;display:block}
+.erCmp{opacity:.92;font-size:12px;line-height:1.3;color:#5a3a17;font-family:'IM Fell English',Georgia,serif;font-style:italic}
+.erCmp small{display:block;margin-top:4px}
+.erXm{display:flex;flex-direction:column;align-items:center;gap:0}
+.erXX{font-size:104px;line-height:.8;color:#b3261e;rotate:-8deg;text-shadow:2px 2px 0 rgba(255,240,200,.7)}
+.erXm em{font-style:normal;font-size:16px;letter-spacing:.08em;color:#3b2a14;margin-top:4px;line-height:1.15}
+.erXm small{font:italic 12px 'IM Fell English',Georgia,serif;letter-spacing:0;color:#6b4b22}
+.erEm{font-size:46px;opacity:.7;filter:sepia(.5)}
+.erTile{position:absolute;display:block;width:var(--tw);height:var(--th);padding:0;border:1px solid #7d5c2c;border-radius:3px;background:#f7edd0;color:#3b2a14;overflow:visible;cursor:pointer;text-align:left;font:inherit;rotate:var(--rot,0deg);box-shadow:0 8px 14px rgba(60,35,10,.42),0 1px 0 rgba(255,255,255,.6) inset;transition:transform .25s var(--ease),rotate .25s var(--ease),box-shadow .25s}
+.erTile::before{content:'';position:absolute;top:-6px;left:50%;width:13px;height:13px;margin-left:-6px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8a78,#a01d12 70%);box-shadow:0 3px 3px rgba(0,0,0,.45);z-index:5}
+.erTile:hover,.erTile:focus-visible{transform:translateY(-6px) scale(1.08);rotate:0deg;box-shadow:0 20px 34px rgba(60,35,10,.55);z-index:6;outline:0;border-color:#9b2d20}
+.erTC{position:absolute;left:7px;top:7px;width:calc(var(--tw) - 14px);height:calc(var(--tw) - 14px);background:linear-gradient(140deg,hsl(var(--hu) 40% 55%),hsl(calc(var(--hu) + 40) 45% 32%));overflow:hidden;border:1px solid rgba(60,35,10,.5)}
+.erTC img{width:100%;height:100%;object-fit:cover;display:block;filter:sepia(.55) saturate(.9) contrast(1.05);transition:filter .3s,transform .5s var(--ease)}
 .erTile:hover .erTC img{filter:none;transform:scale(1.06)}
-.erTC::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.78))}
-.erTY{position:absolute;left:10px;top:calc(var(--tw) - 46px);font-weight:900;font-size:36px;letter-spacing:-.05em;line-height:1;z-index:1;text-shadow:0 2px 14px rgba(0,0,0,.7)}
-.erTN{position:absolute;left:10px;right:10px;top:calc(var(--tw) + 8px);font-weight:800;font-size:10.5px;letter-spacing:.08em;line-height:1.25;text-transform:uppercase;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.erTK{position:absolute;left:10px;bottom:8px;font-size:10.5px;color:var(--accent2);font-weight:800;letter-spacing:.1em}
+.erEmo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:54px;filter:sepia(.3) drop-shadow(0 3px 4px rgba(0,0,0,.35))}.erTC::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 22px rgba(60,35,10,.45)}
+.erTY{position:absolute;left:-7px;top:calc(var(--tw) - 34px);padding:2px 12px 1px 14px;background:#9b2d20;color:#f8eed0;font:400 25px/1.1 'Pirata One',Georgia,serif;letter-spacing:.06em;z-index:2;box-shadow:0 3px 6px rgba(0,0,0,.4);clip-path:polygon(0 0,100% 0,calc(100% - 7px) 50%,100% 100%,0 100%)}
+.erTN{position:absolute;left:9px;right:9px;top:calc(var(--tw) + 6px);font:400 13px/1.15 'Pirata One',Georgia,serif;letter-spacing:.07em;text-transform:uppercase;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#3b2a14}
+.erTK{position:absolute;left:9px;bottom:6px;font:italic 12px 'IM Fell English',Georgia,serif;color:#9b2d20;font-weight:700;letter-spacing:.04em}
 .erHint{position:absolute;left:50%;bottom:16px;translate:-50% 0;padding:8px 14px;border-radius:999px;background:rgba(6,6,7,.82);border:1px solid rgba(255,255,255,.12);z-index:5;font-size:12px;letter-spacing:.2em;font-weight:800;color:#9a9a9a;pointer-events:none;transition:opacity .3s;text-align:center;white-space:nowrap}
 .erHint b{color:var(--accent2)}
 .erBack{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(max(10px,env(safe-area-inset-top,0px)) + 70px);z-index:8;display:flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.28);background:rgba(10,10,12,.78);backdrop-filter:blur(10px);color:#fff;font-weight:800;font-size:12px;letter-spacing:.14em;cursor:pointer;opacity:0;pointer-events:none;transform:translateX(-14px);transition:opacity .35s .2s,transform .35s .2s,background .2s,border-color .2s}
@@ -104,18 +123,18 @@ body.erOn{overflow:hidden}body.erOn header{position:relative;z-index:59;pointer-
 .erBar button:hover:not(:disabled){color:#000;background:var(--accent2)}.erBar button:disabled{opacity:.25;cursor:default}
 .erBar b{font-size:15px;letter-spacing:.04em;padding:0 10px;min-width:56px;text-align:center}
 .erProg{position:absolute;left:0;bottom:0;height:3px;background:var(--accent2);z-index:7;width:0;transition:width .12s}
-@media (max-width:700px){.erBack{top:calc(max(10px,env(safe-area-inset-top,0px)) + 112px)}.erTrack{padding-top:150px}.erBar button{white-space:nowrap;padding:9px 10px}.erTY{font-size:30px}.erTN{font-size:9.5px}.erHint{font-size:9.5px;letter-spacing:.12em}.erCard{width:200px}.erCard .erImg{height:128px}.erBar{bottom:12px}.erBack{padding:9px 14px}.erHint{font-size:10px;bottom:14px}}
+@media (max-width:700px){.erTitle i{display:none}.erFlag{left:auto!important;right:14px;translate:0 -50%!important}.erBack{top:calc(max(10px,env(safe-area-inset-top,0px)) + 112px)}.erTrack{padding-top:150px}.erBar button{white-space:nowrap;padding:9px 10px}.erTY{font-size:21px}.erTN{font-size:11px}.erHint{font-size:9.5px;letter-spacing:.12em}.erCard{width:200px}.erCard .erImg{height:128px}.erBar{bottom:12px}.erBack{padding:9px 14px}.erHint{font-size:10px;bottom:14px}}
 @media (prefers-reduced-motion:reduce){.erWorld,.erYW,.erTile{transition:none!important}}
-`;document.head.appendChild(st);
+`;document.head.appendChild(st);{const l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Pirata+One&display=swap';document.head.appendChild(l)}
 
 /* tiny covers (80px thumbnails) are shown at their real size over a blurred copy instead of being stretched */
 document.addEventListener('load',e=>{const i=e.target;if(!(i instanceof HTMLImageElement)||!i.classList.contains('fg'))return;const w=i.naturalWidth,h=i.naturalHeight,box=i.parentNode.clientHeight||150;
   if(w&&h&&Math.max(w,h)<box){i.style.width=w+'px';i.style.height=h+'px';i.style.objectFit='fill'}},true);
 /* ---------- state + dom ---------- */
 let mode='map',curY=null,tk=null,px=0,minX=0,busy=false,vw=0,vh=0,built=false;
-let world,svgp,layer,yw,backBtn,bar,eL,eR,prog,hint,TW=168,TH=214,tilePos={},cam={s:1,tx:0,ty:0},pan={};
+let world,deco,svgp,layer,yw,backBtn,bar,eL,eR,prog,hint,TW=168,TH=214,tilePos={},cam={s:1,tx:0,ty:0},pan={};
 function shell(){
-  root.innerHTML=`<div class="erWorld" id="erWorld"><svg><path id="erPath"/></svg></div>
+  root.innerHTML=`<div class="erWorld" id="erWorld"><svg><path id="erPath"/></svg><div class="erDeco" id="erDeco"></div></div>
   <div class="erHint" id="erHint">ERAS · <b id="erN"></b> YEARS · CLICK A YEAR TO ZOOM IN</div>
   <div class="erYW" id="erYW"><div class="erLayer" id="erLayer"></div>
    <div class="erEdge L" id="erEL"></div><div class="erEdge R" id="erER"></div>
@@ -123,7 +142,7 @@ function shell(){
    <div class="erProg" id="erProg"></div></div>
   <button type="button" class="erBack" id="erBack" aria-label="Back to all years">← ALL YEARS</button>`;
   root.classList.add('erScreen');
-  world=root.querySelector('#erWorld');svgp=root.querySelector('#erPath');layer=root.querySelector('#erLayer');yw=root.querySelector('#erYW');
+  world=root.querySelector('#erWorld');deco=root.querySelector('#erDeco');svgp=root.querySelector('#erPath');layer=root.querySelector('#erLayer');yw=root.querySelector('#erYW');
   backBtn=root.querySelector('#erBack');bar=root.querySelector('#erBar');eL=root.querySelector('#erEL');eR=root.querySelector('#erER');prog=root.querySelector('#erProg');hint=root.querySelector('#erHint');
   backBtn.onclick=zoomOut;
   root.querySelector('#erPrev').onclick=()=>step(-1);root.querySelector('#erNext').onclick=()=>step(1);
@@ -133,21 +152,59 @@ function shell(){
 /* ---------- overview map ---------- */
 function layoutMap(){
   vw=innerWidth;vh=innerHeight;
-  const cols=vw<560?3:vw<900?5:vw<1250?7:9;
-  TW=vw<560?124:168;TH=Math.round(TW*(vw<560?1.55:1.38));const gx=vw<560?22:34,gy=vw<560?46:60,pad=vw<560?18:36;
+  const small=vw<560;
+  TW=small?124:168;TH=Math.round(TW*(small?1.55:1.36));const gx=small?26:40,gy=small?64:74,pad=small?30:54,top=small?96:136;
+  const dimsFor=c=>{const n=YEARS.length,r=Math.ceil(n/c),e=c-(n-c*(r-1));return {W:pad*2+c*TW+(c-1)*gx,H:top+pad+r*TH+(r-1)*gy+(e>=2?30:small?170:160)}};
+  let cols=3;
+  if(!small){let bs=0;for(let c=4;c<=14;c++){const d=dimsFor(c),s=Math.min((vw-20)/d.W,(vh-136)/d.H);if(s>bs){bs=s;cols=c}}}
   root.style.setProperty('--tw',TW+'px');root.style.setProperty('--th',TH+'px');
-  const rows=Math.ceil(YEARS.length/cols),W=pad*2+cols*TW+(cols-1)*gx,H=pad*2+rows*TH+(rows-1)*gy+24;
+  const N=YEARS.length,rows=Math.ceil(N/cols),k=N-cols*(rows-1),lastRTL=(rows-1)%2===1,emptyCols=cols-k;
+  const bottomExtra=emptyCols>=2?30:small?150:130;
+  const W=pad*2+cols*TW+(cols-1)*gx,H=top+pad+rows*TH+(rows-1)*gy+bottomExtra;
   world.style.width=W+'px';world.style.height=H+'px';
+  const rnd=y=>{const s=Math.sin(y*12.9898)*43758.5453;return s-Math.floor(s)};
   tilePos={};const pts=[];
-  YEARS.forEach((y,i)=>{const r=Math.floor(i/cols),ci=i%cols,c=r%2?cols-1-ci:ci,x=pad+c*(TW+gx),yy=pad+r*(TH+gy);tilePos[y]={x,y:yy,cx:x+TW/2,cy:yy+TH/2};pts.push([x+TW/2,yy+TW/2])});
-  let d='';pts.forEach((p,i)=>{if(!i)d+=`M${p[0]} ${p[1]}`;else{const q=pts[i-1],mx=(q[0]+p[0])/2,my=(q[1]+p[1])/2;d+=` Q${q[0]} ${q[1]} ${mx} ${my}`;if(i===pts.length-1)d+=` T${p[0]} ${p[1]}`}});
+  YEARS.forEach((y,i)=>{const r=Math.floor(i/cols),ci=i%cols,c=r%2?cols-1-ci:ci,jx=(rnd(y)-.5)*(small?10:22),jy=(rnd(y+9)-.5)*(small?14:26),x=pad+c*(TW+gx)+jx,yy=top+r*(TH+gy)+jy;
+    tilePos[y]={x,y:yy,cx:x+TW/2,cy:yy+TH/2,rot:(rnd(y+3)-.5)*5};pts.push([x+TW/2,yy+TW/2])});
+  /* the X that marks the spot sits just past the last tile */
+  const last=tilePos[YEARS[N-1]];let xp;
+  if(emptyCols>=2)xp=[lastRTL?last.cx-TW*1.15:last.cx+TW*1.15,last.cy-TH*.18];
+  else xp=[last.cx,last.y+TH+(small?84:76)];
+  pts.push(xp);
+  let d=`M${pts[0][0]} ${pts[0][1]}`;
+  for(let q=0;q<pts.length-1;q++){const a=pts[q-1]||pts[q],b=pts[q],c=pts[q+1],e=pts[q+2]||c;
+    d+=` C${b[0]+(c[0]-a[0])/6} ${b[1]+(c[1]-a[1])/6} ${c[0]-(e[0]-b[0])/6} ${c[1]-(e[1]-b[1])/6} ${c[0]} ${c[1]}`}
   svgp.setAttribute('d',d);
-  world.querySelectorAll('.erTile').forEach(t=>{const p=tilePos[t.dataset.y];t.style.left=p.x+'px';t.style.top=p.y+'px'});
+  /* jagged torn-paper edge */
+  const jag=[];const stepP=34;
+  for(let x=0;x<=W;x+=stepP)jag.push([x,(rnd(x)*7)]);
+  for(let y=0;y<=H;y+=stepP)jag.push([W-rnd(y+1)*7,y]);
+  for(let x=W;x>=0;x-=stepP)jag.push([x,H-rnd(x+2)*7]);
+  for(let y=H;y>=0;y-=stepP)jag.push([rnd(y+3)*7,y]);
+  world.style.clipPath='polygon('+jag.map(p=>p[0].toFixed(0)+'px '+p[1].toFixed(0)+'px').join(',')+')';
+  world.querySelectorAll('.erTile').forEach(el=>{const q=tilePos[el.dataset.y];el.style.left=q.x+'px';el.style.top=q.y+'px';el.style.setProperty('--rot',q.rot.toFixed(2)+'deg')});
+  /* decorations: title, compass, jokes, start flag, X */
+  deco.innerHTML='';
+  const put=(h,x,y,cls,css)=>{const e=document.createElement('div');e.className='erDc '+(cls||'');e.innerHTML=h;e.style.left=x+'px';e.style.top=y+'px';if(css)e.style.cssText+=css;deco.appendChild(e)};
+  put(`<b>THE ERAS OF YE</b><i>a totally accurate treasure map (not to scale)</i>`,W/2,small?42:56,'erTitle');
+  const first=tilePos[YEARS[0]];
+  put('⚑ START HERE',first.x+TW/2,first.y-26,'erFlag');
+  put(`<span class="erXX">X</span><em>THE TREASURE:<br>the next album<br><small>(ETA: unknown)</small></em>`,xp[0],xp[1],'erXm');
+  const cx=emptyCols>=2?(lastRTL?pad+emptyCols*(TW+gx)/2-gx/2:W-pad-emptyCols*(TW+gx)/2+gx/2):(lastRTL?W-pad-90:pad+90),cy=emptyCols>=2?last.cy+10:H-bottomExtra/2+4;
+  put(`<svg viewBox="-50 -50 100 100" width="${small?96:150}" height="${small?96:150}"><g fill="none" stroke="#5a3a17" stroke-width="1.6"><circle r="40"/><circle r="30" stroke-dasharray="2 3"/><path d="M0-48V48M-48 0H48" stroke-width="1"/></g><path d="M0-46 8 0 0 46-8 0Z" fill="#9b2d20" stroke="#5a3a17" stroke-width="1.2"/><path d="M-46 0 0 8 46 0 0-8Z" fill="#e9d6a5" stroke="#5a3a17" stroke-width="1.2"/><g font-family="serif" font-weight="700" font-size="11" fill="#3b2a14" text-anchor="middle"><text y="-52">N</text><text y="60">S</text><text x="56" y="4">E</text><text x="-56" y="4">W</text></g></svg><small>N = "next drop"<br>S = "stream count"</small>`,cx,cy,'erCmp');
+  const GAP=['☠ HERE BE LEAKS','≈ DELAY BAY ≈','⛰ MOUNT YANDHI <small>(summit never reached)</small>','🌴 SUNDAY SERVICE SANDS','≈ STEM PLAYER STRAIT ≈','🦜 TWEET STORM ZONE','≈ SEA OF UNRELEASED ALBUMS ≈','⚓ ADIDAS HARBOR <small>(closed)</small>','☠ BEWARE: ALBUM DATES','🐙 THE KRAKEN OF FEATURES','🏝 ISLAND OF UNFINISHED SONGS'];
+  for(let r=0;r<rows-1;r++){
+    const yy=top+(r+1)*TH+r*gy+gy/2-8+(rnd(r+40)-.5)*10;
+    const nL=small?1:2;
+    for(let q=0;q<nL;q++){const xx=small?W/2:W*(q?.74:.26)+(rnd(r*7+q)-.5)*90;put(GAP[(r*nL+q)%GAP.length],xx,yy,'erGap',`--r:${((rnd(r+q*5)-.5)*5).toFixed(1)}deg`)}
+  }
+  const emoji=['🐙','🦈','⚓','🧭','🏴‍☠️'];
+  if(!small){put('🐙',W-pad-30,top-82,'erEm');put('🦈',W/2,H-bottomExtra/2+10,'erEm')}
   pan.W=W;pan.H=H;fitCam();applyCam();
 }
 function fitCam(){
   const top=84,bot=52,aw=vw-20,ah=vh-top-bot;let s=Math.min(aw/pan.W,ah/pan.H,1.25);
-  if(s<.62)s=Math.min(aw/pan.W,1.1);
+  if(vw<560)s=Math.min(aw/pan.W,1.1);
   pan.s=s;pan.fit=s;const sw=pan.W*s,sh=pan.H*s;
   cam={s,tx:(vw-sw)/2,ty:sh<=ah?top+(ah-sh)/2:top};clampCam();
 }
@@ -163,7 +220,7 @@ function makeTiles(){
   YEARS.forEach(y=>{
     const m=META[y]||[String(y),'',''],ev=BY[y],cv=m[2]||(ev.find(e=>e.c&&!/^data:/.test(e.c))||{}).c||'',b=document.createElement('button');
     b.type='button';b.className='erTile';b.dataset.y=y;b.style.setProperty('--hu',(y*37)%360);b.setAttribute('aria-label',`${y} ${m[0]}`);
-    b.innerHTML=`<span class="erTC">${cv?`<img loading="lazy" alt="" src="${esc(cv)}" onerror="this.remove()">`:''}</span><span class="erTY">${y}</span><span class="erTN">${esc(m[0]||'')}</span><span class="erTK">${ev.length} MOMENT${ev.length===1?'':'S'}</span>`;
+    b.innerHTML=`<span class="erTC">${cv?`<img loading="lazy" alt="" src="${esc(cv)}" onerror="this.remove()">`:`<span class="erEmo">${EMO[y]||'🗺️'}</span>`}</span><span class="erTY">${y}</span><span class="erTN">${esc(m[0]||'')}</span><span class="erTK">${ev.length} FIND${ev.length===1?'':'S'}</span>`;
     world.appendChild(b);
   });
 }
