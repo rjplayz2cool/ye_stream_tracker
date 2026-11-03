@@ -53,7 +53,7 @@ body.erOn{overflow:hidden}body.erOn header{position:relative;z-index:59;pointer-
 .erTile:hover .erTC img{filter:none;transform:scale(1.06)}
 .erTC::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.78))}
 .erTY{position:absolute;left:10px;top:calc(var(--tw) - 46px);font-weight:900;font-size:36px;letter-spacing:-.05em;line-height:1;z-index:1;text-shadow:0 2px 14px rgba(0,0,0,.7)}
-.erTN{position:absolute;left:10px;right:10px;top:calc(var(--tw) + 8px);font-weight:800;font-size:10.5px;letter-spacing:.08em;line-height:1.25;text-transform:uppercase;max-height:2.6em;overflow:hidden}
+.erTN{position:absolute;left:10px;right:10px;top:calc(var(--tw) + 8px);font-weight:800;font-size:10.5px;letter-spacing:.08em;line-height:1.25;text-transform:uppercase;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .erTK{position:absolute;left:10px;bottom:8px;font-size:10.5px;color:var(--accent2);font-weight:800;letter-spacing:.1em}
 .erHint{position:absolute;left:50%;bottom:16px;translate:-50% 0;padding:8px 14px;border-radius:999px;background:rgba(6,6,7,.82);border:1px solid rgba(255,255,255,.12);z-index:5;font-size:12px;letter-spacing:.2em;font-weight:800;color:#9a9a9a;pointer-events:none;transition:opacity .3s;text-align:center;white-space:nowrap}
 .erHint b{color:var(--accent2)}
@@ -84,13 +84,11 @@ body.erOn{overflow:hidden}body.erOn header{position:relative;z-index:59;pointer-
 .erCard{position:relative;width:236px;background:#121214;border:1px solid rgba(255,255,255,.13);border-radius:14px;overflow:hidden;transition:transform .25s var(--ease),border-color .25s}
 .erCard:hover{transform:translateY(-4px);border-color:var(--kc)}
 .erCard.u{align-self:end;margin-bottom:0}.erCard.d{align-self:start}
-.erCard .erImg{height:128px;background:#0b0b0c;overflow:hidden}
-.erCard img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
+.erCard .erImg{position:relative;height:150px;background:#0b0b0c;overflow:hidden;display:flex;align-items:center;justify-content:center}.erImg img{position:absolute;display:block;pointer-events:none;-webkit-user-drag:none}.erImg .bg{inset:-20px;width:calc(100% + 40px);height:calc(100% + 40px);object-fit:cover;filter:blur(18px) brightness(.55) saturate(1.2)}.erImg .fg{position:relative;max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5))}.erImg.ph{background:linear-gradient(135deg,color-mix(in srgb,var(--kc) 22%,#0b0b0c),#0b0b0c 70%)}.erImg.ph b{font-size:34px;font-weight:900;letter-spacing:-.04em;color:var(--kc);opacity:.9}
 .erTxt{padding:11px 13px 13px}
 .erCard small{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:800;letter-spacing:.14em;color:#a8a8a8}
 .erCard small b{color:var(--kc)}
 .erCard strong{display:block;margin-top:6px;font-size:14.5px;line-height:1.28;font-weight:800;letter-spacing:-.01em}
-.erCard.noimg{border-left:3px solid var(--kc)}
 .erCard.up{border-style:dashed}
 .erCard::after{content:'';position:absolute;left:22px;width:1px;height:26px;background:var(--kc);opacity:.7}
 .erCard.u::after{top:100%}.erCard.d::after{bottom:100%}
@@ -106,10 +104,13 @@ body.erOn{overflow:hidden}body.erOn header{position:relative;z-index:59;pointer-
 .erBar button:hover:not(:disabled){color:#000;background:var(--accent2)}.erBar button:disabled{opacity:.25;cursor:default}
 .erBar b{font-size:15px;letter-spacing:.04em;padding:0 10px;min-width:56px;text-align:center}
 .erProg{position:absolute;left:0;bottom:0;height:3px;background:var(--accent2);z-index:7;width:0;transition:width .12s}
-@media (max-width:700px){.erBack{top:calc(max(10px,env(safe-area-inset-top,0px)) + 112px)}.erTrack{padding-top:150px}.erBar button{white-space:nowrap;padding:9px 10px}.erTY{font-size:30px}.erTN{font-size:9.5px}.erHint{font-size:9.5px;letter-spacing:.12em}.erCard{width:200px}.erCard .erImg{height:104px}.erBar{bottom:12px}.erBack{padding:9px 14px}.erHint{font-size:10px;bottom:14px}}
+@media (max-width:700px){.erBack{top:calc(max(10px,env(safe-area-inset-top,0px)) + 112px)}.erTrack{padding-top:150px}.erBar button{white-space:nowrap;padding:9px 10px}.erTY{font-size:30px}.erTN{font-size:9.5px}.erHint{font-size:9.5px;letter-spacing:.12em}.erCard{width:200px}.erCard .erImg{height:128px}.erBar{bottom:12px}.erBack{padding:9px 14px}.erHint{font-size:10px;bottom:14px}}
 @media (prefers-reduced-motion:reduce){.erWorld,.erYW,.erTile{transition:none!important}}
 `;document.head.appendChild(st);
 
+/* tiny covers (80px thumbnails) are shown at their real size over a blurred copy instead of being stretched */
+document.addEventListener('load',e=>{const i=e.target;if(!(i instanceof HTMLImageElement)||!i.classList.contains('fg'))return;const w=i.naturalWidth,h=i.naturalHeight,box=i.parentNode.clientHeight||150;
+  if(w&&h&&Math.max(w,h)<box){i.style.width=w+'px';i.style.height=h+'px';i.style.objectFit='fill'}},true);
 /* ---------- state + dom ---------- */
 let mode='map',curY=null,tk=null,px=0,minX=0,busy=false,vw=0,vh=0,built=false;
 let world,svgp,layer,yw,backBtn,bar,eL,eR,prog,hint,TW=168,TH=214,tilePos={},cam={s:1,tx:0,ty:0},pan={};
@@ -133,12 +134,12 @@ function shell(){
 function layoutMap(){
   vw=innerWidth;vh=innerHeight;
   const cols=vw<560?3:vw<900?5:vw<1250?7:9;
-  TW=vw<560?124:168;TH=Math.round(TW*(vw<560?1.5:1.27));const gx=vw<560?22:34,gy=vw<560?46:60,pad=vw<560?18:36;
+  TW=vw<560?124:168;TH=Math.round(TW*(vw<560?1.55:1.38));const gx=vw<560?22:34,gy=vw<560?46:60,pad=vw<560?18:36;
   root.style.setProperty('--tw',TW+'px');root.style.setProperty('--th',TH+'px');
   const rows=Math.ceil(YEARS.length/cols),W=pad*2+cols*TW+(cols-1)*gx,H=pad*2+rows*TH+(rows-1)*gy+24;
   world.style.width=W+'px';world.style.height=H+'px';
   tilePos={};const pts=[];
-  YEARS.forEach((y,i)=>{const r=Math.floor(i/cols),ci=i%cols,c=r%2?cols-1-ci:ci,x=pad+c*(TW+gx),yy=pad+r*(TH+gy)+(c%2?14:0);tilePos[y]={x,y:yy,cx:x+TW/2,cy:yy+TH/2};pts.push([x+TW/2,yy+TW/2])});
+  YEARS.forEach((y,i)=>{const r=Math.floor(i/cols),ci=i%cols,c=r%2?cols-1-ci:ci,x=pad+c*(TW+gx),yy=pad+r*(TH+gy);tilePos[y]={x,y:yy,cx:x+TW/2,cy:yy+TH/2};pts.push([x+TW/2,yy+TW/2])});
   let d='';pts.forEach((p,i)=>{if(!i)d+=`M${p[0]} ${p[1]}`;else{const q=pts[i-1],mx=(q[0]+p[0])/2,my=(q[1]+p[1])/2;d+=` Q${q[0]} ${q[1]} ${mx} ${my}`;if(i===pts.length-1)d+=` T${p[0]} ${p[1]}`}});
   svgp.setAttribute('d',d);
   world.querySelectorAll('.erTile').forEach(t=>{const p=tilePos[t.dataset.y];t.style.left=p.x+'px';t.style.top=p.y+'px'});
@@ -156,7 +157,7 @@ function clampCam(){
   const sw=pan.W*cam.s;if(sw<=vw)cam.tx=(vw-sw)/2;else cam.tx=Math.min(10,Math.max(vw-sw-10,cam.tx));
 }
 function applyCam(){world.style.transform=`translate(${cam.tx}px,${cam.ty}px) scale(${cam.s})`}
-function tileCam(y){const p=tilePos[y],s=Math.min(vw*.7/TW,vh*.78/TH,7);return{s,tx:vw/2-p.cx*s,ty:vh/2-p.cy*s}}
+function tileCam(y){const p=tilePos[y],s=Math.min(vw*.7/TW,vh*.78/TH,4.2);return{s,tx:vw/2-p.cx*s,ty:vh/2-p.cy*s}}
 function makeTiles(){
   world.querySelectorAll('.erTile').forEach(n=>n.remove());
   YEARS.forEach(y=>{
@@ -181,7 +182,7 @@ function buildTrack(y){
     h+=`<section class="erMo${g.length?'':' emp'}${k?'':' all'}" style="--mw:${g.length?cols*254:120}px"><h3>${k?MON[k-1]:'ALL YEAR'}</h3>`;
     g.forEach((e,i)=>{
       const up=i%2===0,col=Math.floor(i/2)+1,kc=(KIND[e.k]||KIND.news)[1],kl=(KIND[e.k]||KIND.news)[0];
-      h+=`<article class="erCard ${up?'u':'d'}${e.c?'':' noimg'}${e.up?' up':''}" style="grid-column:${col};grid-row:${up?1:3};--kc:${kc}">${e.c?`<div class="erImg"><img loading="lazy" draggable="false" alt="" src="${esc(e.c)}" onerror="this.parentNode.remove()"></div>`:''}<div class="erTxt"><small><i></i>${dateLabel(e)} · <b>${e.up?'UPCOMING':kl}</b></small><strong>${esc(e.t)}</strong></div></article>`;
+      h+=`<article class="erCard ${up?'u':'d'}${e.up?' up':''}" style="grid-column:${col};grid-row:${up?1:3};--kc:${kc}"><div class="erImg${e.c?'':' ph'}">${e.c?`<img class="bg" aria-hidden="true" loading="lazy" draggable="false" alt="" src="${esc(e.c)}"><img class="fg" loading="lazy" draggable="false" alt="" src="${esc(e.c)}">`:`<b>${dateLabel(e)}</b>`}</div><div class="erTxt"><small><i></i>${dateLabel(e)} · <b>${e.up?'UPCOMING':kl}</b></small><strong>${esc(e.t)}</strong></div></article>`;
     });
     h+='</section>';
   }
