@@ -6,7 +6,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const CFG=window.YE_SUPABASE||{};
 const LIVE=!!(window.supabase&&CFG.url&&CFG.anonKey&&!String(CFG.url).includes('YOUR_'));
 let sb=null;try{if(LIVE)sb=window.supabase.createClient(CFG.url,CFG.anonKey)}catch(e){}
-let docs=null,loading=null,hosted=null,sending=false,built=false;
+let docs=null,loading=null,hosted=null,sending=false,built=false,live='';
 let chats=[],cur=null,uid=null,useLocal=false,editing=null;
 const STOP=new Set('a an the is are was were be been of to in on at for from by with and or but not do does did what whats which who whom when where why how tell me about any all that this these those it its i you your my can could would should have has had get got give list some more most song songs ye kanye west send share show play listen download link links file files please can u'.split(' '));
 const strip=h=>String(h??'').replace(/<br\s*\/?>/gi,' | ').replace(/<[^>]+>/g,'').replace(/&#x27;|&#39;/g,"'").replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
@@ -116,7 +116,7 @@ function msgHtml(m){
 function paintLog(){
   const box=$('aiLog');const msgs=cur?cur.messages:[];
   if(!msgs.length&&!sending){box.innerHTML=welcome();return}
-  box.innerHTML=msgs.map(msgHtml).join('')+(sending?'<div class="aiMsg a"><div class="aiAv">AI</div><div class="aiB aiTyping"><i></i><i></i><i></i></div></div>':'');
+  box.innerHTML=msgs.map(msgHtml).join('')+(sending?(live?'<div class="aiMsg a" id="aiLive"><div class="aiAv">AI</div><div class="aiB">'+md(live)+'</div></div>':'<div class="aiMsg a"><div class="aiAv">AI</div><div class="aiB aiTyping"><i></i><i></i><i></i></div></div>'):'');
   box.scrollTop=box.scrollHeight;
 }
 function group(c){
@@ -213,16 +213,34 @@ async function send(text){
   try{
     const {data:{session}}=await sb.auth.getSession();
     const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),50000);
-    const r=await fetch(CFG.url+'/functions/v1/ye-ai',{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',apikey:CFG.anonKey,Authorization:'Bearer '+session.access_token},body:JSON.stringify({messages:msgs.slice(-9).map(m=>({role:m.role,content:m.content})),context:ctx})});
+    live='';
+    const r=await fetch(CFG.url+'/functions/v1/ye-ai',{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',apikey:CFG.anonKey,Authorization:'Bearer '+session.access_token},body:JSON.stringify({stream:true,messages:msgs.slice(-9).map(m=>({role:m.role,content:m.content})),context:ctx})});
+    let j={};
+    if(r.ok&&(r.headers.get('content-type')||'').includes('text/event-stream')&&r.body){
+      const rd=r.body.getReader(),dec=new TextDecoder();let buf='',raf=0;
+      const flush=()=>{raf=0;const el=document.querySelector('#aiLive .aiB');if(el){el.innerHTML=md(live);const b=$('aiLog');b.scrollTop=b.scrollHeight}else paintLog()};
+      for(;;){
+        const {done,value}=await rd.read();if(done)break;
+        buf+=dec.decode(value,{stream:true});let i;
+        while((i=buf.indexOf('\n\n'))>=0){
+          const ev=buf.slice(0,i).trim();buf=buf.slice(i+2);
+          if(!ev.startsWith('data:'))continue;
+          let d;try{d=JSON.parse(ev.slice(5))}catch(e){continue}
+          if(d.t){live+=d.t;clearTimeout(to);if(!raf)raf=requestAnimationFrame(flush)}
+          else if(d.done)j={reply:live.trim(),remaining:d.remaining};
+          else if(d.error)j=live.trim()?{reply:live.trim(),remaining:undefined}:{error:d.error};
+        }
+      }
+      if(!j.reply&&!j.error&&live.trim())j={reply:live.trim()};
+    }else j=await r.json().catch(()=>({}));
     clearTimeout(to);
-    const j=await r.json().catch(()=>({}));
     if(r.ok&&typeof j.remaining==='number'){const f=document.querySelector('.aiFine');if(f){f.dataset.left=j.remaining;f.firstElementChild.textContent=(j.remaining<=15?j.remaining+' questions left today. ':'')+'Ye AI can make mistakes. Check the Ye Tracker tab for anything important. Tweets via '}}
     if(r.ok&&j.reply)reply={role:'assistant',content:j.reply,files:files.length?files:undefined,src:hits.slice(0,6).map(d=>d.name.slice(0,90)).concat(tws.slice(0,4).map(d=>'Tweet ('+d.era+'): '+d.name.replace(/\s+/g,' ').slice(0,70)))};
     else if(j.error==='slow')reply={role:'assistant',content:'Easy there. Give it a few seconds between questions and send that again.'};
     else if(j.error==='limit')reply={role:'assistant',content:`You've hit today's limit of ${j.limit||40} questions. It resets tomorrow (UTC). The Ye Tracker tab is always open in the meantime.`};
     else{reply=fallback(q,j.error==='no_key'?'Ye AI isn\'t switched on yet.':j.error==='busy'?'Ye AI is busy right now.':'Ye AI couldn\'t answer just now.');if(files.length)reply.files=files}
   }catch(e){reply=fallback(q,e&&e.name==='AbortError'?'Ye AI took too long to answer.':'Couldn\'t reach Ye AI.');if(files.length)reply.files=files}
-  cur.messages.push(reply);sending=false;paintAll();
+  live='';cur.messages.push(reply);sending=false;paintAll();
   await saveChat(cur);paintList();
 }
 function build(){
