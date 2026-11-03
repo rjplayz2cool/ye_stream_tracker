@@ -5,7 +5,6 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 const KIND={release:['RELEASE','#b6ff39'],music:['MUSIC','#b6ff39'],live:['LIVE','#ff5a5a'],leak:['LEAK','#a78bfa'],family:['FAMILY','#ffb86b'],news:['NEWS','#6bd0ff'],fashion:['FASHION','#ff7ad9'],business:['BUSINESS','#ffd84d'],life:['LIFE','#d4d4d4']};
 const kindOf=t=>/\b(Leak|Leaked|Snippet|Snippets|Demo|OG File|Files?)\b/i.test(t)?'leak':/\b(Tour|Live|Performs?|Performance|Headlines?|Festival|Concert|Listening|Sunday Service|Show|Opens?)\b/i.test(t)?'live':/\b(Release|Releases|Released|Drops?|Album|Single|Peaks|Certified|Debuts?)\b/i.test(t)?'release':/\b(Yeezy|Adidas|Gap|Collection|Season|Sneaker|Balenciaga)\b/i.test(t)?'fashion':'news';
-const EMO={1977:'👶',1980:'🌆',1987:'🥢',1996:'🎛️',1998:'🎒',2017:'🤫'};
 const KID={North:'North West',Saint:'Saint West',Chicago:'Chicago West',Psalm:'Psalm West'};
 const ft=s=>s.toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3);
 const similar=(a,b)=>{const A=new Set(ft(a)),B=ft(b);if(!A.size||!B.length)return false;const n=B.filter(w=>A.has(w)).length;return n/Math.min(A.size,B.length)>=.6};
@@ -32,6 +31,7 @@ function build(){
     if(m>0&&(BY[y]||[]).some(e=>e.m===m&&similar(e.t,t)))continue;
     add(+y,{m,d,t,k});
   }
+  for(const [y,k,src] of window.ERAS_IMG||[])for(const e of BY[y]||[])if(!e.c&&e.t.toLowerCase().includes(k)&&!src.startsWith('__'))e.c=src;
   YEARS=Object.keys(BY).map(Number).filter(y=>y>=1977).sort((a,b)=>a-b);
   for(const y of YEARS)BY[y].sort((a,b)=>(a.m||0)-(b.m||0)||(a.d||0)-(b.d||0));
 }
@@ -44,36 +44,21 @@ body.erOn{overflow:hidden}body.erOn header{position:relative;z-index:59;pointer-
  background-image:radial-gradient(1200px 700px at 20% 10%,rgba(182,255,57,.07),transparent 60%),radial-gradient(900px 600px at 90% 90%,rgba(139,92,246,.10),transparent 60%),linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
  background-size:auto,auto,64px 64px,64px 64px;background-position:0 0,0 0,var(--bgx,0px) 0,var(--bgx,0px) 0}
 .erScreen::before{content:'';position:absolute;left:0;right:0;top:0;height:92px;z-index:4;pointer-events:none;background:linear-gradient(#060607 35%,rgba(6,6,7,0))}.erScreen.grab{cursor:grabbing}.erScreen.yr{cursor:grab}
-.erWorld{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;color:#3b2a14;
- background:radial-gradient(ellipse 600px 380px at 14% 18%,rgba(140,86,28,.20),transparent 70%),radial-gradient(ellipse 520px 420px at 86% 78%,rgba(120,70,20,.22),transparent 70%),radial-gradient(ellipse 380px 260px at 60% 40%,rgba(255,244,214,.55),transparent 70%),radial-gradient(ellipse at 50% 50%,#edd9a2 0%,#e1c98d 62%,#c9a566 100%),#e1c98d;
- box-shadow:inset 0 0 140px rgba(94,52,12,.5)}
-.erWorld::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.55;mix-blend-mode:multiply;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .36 0 0 0 0 .22 0 0 0 0 .08 0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.erWorld{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;color:#fff}
 .erWorld svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
-.erWorld path{fill:none;stroke:#9b2d20;stroke-width:3.2;stroke-dasharray:2 11;stroke-linecap:round;opacity:.85}
-.erDeco{position:absolute;inset:0;pointer-events:none;font-family:'Pirata One','IM Fell English SC',Georgia,serif}
+.erWorld path{fill:none;stroke:#b6ff39;stroke-width:3;stroke-dasharray:2 11;stroke-linecap:round;opacity:.55}
+.erDeco{position:absolute;inset:0;pointer-events:none}
 .erDc{position:absolute;translate:-50% -50%;text-align:center;white-space:nowrap}
-.erTitle b{display:block;font-size:clamp(30px,4.2vw,58px);letter-spacing:.06em;font-weight:400;color:#3b2a14;text-shadow:1px 1px 0 rgba(255,240,200,.7)}
-.erTitle i{display:block;font:italic 15px/1.2 'IM Fell English',Georgia,serif;color:#6b4b22;margin-top:2px}
-.erFlag{font-size:15px;letter-spacing:.1em;color:#9b2d20;rotate:-4deg}
-.erGap{font-size:16px;letter-spacing:.08em;color:#6b4b22;rotate:var(--r,0deg);opacity:.9}
-.erGap small{font-size:11px;font-family:'IM Fell English',Georgia,serif;font-style:italic;letter-spacing:0;display:block}
-.erCmp{opacity:.92;font-size:12px;line-height:1.3;color:#5a3a17;font-family:'IM Fell English',Georgia,serif;font-style:italic}
-.erCmp small{display:block;margin-top:4px}
-.erXm{display:flex;flex-direction:column;align-items:center;gap:0}
-.erXX{font-size:104px;line-height:.8;color:#b3261e;rotate:-8deg;text-shadow:2px 2px 0 rgba(255,240,200,.7)}
-.erXm em{font-style:normal;font-size:16px;letter-spacing:.08em;color:#3b2a14;margin-top:4px;line-height:1.15}
-.erXm small{font:italic 12px 'IM Fell English',Georgia,serif;letter-spacing:0;color:#6b4b22}
-.erEm{font-size:46px;opacity:.7;filter:sepia(.5)}
-.erTile{position:absolute;display:block;width:var(--tw);height:var(--th);padding:0;border:1px solid #7d5c2c;border-radius:3px;background:#f7edd0;color:#3b2a14;overflow:visible;cursor:pointer;text-align:left;font:inherit;rotate:var(--rot,0deg);box-shadow:0 8px 14px rgba(60,35,10,.42),0 1px 0 rgba(255,255,255,.6) inset;transition:transform .25s var(--ease),rotate .25s var(--ease),box-shadow .25s}
-.erTile::before{content:'';position:absolute;top:-6px;left:50%;width:13px;height:13px;margin-left:-6px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8a78,#a01d12 70%);box-shadow:0 3px 3px rgba(0,0,0,.45);z-index:5}
-.erTile:hover,.erTile:focus-visible{transform:translateY(-6px) scale(1.08);rotate:0deg;box-shadow:0 20px 34px rgba(60,35,10,.55);z-index:6;outline:0;border-color:#9b2d20}
-.erTC{position:absolute;left:7px;top:7px;width:calc(var(--tw) - 14px);height:calc(var(--tw) - 14px);background:linear-gradient(140deg,hsl(var(--hu) 40% 55%),hsl(calc(var(--hu) + 40) 45% 32%));overflow:hidden;border:1px solid rgba(60,35,10,.5)}
-.erTC img{width:100%;height:100%;object-fit:cover;display:block;filter:sepia(.55) saturate(.9) contrast(1.05);transition:filter .3s,transform .5s var(--ease)}
-.erTile:hover .erTC img{filter:none;transform:scale(1.06)}
-.erEmo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:54px;filter:sepia(.3) drop-shadow(0 3px 4px rgba(0,0,0,.35))}.erTC::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 22px rgba(60,35,10,.45)}
-.erTY{position:absolute;left:-7px;top:calc(var(--tw) - 34px);padding:2px 12px 1px 14px;background:#9b2d20;color:#f8eed0;font:400 25px/1.1 'Pirata One',Georgia,serif;letter-spacing:.06em;z-index:2;box-shadow:0 3px 6px rgba(0,0,0,.4);clip-path:polygon(0 0,100% 0,calc(100% - 7px) 50%,100% 100%,0 100%)}
-.erTN{position:absolute;left:9px;right:9px;top:calc(var(--tw) + 6px);font:400 13px/1.15 'Pirata One',Georgia,serif;letter-spacing:.07em;text-transform:uppercase;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#3b2a14}
-.erTK{position:absolute;left:9px;bottom:6px;font:italic 12px 'IM Fell English',Georgia,serif;color:#9b2d20;font-weight:700;letter-spacing:.04em}
+.erTitle b{display:block;font-size:clamp(26px,3.6vw,48px);letter-spacing:.14em;font-weight:800;color:#fff}
+.erTile{position:absolute;display:block;width:var(--tw);height:var(--th);padding:0;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:#121214;color:#fff;overflow:visible;cursor:pointer;text-align:left;font:inherit;rotate:var(--rot,0deg);box-shadow:0 10px 24px rgba(0,0,0,.6);transition:transform .25s var(--ease),rotate .25s var(--ease),box-shadow .25s,border-color .25s}
+.erTile::before{content:'';position:absolute;top:-6px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#b6ff39;box-shadow:0 0 12px rgba(182,255,57,.7);z-index:5}
+.erTile:hover,.erTile:focus-visible{transform:translateY(-6px) scale(1.08);rotate:0deg;box-shadow:0 20px 40px rgba(0,0,0,.75);z-index:6;outline:0;border-color:#b6ff39}
+.erTC{position:absolute;left:7px;top:7px;width:calc(var(--tw) - 14px);height:calc(var(--tw) - 14px);background:linear-gradient(140deg,hsl(var(--hu) 30% 24%),hsl(calc(var(--hu) + 40) 35% 12%));overflow:hidden;border-radius:6px}
+.erTC img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s var(--ease)}
+.erTile:hover .erTC img{transform:scale(1.06)}
+.erTY{position:absolute;left:-7px;top:calc(var(--tw) - 34px);padding:2px 12px 1px 12px;background:#b6ff39;color:#060607;font-weight:800;font-size:22px;line-height:1.15;letter-spacing:.04em;z-index:2;border-radius:4px;box-shadow:0 3px 8px rgba(0,0,0,.5)}
+.erTN{position:absolute;left:9px;right:9px;top:calc(var(--tw) + 6px);font-weight:700;font-size:12px;line-height:1.2;letter-spacing:.06em;text-transform:uppercase;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#fff}
+.erTK{position:absolute;left:9px;bottom:6px;font-weight:600;font-size:11px;color:#b6ff39;letter-spacing:.1em}
 .erHint{position:absolute;left:50%;bottom:16px;translate:-50% 0;padding:8px 14px;border-radius:999px;background:rgba(6,6,7,.82);border:1px solid rgba(255,255,255,.12);z-index:5;font-size:12px;letter-spacing:.2em;font-weight:800;color:#9a9a9a;pointer-events:none;transition:opacity .3s;text-align:center;white-space:nowrap}
 .erHint b{color:var(--accent2)}
 .erBack{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(max(10px,env(safe-area-inset-top,0px)) + 70px);z-index:8;display:flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.28);background:rgba(10,10,12,.78);backdrop-filter:blur(10px);color:#fff;font-weight:800;font-size:12px;letter-spacing:.14em;cursor:pointer;opacity:0;pointer-events:none;transform:translateX(-14px);transition:opacity .35s .2s,transform .35s .2s,background .2s,border-color .2s}
@@ -123,9 +108,9 @@ body.erOn{overflow:hidden}body.erOn header{position:relative;z-index:59;pointer-
 .erBar button:hover:not(:disabled){color:#000;background:var(--accent2)}.erBar button:disabled{opacity:.25;cursor:default}
 .erBar b{font-size:15px;letter-spacing:.04em;padding:0 10px;min-width:56px;text-align:center}
 .erProg{position:absolute;left:0;bottom:0;height:3px;background:var(--accent2);z-index:7;width:0;transition:width .12s}
-@media (max-width:700px){.erTitle i{display:none}.erFlag{left:auto!important;right:14px;translate:0 -50%!important}.erBack{top:calc(max(10px,env(safe-area-inset-top,0px)) + 112px)}.erTrack{padding-top:150px}.erBar button{white-space:nowrap;padding:9px 10px}.erTY{font-size:21px}.erTN{font-size:11px}.erHint{font-size:9.5px;letter-spacing:.12em}.erCard{width:200px}.erCard .erImg{height:128px}.erBar{bottom:12px}.erBack{padding:9px 14px}.erHint{font-size:10px;bottom:14px}}
+@media (max-width:700px){.erBack{top:calc(max(10px,env(safe-area-inset-top,0px)) + 112px)}.erTrack{padding-top:150px}.erBar button{white-space:nowrap;padding:9px 10px}.erTY{font-size:21px}.erTN{font-size:11px}.erHint{font-size:9.5px;letter-spacing:.12em}.erCard{width:200px}.erCard .erImg{height:128px}.erBar{bottom:12px}.erBack{padding:9px 14px}.erHint{font-size:10px;bottom:14px}}
 @media (prefers-reduced-motion:reduce){.erWorld,.erYW,.erTile{transition:none!important}}
-`;document.head.appendChild(st);{const l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Pirata+One&display=swap';document.head.appendChild(l)}
+`;document.head.appendChild(st);
 
 /* tiny covers (80px thumbnails) are shown at their real size over a blurred copy instead of being stretched */
 document.addEventListener('load',e=>{const i=e.target;if(!(i instanceof HTMLImageElement)||!i.classList.contains('fg'))return;const w=i.naturalWidth,h=i.naturalHeight,box=i.parentNode.clientHeight||150;
@@ -175,31 +160,11 @@ function layoutMap(){
   for(let q=0;q<pts.length-1;q++){const a=pts[q-1]||pts[q],b=pts[q],c=pts[q+1],e=pts[q+2]||c;
     d+=` C${b[0]+(c[0]-a[0])/6} ${b[1]+(c[1]-a[1])/6} ${c[0]-(e[0]-b[0])/6} ${c[1]-(e[1]-b[1])/6} ${c[0]} ${c[1]}`}
   svgp.setAttribute('d',d);
-  /* jagged torn-paper edge */
-  const jag=[];const stepP=34;
-  for(let x=0;x<=W;x+=stepP)jag.push([x,(rnd(x)*7)]);
-  for(let y=0;y<=H;y+=stepP)jag.push([W-rnd(y+1)*7,y]);
-  for(let x=W;x>=0;x-=stepP)jag.push([x,H-rnd(x+2)*7]);
-  for(let y=H;y>=0;y-=stepP)jag.push([rnd(y+3)*7,y]);
-  world.style.clipPath='polygon('+jag.map(p=>p[0].toFixed(0)+'px '+p[1].toFixed(0)+'px').join(',')+')';
   world.querySelectorAll('.erTile').forEach(el=>{const q=tilePos[el.dataset.y];el.style.left=q.x+'px';el.style.top=q.y+'px';el.style.setProperty('--rot',q.rot.toFixed(2)+'deg')});
   /* decorations: title, compass, jokes, start flag, X */
   deco.innerHTML='';
   const put=(h,x,y,cls,css)=>{const e=document.createElement('div');e.className='erDc '+(cls||'');e.innerHTML=h;e.style.left=x+'px';e.style.top=y+'px';if(css)e.style.cssText+=css;deco.appendChild(e)};
-  put(`<b>THE ERAS OF YE</b><i>a totally accurate treasure map (not to scale)</i>`,W/2,small?42:56,'erTitle');
-  const first=tilePos[YEARS[0]];
-  put('⚑ START HERE',first.x+TW/2,first.y-26,'erFlag');
-  put(`<span class="erXX">X</span><em>THE TREASURE:<br>the next album<br><small>(ETA: unknown)</small></em>`,xp[0],xp[1],'erXm');
-  const cx=emptyCols>=2?(lastRTL?pad+emptyCols*(TW+gx)/2-gx/2:W-pad-emptyCols*(TW+gx)/2+gx/2):(lastRTL?W-pad-90:pad+90),cy=emptyCols>=2?last.cy+10:H-bottomExtra/2+4;
-  put(`<svg viewBox="-50 -50 100 100" width="${small?96:150}" height="${small?96:150}"><g fill="none" stroke="#5a3a17" stroke-width="1.6"><circle r="40"/><circle r="30" stroke-dasharray="2 3"/><path d="M0-48V48M-48 0H48" stroke-width="1"/></g><path d="M0-46 8 0 0 46-8 0Z" fill="#9b2d20" stroke="#5a3a17" stroke-width="1.2"/><path d="M-46 0 0 8 46 0 0-8Z" fill="#e9d6a5" stroke="#5a3a17" stroke-width="1.2"/><g font-family="serif" font-weight="700" font-size="11" fill="#3b2a14" text-anchor="middle"><text y="-52">N</text><text y="60">S</text><text x="56" y="4">E</text><text x="-56" y="4">W</text></g></svg><small>N = "next drop"<br>S = "stream count"</small>`,cx,cy,'erCmp');
-  const GAP=['☠ HERE BE LEAKS','≈ DELAY BAY ≈','⛰ MOUNT YANDHI <small>(summit never reached)</small>','🌴 SUNDAY SERVICE SANDS','≈ STEM PLAYER STRAIT ≈','🦜 TWEET STORM ZONE','≈ SEA OF UNRELEASED ALBUMS ≈','⚓ ADIDAS HARBOR <small>(closed)</small>','☠ BEWARE: ALBUM DATES','🐙 THE KRAKEN OF FEATURES','🏝 ISLAND OF UNFINISHED SONGS'];
-  for(let r=0;r<rows-1;r++){
-    const yy=top+(r+1)*TH+r*gy+gy/2-8+(rnd(r+40)-.5)*10;
-    const nL=small?1:2;
-    for(let q=0;q<nL;q++){const xx=small?W/2:W*(q?.74:.26)+(rnd(r*7+q)-.5)*90;put(GAP[(r*nL+q)%GAP.length],xx,yy,'erGap',`--r:${((rnd(r+q*5)-.5)*5).toFixed(1)}deg`)}
-  }
-  const emoji=['🐙','🦈','⚓','🧭','🏴‍☠️'];
-  if(!small){put('🐙',W-pad-30,top-82,'erEm');put('🦈',W/2,H-bottomExtra/2+10,'erEm')}
+  put(`<b>THE ERAS OF YE</b>`,W/2,small?42:56,'erTitle');
   pan.W=W;pan.H=H;fitCam();applyCam();
 }
 function fitCam(){
@@ -218,9 +183,9 @@ function tileCam(y){const p=tilePos[y],s=Math.min(vw*.7/TW,vh*.78/TH,4.2);return
 function makeTiles(){
   world.querySelectorAll('.erTile').forEach(n=>n.remove());
   YEARS.forEach(y=>{
-    const m=META[y]||[String(y),'',''],ev=BY[y],cv=m[2]||(ev.find(e=>e.c&&!/^data:/.test(e.c))||{}).c||'',b=document.createElement('button');
+    const m=META[y]||[String(y),'',''],ev=BY[y],cv=m[2]||(window.ERAS_TILE||{})[y]||(ev.find(e=>e.c&&!/^data:/.test(e.c))||{}).c||'',b=document.createElement('button');
     b.type='button';b.className='erTile';b.dataset.y=y;b.style.setProperty('--hu',(y*37)%360);b.setAttribute('aria-label',`${y} ${m[0]}`);
-    b.innerHTML=`<span class="erTC">${cv?`<img loading="lazy" alt="" src="${esc(cv)}" onerror="this.remove()">`:`<span class="erEmo">${EMO[y]||'🗺️'}</span>`}</span><span class="erTY">${y}</span><span class="erTN">${esc(m[0]||'')}</span><span class="erTK">${ev.length} FIND${ev.length===1?'':'S'}</span>`;
+    b.innerHTML=`<span class="erTC">${cv?`<img loading="lazy" alt="" src="${esc(cv)}" onerror="this.remove()">`:''}</span><span class="erTY">${y}</span><span class="erTN">${esc(m[0]||'')}</span><span class="erTK">${ev.length} MOMENT${ev.length===1?'':'S'}</span>`;
     world.appendChild(b);
   });
 }
@@ -372,5 +337,5 @@ PH.eras={
     else{vw=innerWidth;vh=innerHeight;if(tk){minX=measure(tk);setX(Math.max(minX,Math.min(0,px)))}}},
   hide(){root.classList.remove('activeScreen');document.body.classList.remove('erOn');cancelAnimationFrame(raf)}
 };
-window.Eras={get years(){return YEARS},get mode(){return mode},open:openYear,back:zoomOut,step};
+window.Eras={get data(){return BY},get meta(){return META},get years(){return YEARS},get mode(){return mode},open:openYear,back:zoomOut,step};
 })();
