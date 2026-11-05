@@ -1,0 +1,27 @@
+name: scrape-tmp
+on:
+  push:
+    branches: [scrape-tmp]
+permissions:
+  contents: write
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p /tmp/o
+          U=$(grep -o "https://[a-z0-9]*\.supabase\.co" supabase-config.js | head -1)
+          K=$(grep -o "eyJ[A-Za-z0-9_.-]*\|sb_publishable_[A-Za-z0-9_-]*" supabase-config.js | head -1)
+          for off in 0 1000; do
+            curl -s -H "apikey: $K" -H "Authorization: Bearer $K" -H "Range: $off-$((off+999))" "$U/rest/v1/catalog?select=key,title,credits,album,rarity,kind,streams,release_date&order=key" > /tmp/o/cat$off.json
+          done
+          ls -la /tmp/o
+      - name: save
+        run: |
+          git config user.name bot; git config user.email bot@users.noreply.github.com
+          git checkout --orphan scrape-out2
+          git rm -rf -q . || true
+          cp -r /tmp/o/. .
+          git add -A; git commit -q -m out
+          git push -f origin scrape-out2:scrape-out
