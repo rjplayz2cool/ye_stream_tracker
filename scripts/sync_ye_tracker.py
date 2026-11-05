@@ -83,7 +83,7 @@ def collect(source_dir=None):
 
 def update(index_path,source_dir=None):
  original=index_path.read_text();match=re.search(ARCHIVE_PATTERN,original)
- if not match or not original.rstrip().endswith('</script></body></html>'):
+ if not match or not original.rstrip().endswith('</body></html>'):
   raise ValueError('Index is incomplete or tracker archive is missing; no changes written')
  external=re.search(r'data-src="([^"]+)"',match.group(1))
  archive_path=index_path.parent/'data'/'ye-tracker-archive.txt' if external else None
