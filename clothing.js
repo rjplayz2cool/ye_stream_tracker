@@ -14,6 +14,7 @@ const st=document.createElement('style');st.textContent=`
 .clTh{border:1px solid #ffffff40;background:#ffffff0d;color:#fff;border-radius:999px;padding:8px 16px;font:600 12px/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
 .clTh:hover{background:#ffffff24}
 .clPane[hidden]{display:none}
+.clS01 .mcI img{object-fit:cover;width:100%;height:100%}
 .clYz a{color:inherit}
 .clNote{margin:0 0 14px;color:#fff9;font-size:13px}
 .clNote a{color:#fff}
@@ -69,8 +70,8 @@ body.clyOn header .mark,body.clyOn header .live,body.clyOn header #upd{color:#00
 `;document.head.appendChild(st);
 root.innerHTML=`<div class="eyebrow">STYLE</div><h1 class="title">CLOTHING</h1><div class="muted">Every piece in the Yeezy archive, the tour merch, and what's on yeezy.com now.</div>
 <div class="clWm">YEEZY</div>
-<div class="clBar"><div class="tNav" role="tablist"><button type="button" data-t="arch">Yeezy Archive</button><button type="button" data-t="tour">Tour Merch</button><button type="button" data-t="yz">Yeezy.com</button></div><button type="button" class="clTh" data-th>Change Theme</button></div>
-<section class="clPane" data-p="arch"></section><section class="clPane" data-p="tour" hidden></section><section class="clPane clYz" data-p="yz" hidden></section>`;
+<div class="clBar"><div class="tNav" role="tablist"><button type="button" data-t="arch">Yeezy Archive</button><button type="button" data-t="tour">Tour Merch</button><button type="button" data-t="yz">Yeezy.com</button><button type="button" data-t="s01">SEASON 01</button></div><button type="button" class="clTh" data-th>Change Theme</button></div>
+<section class="clPane" data-p="arch"></section><section class="clPane" data-p="tour" hidden></section><section class="clPane clYz" data-p="yz" hidden></section><section class="clPane clS01" data-p="s01" hidden></section>`;
 const P=k=>root.querySelector('[data-p="'+k+'"]'),done={};
 let yzG='All',storeP=null;
 const SW='https://cdn.swell.store/yzy-prod/';
@@ -86,8 +87,14 @@ function renderYz(){const el=P('yz'),U=window.__tourUI;
   el.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{yzG=b.dataset.g;renderYz()});
   el.querySelectorAll('.yaT').forEach(b=>b.onclick=()=>{const x=L[+b.dataset.k];U.openViewer({n:x[0],p:x[4]===2?'COMING SOON':'$'+x[3]},x[6].map(u=>SW+u))})
  }).catch(()=>{el.innerHTML='<div class="tEmpty">Could not load. Refresh and try again.</div>'})}
+const S01=Array.from({length:36},(_,i)=>'assets/season-01/look-'+String(i+1).padStart(2,'0')+'.jpg');
+function renderS01(){const el=P('s01'),U=window.__tourUI;
+ el.innerHTML=`<div class="tHead"><div><h2>SEASON 01</h2><p>${S01.length} looks · Runway show, Nov 4, 2026</p></div></div>
+ <p class="clNote">Images from <a href="https://www.instagram.com/yzy/" target="_blank" rel="noopener noreferrer">@yzy</a> on Instagram.</p>
+ <div class="mGrid">${S01.map((u,i)=>`<button type="button" class="yaT mc" data-k="${i}" aria-label="SEASON 01 look ${i+1}"><div class="mcI"><img loading="lazy" alt="" src="${esc(u)}"></div><div class="mcN">SEASON 01 · LOOK ${String(i+1).padStart(2,'0')}<small>COMING SOON</small></div></button>`).join('')}</div>`;
+ el.querySelectorAll('.yaT').forEach(b=>b.onclick=()=>{const i=+b.dataset.k;U&&U.openViewer({n:'SEASON 01',p:'COMING SOON'},S01.slice(i).concat(S01.slice(0,i)))})}
 function setTab(t){tab=t;root.querySelectorAll('.tNav button').forEach(b=>b.setAttribute('aria-current',b.dataset.t===t?'true':'false'));root.querySelectorAll('.clPane').forEach(p=>p.hidden=p.dataset.p!==t);
- const U=window.__tourUI;if(!U||done[t])return;done[t]=1;if(t==='arch')U.renderArch(P('arch'));else if(t==='tour')U.ready().then(()=>U.renderMerch(P('tour')));else renderYz()}
+ const U=window.__tourUI;if(!U||done[t])return;done[t]=1;if(t==='arch')U.renderArch(P('arch'));else if(t==='tour')U.ready().then(()=>U.renderMerch(P('tour')));else if(t==='s01')renderS01();else renderYz()}
 root.querySelectorAll('.tNav button').forEach(b=>b.onclick=()=>{setTab(b.dataset.t);scrollTo({top:0});root.scrollTo&&root.scrollTo({top:0})});
 function sync(){const show=on&&!pg.hidden;document.body.classList.toggle('clyOn',show);
  if(show&&(!root.classList.contains('clY')||root.classList.contains('out'))){clearTimeout(root._t);root.classList.remove('out');root.classList.add('clY');root.classList.remove('in');void root.offsetWidth;root.classList.add('in')}
